@@ -1,0 +1,2720 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>shape: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">spatial-id/shape/cylinders.go (0.0%)</option>
+				
+				<option value="file1">spatial-id/shape/line.go (100.0%)</option>
+				
+				<option value="file2">spatial-id/shape/point.go (100.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package shape
+
+import (
+        "math"
+        "reflect"
+        "sort"
+        "spatial-id/common"
+        "spatial-id/common/consts"
+        "spatial-id/common/enum"
+        "spatial-id/common/errors"
+        "spatial-id/common/logger"
+        "spatial-id/common/object"
+        "spatial-id/common/spatial"
+        "spatial-id/operated"
+        "spatial-id/shape/physics"
+        "strconv"
+        "strings"
+)
+
+// convertSpatialProjectionPoint PointオブジェクトからSpatialPointオブジェクトへの変換関数
+//
+// 引数：
+//  point： Point3オブジェクト
+//
+// 戻り値：
+//  projectedPointオブジェクト
+func convertSpatialProjectionPoint(point spatial.Point3) object.ProjectedPoint <span class="cov0" title="0">{
+        return object.ProjectedPoint{point.X, point.Y, point.Z}
+}</span>
+
+// DetectCollision 線分と面の衝突点座標算出関数
+//
+// 線分と面の衝突点の座標を求める
+//
+// 引数：
+//  plane：衝突判定面
+//  lines：衝突判定線分スライス
+//  operate： 拡張空間IDに対する操作
+//   引数：
+//    衝突座標
+//    衝突判定線分スライスのインデックス
+func DetectCollision(
+        plane spatial.Plane,
+        lines []spatial.Line3,
+        operate func(spatial.Point3, int64),
+) <span class="cov0" title="0">{
+        for index, line := range lines </span><span class="cov0" title="0">{
+                // 衝突位置
+                collisionPoint := spatial.Point3{}
+                // 面上の一点から線分の始点へのベクトル
+                c0 := spatial.NewVectorFromPoints(plane.Point, line.Start())
+
+                // 進行方向と法線の内積
+                directDot := plane.Normal.Dot(line.Direction)
+                // 進行方向と法線の内積が0
+                // (進行方向が面に平行)の場合は衝突位置をNoneとして返却
+                if math.Abs(directDot) &lt; consts.Minima </span><span class="cov0" title="0">{
+                        logger.Debug("線分と衝突判定面が平行")
+                        continue</span>
+                }
+
+                // 衝突時間算出
+                <span class="cov0" title="0">collisionTime := -plane.Normal.Dot(c0) / directDot
+                // 衝突時間が0～1の間にあれば衝突位置を算出
+                if 0 &lt;= collisionTime &amp;&amp; collisionTime &lt;= 1 </span><span class="cov0" title="0">{
+                        collisionPoint = line.ToPoint(collisionTime)
+                        // 衝突位置に対して処理実施
+                        operate(collisionPoint, int64(index))
+                }</span>
+        }
+}
+
+// CreateSequenceList 指定範囲の連番リストを作成
+//
+// 開始値から終了値までの範囲の連番リストを返却する。
+//  - プラス方向に増加している場合は、開始値から終了値までの範囲で増分1の連番となる。
+//  - マイナス方向に増加している場合は、終了値から開始値までの範囲で増分1の連番となる。
+//  - 開始値と終了値が同一の場合は、開始値を格納した配列を返却する。
+//
+// 引数：
+//  start： 開始値
+//  end： 終了値
+//
+// 戻り値：
+//  指定範囲の連番リスト
+func CreateSequenceList(start, end int64) []int64 <span class="cov0" title="0">{
+        num := end - start
+        sequenceList := make([]int64, 0)
+
+        if num &lt; 0 </span><span class="cov0" title="0">{
+                for i := end; i &lt;= start; i++ </span><span class="cov0" title="0">{
+                        sequenceList = append(sequenceList, i)
+                }</span>
+        } else<span class="cov0" title="0"> if num &gt; 0 </span><span class="cov0" title="0">{
+                for i := start; i &lt;= end; i++ </span><span class="cov0" title="0">{
+                        sequenceList = append(sequenceList, i)
+                }</span>
+        } else<span class="cov0" title="0"> {
+                sequenceList = append(sequenceList, start)
+        }</span>
+
+        <span class="cov0" title="0">return sequenceList</span>
+}
+
+//  GenerateXVoxelPlane X軸ボクセル境界を取得
+//
+// 拡張空間IDのX軸ボクセル境界面を返却する。
+//
+// 引数：
+//  startXID： 始点ボクセルのX成分ID
+//  endXID： 終点ボクセルのX成分ID
+//  hZoom： 水平方向精度
+//  vZoom： 垂直方向精度
+//
+// 戻り値：
+//  X軸ボクセル境界面
+//
+// 戻り値(エラー)：
+//        以下の条件に当てはまる場合、エラーインスタンスが返却される。
+//         精度閾値超過          ：水平方向精度、または垂直方向精度に 0 ～ 35 の整数値以外が入力されていた場合。
+//         拡張空間IDフォーマット不正：拡張空間IDのフォーマットに違反する値が"拡張空間ID"に入力されていた場合。
+func GenerateXVoxelPlane(
+        startXID, endXID, hZoom, vZoom int64,
+) ([]*spatial.Plane, error) <span class="cov0" title="0">{
+        logger.Debug(
+                "X境界面の取得(start_id=%s, end_id=%s)",
+                reflect.ValueOf(startXID),
+                reflect.ValueOf(endXID),
+        )
+        xPlanes := make([]*spatial.Plane, 0)
+
+        // 【直交座標空間系】X境界線毎に処理
+        for _, xID := range CreateSequenceList(startXID, endXID)[1:] </span><span class="cov0" title="0">{
+                // 【直交座標空間】X軸ボクセル境界面の単位法線ベクトル
+                xNormVector := spatial.Vector3{1.0, 0.0, 0.0}
+
+                // 【直交座標空間】X軸拡張空間ID取得
+                spatialID := GetSpatialIDOnAxisIDs(xID, 0, 0, hZoom, vZoom)
+                // 【直交座標空間】境界面上のX座標取得
+                xPoint, err := GetXVoxelPlanePointOnSpatialID(spatialID)
+                if err != nil </span><span class="cov0" title="0">{
+                        return xPlanes, err
+                }</span>
+                // 【直交座標空間】境界面上の座標を定義
+                <span class="cov0" title="0">planeOrthPoint := spatial.Point3{xPoint, 0.0, 0.0}
+                logger.Debug("X境界面上の拡張空間ID: %s", reflect.ValueOf(spatialID))
+                logger.Debug("X境界面上の座標: %s", reflect.ValueOf(planeOrthPoint))
+
+                // 【直交座標空間】X軸ボクセル境界面
+                xPlane := spatial.Plane{planeOrthPoint, xNormVector}
+
+                xPlanes = append(xPlanes, &amp;xPlane)</span>
+        }
+
+        <span class="cov0" title="0">return xPlanes, nil</span>
+}
+
+// GenerateYVoxelPlane Y軸ボクセル境界を取得
+//
+// 拡張空間IDのY軸ボクセル境界面を返却する。
+//
+// 引数：
+//  startYID： 始点ボクセルのY成分ID
+//  endYID： 終点ボクセルのY成分ID
+//  hZoom： 水平方向精度
+//  vZoom： 垂直方向精度
+//
+// 戻り値：
+//  Y軸ボクセル境界面
+//
+// 戻り値(エラー)：
+//        以下の条件に当てはまる場合、エラーインスタンスが返却される。
+//         精度閾値超過          ：水平方向精度、または垂直方向精度に 0 ～ 35 の整数値以外が入力されていた場合。
+//         拡張空間IDフォーマット不正：拡張空間IDのフォーマットに違反する値が"拡張空間ID"に入力されていた場合。
+func GenerateYVoxelPlane(
+        startYID, endYID, hZoom, vZoom int64,
+) ([]*spatial.Plane, error) <span class="cov0" title="0">{
+        logger.Debug(
+                "Y境界面の取得(start_id=%s, end_id=%s)",
+                reflect.ValueOf(startYID),
+                reflect.ValueOf(endYID),
+        )
+        yPlanes := make([]*spatial.Plane, 0)
+
+        // 【直交座標空間系】Y境界線毎に処理
+        for _, yID := range CreateSequenceList(startYID, endYID)[1:] </span><span class="cov0" title="0">{
+                // 【直交座標空間】Y軸ボクセル境界面の単位法線ベクトル
+                yNormVector := spatial.Vector3{0.0, 1.0, 0.0}
+
+                // 【直交座標空間】Y軸拡張空間ID取得
+                spatialID := GetSpatialIDOnAxisIDs(0, yID, 0, hZoom, vZoom)
+                // 【直交座標空間】境界面上のX座標取得
+                yPoint, err := GetYVoxelPlanePointOnSpatialID(spatialID)
+                if err != nil </span><span class="cov0" title="0">{
+                        return yPlanes, err
+                }</span>
+                // 【直交座標空間】境界面上の座標を定義
+                <span class="cov0" title="0">planeOrthPoint := spatial.Point3{0.0, yPoint, 0.0}
+                logger.Debug("Y境界面上の拡張空間ID: %s", reflect.ValueOf(spatialID))
+                logger.Debug("Y境界面上の座標: %s", reflect.ValueOf(planeOrthPoint))
+
+                // 【直交座標空間】Y軸ボクセル境界面
+                yPlane := spatial.Plane{planeOrthPoint, yNormVector}
+
+                yPlanes = append(yPlanes, &amp;yPlane)</span>
+        }
+
+        <span class="cov0" title="0">return yPlanes, nil</span>
+}
+
+// GenerateZVoxelPlane Z軸ボクセル境界を取得
+//
+// 拡張空間IDのZ軸ボクセル境界面を返却する。
+//
+// 引数：
+//  startZID： 始点ボクセルのY成分ID
+//  endZID： 終点ボクセルのY成分ID
+//  hZoom： 水平方向精度
+//  vZoom： 垂直方向精度
+//
+// 戻り値：
+//  Z軸ボクセル境界面
+//
+// 戻り値(エラー)：
+//        以下の条件に当てはまる場合、エラーインスタンスが返却される。
+//         精度閾値超過          ：水平方向精度、または垂直方向精度に 0 ～ 35 の整数値以外が入力されていた場合。
+//         拡張空間IDフォーマット不正：拡張空間IDのフォーマットに違反する値が"拡張空間ID"に入力されていた場合。
+func GenerateZVoxelPlane(
+        startZID, endZID, hZoom, vZoom int64,
+) ([]*spatial.Plane, error) <span class="cov0" title="0">{
+        logger.Debug(
+                "Z境界面の取得(start_id=%s, end_id=%s)",
+                reflect.ValueOf(startZID),
+                reflect.ValueOf(endZID),
+        )
+        zPlanes := make([]*spatial.Plane, 0)
+
+        // 【直交座標空間系】Z境界線毎に処理
+        for _, zID := range CreateSequenceList(startZID, endZID)[1:] </span><span class="cov0" title="0">{
+                // 【直交座標空間】Z軸ボクセル境界面の単位法線ベクトル
+                zNormVector := spatial.Vector3{0.0, 0.0, 1.0}
+
+                // 【直交座標空間】Z軸拡張空間ID取得
+                spatialID := GetSpatialIDOnAxisIDs(0, 0, zID, hZoom, vZoom)
+                // 【直交座標空間】境界面上のZ座標取得
+                zPoint, err := GetZVoxelPlanePointOnSpatialID(spatialID)
+                if err != nil </span><span class="cov0" title="0">{
+                        return zPlanes, err
+                }</span>
+                // 【直交座標空間】境界面上の座標を定義
+                <span class="cov0" title="0">planeOrthPoint := spatial.Point3{0.0, 0.0, zPoint}
+                logger.Debug("Z境界面上の拡張空間ID: %s", reflect.ValueOf(spatialID))
+                logger.Debug("Z境界面上の座標: %s", reflect.ValueOf(planeOrthPoint))
+
+                // 【直交座標空間】Y軸ボクセル境界面
+                zPlane := spatial.Plane{planeOrthPoint, zNormVector}
+
+                zPlanes = append(zPlanes, &amp;zPlane)</span>
+        }
+
+        <span class="cov0" title="0">return zPlanes, nil</span>
+}
+
+// GetXVoxelPlanePointOnSpatialID 拡張空間IDからX方向ボクセル境界座標を取得
+//
+// 引数：
+//  spatialID: 拡張空間ID
+//
+// 戻り値：
+//  X方向ボクセル境界座標
+//
+// 戻り値(エラー)：
+//        以下の条件に当てはまる場合、エラーインスタンスが返却される。
+//         拡張空間IDフォーマット不正：拡張空間IDのフォーマットに違反する値が"拡張空間ID"に入力されていた場合。
+func GetXVoxelPlanePointOnSpatialID(spatialID string) (float64, error) <span class="cov0" title="0">{
+        // 頂点座標を取得
+        points, e := GetPointOnExtendedSpatialId(
+                spatialID, enum.Vertex,
+        )
+        if e != nil </span><span class="cov0" title="0">{
+                return 0.0, e
+        }</span>
+        <span class="cov0" title="0">projrctedPoints, e :=
+                ConvertPointListToProjectedPointList(points, consts.OrthCrs)
+        if e != nil </span><span class="cov0" title="0">{
+                return 0.0, e
+        }</span>
+
+        <span class="cov0" title="0">xPoints := make([]float64, 0, 8)
+        for _, projectedPoint := range projrctedPoints </span><span class="cov0" title="0">{
+                xPoints = append(xPoints, projectedPoint.X)
+        }</span>
+
+        <span class="cov0" title="0">minX, _ := common.Min(xPoints)
+        return minX, nil</span>
+}
+
+// GetYVoxelPlanePointOnSpatialID 拡張空間IDからY方向ボクセル境界座標を取得
+//
+// 引数：
+//  spatialID: 拡張空間ID
+//
+// 戻り値：
+//  Y方向ボクセル境界座標
+//
+// 戻り値(エラー)：
+//
+//        以下の条件に当てはまる場合、エラーインスタンスが返却される。
+//         拡張空間IDフォーマット不正：拡張空間IDのフォーマットに違反する値が"拡張空間ID"に入力されていた場合。
+func GetYVoxelPlanePointOnSpatialID(spatialID string) (float64, error) <span class="cov0" title="0">{
+        // 頂点座標を取得
+        points, e := GetPointOnExtendedSpatialId(
+                spatialID, enum.Vertex,
+        )
+        if e != nil </span><span class="cov0" title="0">{
+                return 0.0, e
+        }</span>
+        <span class="cov0" title="0">projrctedPoints, e :=
+                ConvertPointListToProjectedPointList(points, consts.OrthCrs)
+        if e != nil </span><span class="cov0" title="0">{
+                return 0.0, e
+        }</span>
+
+        <span class="cov0" title="0">yPoints := make([]float64, 0, 8)
+        for _, projrctedPoint := range projrctedPoints </span><span class="cov0" title="0">{
+                yPoints = append(yPoints, projrctedPoint.Y)
+        }</span>
+
+        <span class="cov0" title="0">minY, _ := common.Min(yPoints)
+        return minY, nil</span>
+}
+
+// GetZVoxelPlanePointOnSpatialID 拡張空間IDからZ方向ボクセル境界座標を取得
+//
+// 引数：
+//  spatialID: 拡張空間ID
+//
+// 戻り値：
+//  Z方向ボクセル境界座標
+//
+// 戻り値(エラー)：
+//
+//        以下の条件に当てはまる場合、エラーインスタンスが返却される。
+//         拡張空間IDフォーマット不正：拡張空間IDのフォーマットに違反する値が"拡張空間ID"に入力されていた場合。
+func GetZVoxelPlanePointOnSpatialID(spatialID string) (float64, error) <span class="cov0" title="0">{
+        // 頂点座標を取得
+        points, e := GetPointOnExtendedSpatialId(
+                spatialID, enum.Vertex,
+        )
+        if e != nil </span><span class="cov0" title="0">{
+                return 0.0, e
+        }</span>
+
+        <span class="cov0" title="0">projrctedPoints, e :=
+                ConvertPointListToProjectedPointList(points, consts.OrthCrs)
+        if e != nil </span><span class="cov0" title="0">{
+                return 0.0, e
+        }</span>
+
+        <span class="cov0" title="0">zPoints := make([]float64, 0, 8)
+        for _, projrctedPoint := range projrctedPoints </span><span class="cov0" title="0">{
+                zPoints = append(zPoints, projrctedPoint.Alt)
+        }</span>
+
+        <span class="cov0" title="0">minZ, _ := common.Min(zPoints)
+        return minZ, nil</span>
+}
+
+// GetSpatialIDOnAxisIDs 軸IDから拡張空間ID取得
+//
+// 引数：
+//  xID: X軸ボクセルID
+//  yID: Y軸ボクセルID
+//  zID: Z軸ボクセルID
+//  hZoom: 水平方向精度
+//  vZoom: 垂直方向精度
+//
+// 戻り値：
+//   拡張空間ID
+func GetSpatialIDOnAxisIDs(xID, yID, zID, hZoom, vZoom int64) string <span class="cov0" title="0">{
+        spatialIDs := []string{
+                strconv.FormatInt(hZoom, 10),
+                strconv.FormatInt(xID, 10),
+                strconv.FormatInt(yID, 10),
+                strconv.FormatInt(vZoom, 10),
+                strconv.FormatInt(zID, 10),
+        }
+
+        return strings.Join(spatialIDs, consts.SpatialIDDelimiter)
+}</span>
+
+// GetVoxelIDToSpatialID ボクセル成分ID取得
+//
+// 拡張空間IDからボクセル成分ID取得
+//
+// 引数：
+//  spatialID： 取得するボクセルの拡張空間ID
+//
+// 戻り値：
+//  (xインデックス, yインデックス, vインデックス)
+func GetVoxelIDToSpatialID(spatialID string) []int64 <span class="cov0" title="0">{
+        ids := strings.Split(spatialID, consts.SpatialIDDelimiter)
+        lonIndex, _ := strconv.ParseInt(ids[1], 10, 64)
+        latIndex, _ := strconv.ParseInt(ids[2], 10, 64)
+        altIndex, _ := strconv.ParseInt(ids[4], 10, 64)
+
+        return []int64{
+                lonIndex,
+                latIndex,
+                altIndex,
+        }
+}</span>
+
+// Rectangular 直方体構造体
+type Rectangular struct {
+        start         spatial.Point3    // 始点
+        end           spatial.Point3    // 終点
+        radius        float64           // 半径
+        hZoom         int64             // 水平精度
+        vZoom         int64             // 垂直精度
+        height        float64           // 高さ
+        rOrth         spatial.Vector3   // 半径長直交ベクトル
+        uAxis         spatial.Vector3   // 単位軸ベクトル
+        contact       spatial.Point3    // 直方体と円との接点
+        rNormal       spatial.Vector3   // 半径長法線ベクトル
+        crossPoints   []*spatial.Point3 // 全交点
+        allSpatialIDs []string          // 全拡張空間ID
+}
+
+// NewRectangular 直方体構造体コンストラクタ
+//
+// 直方体構造体作成
+//
+// 引数：
+//  startPoint： 始点
+//  endPoint： 終点
+//  radius： 半径
+//  hZoom： 水平精度
+//  vZoom： 垂直精度
+//
+// 戻り値：
+//  直方体構造体ポインタ
+func NewRectangular(
+        startPoint spatial.Point3,
+        endPoint spatial.Point3,
+        radius float64,
+        hZoom int64,
+        vZoom int64,
+) *Rectangular <span class="cov0" title="0">{
+
+        rect := new(Rectangular)
+        rect.start = startPoint
+        rect.end = endPoint
+        rect.radius = radius
+
+        // 分解能取得
+        rect.hZoom = hZoom
+        rect.vZoom = vZoom
+
+        return rect
+}</span>
+
+// initAxis 図形初期化
+//
+// 図形を構成する軸・ベクトルを初期化
+func (r *Rectangular) initAxis() <span class="cov0" title="0">{
+
+        // 【直交座標空間】軸ベクトル
+        axis := spatial.NewVectorFromPoints(r.start, r.end)
+
+        // 縦の長さ
+        r.height = axis.Norm()
+
+        // 開始点の直交ベクトルを一つ求める
+        // 直交ベクトル
+        orth := spatial.Vector3{}
+        if math.Abs(axis.Y) &lt; consts.Minima </span><span class="cov0" title="0">{
+                orth = spatial.Vector3{0.0, 1.0, 0.0}
+        }</span> else<span class="cov0" title="0"> if math.Abs(axis.Z) &lt; consts.Minima </span><span class="cov0" title="0">{
+                orth = spatial.Vector3{0.0, 0.0, 1.0}
+        }</span> else<span class="cov0" title="0"> {
+                orth = spatial.Vector3{0.0, -axis.Z, axis.Y}
+        }</span>
+
+        // 直交ベクトルを機体半径の大きさにする
+        <span class="cov0" title="0">r.rOrth = orth.Unit().Scale(r.radius)
+
+        // 単位軸ベクトル
+        r.uAxis = axis.Unit()
+
+        // 円との接点
+        r.contact = r.start.Translate(r.rOrth)
+
+        // 軸ベクトルと直交ベクトルの法線ベクトル(大きさは機体半径)
+        r.rNormal = r.uAxis.Cross(r.rOrth).Unit().Scale(r.radius)</span>
+}
+
+// calcRectangularApex 直方体頂点・辺取得
+//
+// 直方体の頂点・辺をを取得し、境界面との交点を取得
+//
+// 戻り値(エラー)：
+//        以下の条件に当てはまる場合、エラーインスタンスが返却される。
+//         拡張空間IDフォーマット不正：拡張空間IDのフォーマットに違反する値が"拡張空間ID"に入力されていた場合。
+func (r *Rectangular) calcRectangularApex() error <span class="cov0" title="0">{
+        // 【直交座標空間】直方体の頂点
+        apexes := make([]spatial.Point3, 8)
+        apexes[0] = r.contact.Translate(r.rNormal)
+        apexes[1] = r.contact.Translate(r.rNormal.Scale(-1))
+        apexes[2] = apexes[0].Translate(r.rOrth.Scale(-2))
+        apexes[3] = apexes[1].Translate(r.rOrth.Scale(-2))
+        apexes[4] = apexes[0].Translate(r.uAxis.Scale(r.height))
+        apexes[5] = apexes[1].Translate(r.uAxis.Scale(r.height))
+        apexes[6] = apexes[2].Translate(r.uAxis.Scale(r.height))
+        apexes[7] = apexes[3].Translate(r.uAxis.Scale(r.height))
+        logger.Debug("直方体の頂点: %s", reflect.ValueOf(apexes))
+
+        // 【直交座標空間】直方体の辺)
+        edges := make([]spatial.Line3, 12)
+        edges[0] = spatial.NewLineFromPoints(apexes[0], apexes[1])
+        edges[1] = spatial.NewLineFromPoints(apexes[0], apexes[4])
+        edges[2] = spatial.NewLineFromPoints(apexes[1], apexes[5])
+        edges[3] = spatial.NewLineFromPoints(apexes[4], apexes[5])
+        edges[4] = spatial.NewLineFromPoints(apexes[2], apexes[3])
+        edges[5] = spatial.NewLineFromPoints(apexes[2], apexes[6])
+        edges[6] = spatial.NewLineFromPoints(apexes[6], apexes[7])
+        edges[7] = spatial.NewLineFromPoints(apexes[3], apexes[7])
+        edges[8] = spatial.NewLineFromPoints(apexes[0], apexes[2])
+        edges[9] = spatial.NewLineFromPoints(apexes[1], apexes[3])
+        edges[10] = spatial.NewLineFromPoints(apexes[4], apexes[6])
+        edges[11] = spatial.NewLineFromPoints(apexes[5], apexes[7])
+        logger.Debug("直方体の辺: %s", reflect.ValueOf(edges))
+
+        // 【直交座標空間】直方体の各辺に対して拡張空間IDを取得する
+        for _, edge := range edges </span><span class="cov0" title="0">{
+                edgeStart := convertSpatialProjectionPoint(edge.Start())
+                edgeEnd := convertSpatialProjectionPoint(edge.End())
+                // 【緯度経度空間】直方体の各辺の頂点を緯度経度に変換
+                wgs84Edges, _ := ConvertProjectedPointListToPointList(
+                        []*object.ProjectedPoint{&amp;edgeStart, &amp;edgeEnd}, consts.OrthCrs,
+                )
+                // 辺の拡張空間ID取得
+                edgeSpatialIDs, err :=
+                        GetSpatialIdsOnLine(wgs84Edges[0], wgs84Edges[1], r.hZoom, r.vZoom)
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+                <span class="cov0" title="0">r.allSpatialIDs = append(r.allSpatialIDs, edgeSpatialIDs...)</span>
+        }
+        <span class="cov0" title="0">logger.Debug("直方体の辺に対する拡張空間ID: %s", reflect.ValueOf(r.allSpatialIDs))
+
+        err := r.calcRectangularCrossPoints(apexes, edges)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov0" title="0">return nil</span>
+}
+
+// calcRectangularCrossPoints 直方体と境界面との交点取得
+//
+// 直方体の境界面との交点を取得
+//
+// 戻り値(エラー)：
+//        以下の条件に当てはまる場合、エラーインスタンスが返却される。
+//         拡張空間IDフォーマット不正：拡張空間IDのフォーマットに違反する値が"拡張空間ID"に入力されていた場合。
+func (r *Rectangular) calcRectangularCrossPoints(
+        apexes []spatial.Point3, edges []spatial.Line3,
+) error <span class="cov0" title="0">{
+        // 【直交座標空間】直方体頂点の拡張空間IDを取得
+        apexProjectedList := make([]*object.ProjectedPoint, 0, 8)
+        for _, apex := range apexes </span><span class="cov0" title="0">{
+                apexProjected := convertSpatialProjectionPoint(apex)
+                apexProjectedList = append(apexProjectedList, &amp;apexProjected)
+        }</span>
+        <span class="cov0" title="0">apexWgs84List, err := ConvertProjectedPointListToPointList(
+                apexProjectedList, consts.OrthCrs,
+        )
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov0" title="0">apexSpatialIDs, err := GetExtendedSpatialIdsOnPoints(apexWgs84List, r.hZoom, r.vZoom)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov0" title="0">logger.Debug("直方体の頂点に対する拡張空間ID: %s", reflect.ValueOf(apexSpatialIDs))
+
+        // 【直交座標空間】直方体の各頂点の拡張空間IDインデックスを取得
+        apexSpatialXIndexes := make([]int64, 0, 8)
+        apexSpatialYIndexes := make([]int64, 0, 8)
+        apexSpatialZIndexes := make([]int64, 0, 8)
+        for _, apexSpatialID := range apexSpatialIDs </span><span class="cov0" title="0">{
+                apexSpatialIndex := GetVoxelIDToSpatialID(apexSpatialID)
+                apexSpatialXIndexes = append(apexSpatialXIndexes, apexSpatialIndex[0])
+                apexSpatialYIndexes = append(apexSpatialYIndexes, apexSpatialIndex[1])
+                apexSpatialZIndexes = append(apexSpatialZIndexes, apexSpatialIndex[2])
+        }</span>
+
+        // 【直交座標空間】直方体の各頂点の最大緯度・最小緯度を取得
+        <span class="cov0" title="0">minRectXIndex, _ := common.Min(apexSpatialXIndexes)
+        maxRectXIndex, _ := common.Max(apexSpatialXIndexes)
+        logger.Debug(
+                "直方体頂点拡張空間IDのX成分範囲: %s～%s",
+                reflect.ValueOf(minRectXIndex),
+                reflect.ValueOf(maxRectXIndex),
+        )
+
+        // 【直交座標空間】直方体の各頂点の最大経度・最小経度を取得
+        minRectYIndex, _ := common.Min(apexSpatialYIndexes)
+        maxRectYIndex, _ := common.Max(apexSpatialYIndexes)
+        logger.Debug(
+                "直方体頂点拡張空間IDのY成分範囲: %s～%s",
+                reflect.ValueOf(minRectYIndex),
+                reflect.ValueOf(maxRectYIndex),
+        )
+
+        // 【直交座標空間】直方体の各頂点の最大高さ・最小高さを取得
+        minRectZIndex, _ := common.Min(apexSpatialZIndexes)
+        maxRectZIndex, _ := common.Max(apexSpatialZIndexes)
+        logger.Debug(
+                "直方体頂点拡張空間IDのZ成分範囲: %s～%s",
+                reflect.ValueOf(minRectZIndex),
+                reflect.ValueOf(maxRectZIndex),
+        )
+
+        // 【直交座標空間】Xボクセル境界面取得
+        xVoxelPlanes, err := GenerateXVoxelPlane(
+                minRectXIndex,
+                maxRectXIndex,
+                r.hZoom,
+                r.vZoom,
+        )
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        // 【直交座標空間】Yボクセル境界面取得
+        <span class="cov0" title="0">yVoxelPlanes, err := GenerateYVoxelPlane(
+                minRectYIndex,
+                maxRectYIndex,
+                r.hZoom,
+                r.vZoom,
+        )
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        // 【直交座標空間】Zボクセル境界面取得
+        <span class="cov0" title="0">zVoxelPlanes, err := GenerateZVoxelPlane(
+                minRectZIndex,
+                maxRectZIndex,
+                r.hZoom,
+                r.vZoom,
+        )
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        // X境界面との交点を取得
+        <span class="cov0" title="0">r.getVoxelPlaneCrossPoint(
+                edges,
+                xVoxelPlanes,
+                yVoxelPlanes,
+                zVoxelPlanes,
+                spatial.Vector3{0.0, 0.0, 1.0},
+        )
+
+        // Y境界面との交点を取得
+        r.getVoxelPlaneCrossPoint(
+                edges,
+                yVoxelPlanes,
+                zVoxelPlanes,
+                xVoxelPlanes,
+                spatial.Vector3{1.0, 0.0, 0.0},
+        )
+
+        // Z境界面との交点を取得
+        r.getVoxelPlaneCrossPoint(
+                edges,
+                zVoxelPlanes,
+                xVoxelPlanes,
+                yVoxelPlanes,
+                spatial.Vector3{0.0, 1.0, 0.0},
+        )
+        return nil</span>
+}
+
+// getVoxelPlaneCrossPoint 境界面との交点取得
+//
+// 引数：
+//  edges： 直方体の辺全て。
+//  firstVoxelPlanes： 第一ボクセル境界面
+//  secondVoxelPlanes： 第二ボクセル境界面
+//  thirdVoxelPlanes： 第三ボクセル境界面
+//  basicAxis： 処理時に基準とする軸ベクトル
+func (r *Rectangular) getVoxelPlaneCrossPoint(
+        edges []spatial.Line3,
+        firstVoxelPlanes []*spatial.Plane,
+        secondVoxelPlanes []*spatial.Plane,
+        thirdVoxelPlanes []*spatial.Plane,
+        basicAxis spatial.Vector3,
+) <span class="cov0" title="0">{
+        // 【直交座標空間】第一ボクセル境界面毎に処理
+        for _, firstPlane := range firstVoxelPlanes </span><span class="cov0" title="0">{
+
+                // 【直交座標空間】第一ボクセル境界面に対する辺の交点を求める
+                planeCollisions := []*spatial.Point3{}
+                DetectCollision(*firstPlane, edges, func(collisionPoint spatial.Point3, _ int64) </span><span class="cov0" title="0">{
+                        // 交点をユニーク性を維持して追加
+                        planeCollisions =
+                                spatial.UniqueAppend(planeCollisions, &amp;collisionPoint, consts.Minima)
+                }</span>)
+
+                // 第一ボクセル境界への交点が1もしくは2の場合は辺の拡張空間IDとして取得出来ているので、処理をスキップ
+                <span class="cov0" title="0">if len(planeCollisions) &lt;= 2 </span><span class="cov0" title="0">{
+                        continue</span>
+                }
+                // 【直交座標空間】全交点リストに追加
+                <span class="cov0" title="0">for _, planeCollision := range planeCollisions </span><span class="cov0" title="0">{
+                        logger.Debug(
+                                "第一ボクセル境界への交点: %s",
+                                reflect.ValueOf(planeCollision),
+                        )
+                        r.crossPoints = append(r.crossPoints, planeCollision)
+                }</span>
+
+                // 第一ボクセル境界への交点を結んだ交線リストを作成
+                <span class="cov0" title="0">planeCollisionLines := []spatial.Line3{}
+                common.Combinations(int64(len(planeCollisions)), 2, func(pair []int64) </span><span class="cov0" title="0">{
+                        start := *planeCollisions[pair[0]]
+                        end := *planeCollisions[pair[1]]
+                        line := spatial.NewLineFromPoints(start, end)
+                        planeCollisionLines = append(planeCollisionLines, line)
+                }</span>)
+                <span class="cov0" title="0">logger.Debug(
+                        "第一ボクセル境界への交点を結んだ交線リスト: %s",
+                        reflect.ValueOf(planeCollisionLines),
+                )
+
+                // 交線ごとの交点辞書を作成（キーは交線リストのインデックス）
+                collisionLineCrossPoints := make(map[int64][]*spatial.Point3)
+
+                // 【直交座標空間】第二ボクセル境界面毎に処理
+                secondCollisionLines := r.setSecondPoint(
+                        secondVoxelPlanes,
+                        planeCollisionLines,
+                        collisionLineCrossPoints,
+                        basicAxis,
+                )
+
+                // 【直交座標空間】第三ボクセル境界面毎に処理
+                r.setThirdPoint(
+                        thirdVoxelPlanes,
+                        planeCollisionLines,
+                        secondCollisionLines,
+                        collisionLineCrossPoints,
+                )
+
+                // 中点取得
+                r.setMiddlePoint(collisionLineCrossPoints, planeCollisionLines)</span>
+        }
+}
+
+// setSecondPoint 第二ボクセル境界交点取得
+//
+// 引数：
+//        secondVoxelPlanes： 第二ボクセル境界面
+//        planeCollisionLines: 第一ボクセル境界面上の交線
+//        collisionLineCrossPoints： 第一ボクセル境界面上の交線ごとの交点辞書
+//  basicAxis： 処理時に基準とする軸ベクトル
+//
+// 戻り値：
+//        第二ボクセル境界面上の交線
+func (r *Rectangular) setSecondPoint(
+        secondVoxelPlanes []*spatial.Plane,
+        planeCollisionLines []spatial.Line3,
+        collisionLineCrossPoints map[int64][]*spatial.Point3,
+        basicAxis spatial.Vector3,
+) []spatial.Line3 <span class="cov0" title="0">{
+        secondCollisionLines := []spatial.Line3{}
+        for _, secondPlane := range secondVoxelPlanes </span><span class="cov0" title="0">{
+
+                secondCollisions := []*spatial.Point3{}
+                // 【直交座標空間】交線に対する第二ボクセル境界面の交点を取得
+                DetectCollision(
+                        *secondPlane,
+                        planeCollisionLines,
+                        func(collisionPoint spatial.Point3, index int64) </span><span class="cov0" title="0">{
+                                // 交点をユニーク性を維持して追加
+                                secondCollisions =
+                                        spatial.UniqueAppend(secondCollisions, &amp;collisionPoint, consts.Minima)
+
+                                // 交線ごとの交点辞書に交点を追加
+                                collisionLineCrossPoints[index] =
+                                        append(collisionLineCrossPoints[index], &amp;collisionPoint)
+                        }</span>,
+                )
+
+                // 接触しない場合はスキップ
+                // 接触点が1の場合は接触点は辺なのでスキップ
+                <span class="cov0" title="0">if len(secondCollisions) &lt;= 1 </span><span class="cov0" title="0">{
+                        continue</span>
+                }
+
+                // 【直交座標空間】全交点リストに追加
+                <span class="cov0" title="0">for _, secondCollision := range secondCollisions </span><span class="cov0" title="0">{
+                        logger.Debug(
+                                "第二ボクセル境界と第一ボクセル交線の交点: %s",
+                                reflect.ValueOf(secondCollision),
+                        )
+                        r.crossPoints = append(r.crossPoints, secondCollision)
+                }</span>
+
+                // 第二ボクセル交線を取得
+                <span class="cov0" title="0">secondMaxCollision, _ := spatial.MaxPoint(secondCollisions, basicAxis)
+                secondMinCollision, _ := spatial.MinPoint(secondCollisions, basicAxis)
+                secondCollisionLines = append(
+                        secondCollisionLines,
+                        spatial.NewLineFromPoints(*secondMaxCollision, *secondMinCollision),
+                )</span>
+        }
+
+        <span class="cov0" title="0">return secondCollisionLines</span>
+}
+
+// setThirdPoint 第三ボクセル境界交点取得
+//
+// 引数：
+//        thirdVoxelPlanes： 第三ボクセル境界面
+//        planeCollisionLines: 第一ボクセル境界面上の交線
+//        secondCollisionLines： 第二ボクセル境界面上の交線
+//        collisionLineCrossPoints： 第一ボクセル境界面上の交線ごとの交点辞書
+func (r *Rectangular) setThirdPoint(
+        thirdVoxelPlanes []*spatial.Plane,
+        planeCollisionLines, secondCollisionLines []spatial.Line3,
+        collisionLineCrossPoints map[int64][]*spatial.Point3,
+) <span class="cov0" title="0">{
+        for _, thirdPlane := range thirdVoxelPlanes </span><span class="cov0" title="0">{
+                thirdCollisions := []*spatial.Point3{}
+                // 【直交座標空間】第三ボクセル境界と第二ボクセル交線の交点の座標を取得
+                DetectCollision(
+                        *thirdPlane,
+                        secondCollisionLines,
+                        func(collisionPoint spatial.Point3, _ int64) </span><span class="cov0" title="0">{
+                                logger.Debug(
+                                        "第三ボクセル境界と第二ボクセル交線の交点: %s",
+                                        reflect.ValueOf(collisionPoint),
+                                )
+                                // 交点をユニーク性を維持して追加
+                                thirdCollisions =
+                                        spatial.UniqueAppend(thirdCollisions, &amp;collisionPoint, consts.Minima)
+                                // 【直交座標空間】全交点リストに追加
+                                r.crossPoints = append(r.crossPoints, &amp;collisionPoint)
+                        }</span>,
+                )
+
+                // 接触しない場合はスキップ
+                <span class="cov0" title="0">if len(thirdCollisions) == 0 </span><span class="cov0" title="0">{
+                        continue</span>
+                }
+
+                // 【直交座標空間】第三ボクセル境界と第一ボクセル交線の交点の座標を取得
+                <span class="cov0" title="0">DetectCollision(
+                        *thirdPlane,
+                        planeCollisionLines,
+                        func(collisionPoint spatial.Point3, index int64) </span><span class="cov0" title="0">{
+                                logger.Debug(
+                                        "第三ボクセル境界と第一ボクセル交線の交点: %s",
+                                        reflect.ValueOf(collisionPoint),
+                                )
+                                // 交線ごとの交点辞書に交点を追加
+                                collisionLineCrossPoints[index] =
+                                        append(collisionLineCrossPoints[index], &amp;collisionPoint)
+                                // 【直交座標空間】全交点リストに追加
+                                r.crossPoints = append(r.crossPoints, &amp;collisionPoint)
+                        }</span>,
+                )
+        }
+}
+
+// setMiddlePoint 中点取得
+//
+// 引数：
+//        collisionLineCrossPoints： 第一ボクセル境界面上の交線ごとの交点辞書
+//        planeCollisionLines: 第一ボクセル境界面上の交線
+func (r *Rectangular) setMiddlePoint(
+        collisionLineCrossPoints map[int64][]*spatial.Point3,
+        planeCollisionLines []spatial.Line3,
+) <span class="cov0" title="0">{
+        // 交線ごとの交点辞書に対して処理を実施
+        for index, crossPoints := range collisionLineCrossPoints </span><span class="cov0" title="0">{
+                // 第一ボクセル境界面上の線の方向ベクトル
+                planeCollisionDirect := planeCollisionLines[index].Direction
+
+                // 並び替え実施
+                // 線の方向ベクトルのX成分がある場合はX軸
+                if math.Abs(planeCollisionDirect.X) &gt; consts.Minima </span><span class="cov0" title="0">{
+                        sort.Slice(crossPoints, func(i, j int) bool </span><span class="cov0" title="0">{
+                                return crossPoints[i].X &lt; crossPoints[j].X
+                        }</span>)
+
+                        // 線の方向ベクトルのY成分がある場合はY軸
+                } else<span class="cov0" title="0"> if math.Abs(planeCollisionDirect.Y) &gt; consts.Minima </span><span class="cov0" title="0">{
+                        sort.Slice(crossPoints, func(i, j int) bool </span><span class="cov0" title="0">{
+                                return crossPoints[i].Y &lt; crossPoints[j].Y
+                        }</span>)
+
+                        // 線の方向ベクトルのZ成分がある場合はZ軸
+                } else<span class="cov0" title="0"> {
+                        sort.Slice(crossPoints, func(i, j int) bool </span><span class="cov0" title="0">{
+                                return crossPoints[i].Z &lt; crossPoints[j].Z
+                        }</span>)
+                }
+
+                // 中点取得
+                <span class="cov0" title="0">for index := range crossPoints[:len(crossPoints)-1] </span><span class="cov0" title="0">{
+                        // 第一ボクセル交線の第二ボクセル境界・第三ボクセル境界との交点の中点取得
+                        middlePoint := spatial.NewLineFromPoints(
+                                *crossPoints[index],
+                                *crossPoints[index+1],
+                        ).ToPoint(0.5)
+                        logger.Debug(
+                                "第一ボクセル交線の第二ボクセル境界・第三ボクセル境界との交点の中点: %s",
+                                reflect.ValueOf(middlePoint),
+                        )
+                        // 【直交座標空間】全交点リストに追加
+                        r.crossPoints = append(r.crossPoints, &amp;middlePoint)
+                }</span>
+        }
+}
+
+// CalcCrossSpatialIDs 交点の拡張空間IDを取得
+//
+// 戻り値(エラー)：
+//        以下の条件に当てはまる場合、エラーインスタンスが返却される。
+//         拡張空間IDフォーマット不正：拡張空間IDのフォーマットに違反する値が"拡張空間ID"に入力されていた場合。
+func (r *Rectangular) calcCrossSpatialIDs() error <span class="cov0" title="0">{
+
+        // 【直交座標空間⇒緯度経度空間】交点の座標
+        allCrossProjectPoints := make([]*object.ProjectedPoint, 0, len(r.crossPoints))
+        for _, crossPoint := range r.crossPoints </span><span class="cov0" title="0">{
+                crossProjectPoint := convertSpatialProjectionPoint(*crossPoint)
+                allCrossProjectPoints = append(allCrossProjectPoints, &amp;crossProjectPoint)
+        }</span>
+
+        <span class="cov0" title="0">crossWgs84Points, err := ConvertProjectedPointListToPointList(allCrossProjectPoints, consts.OrthCrs)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov0" title="0">logger.Debug(
+                "交点の座標(直交座標): %s",
+                reflect.ValueOf(allCrossProjectPoints),
+        )
+        logger.Debug(
+                "交点の座標(地理座標): %s",
+                reflect.ValueOf(crossWgs84Points),
+        )
+        // 拡張空間ID
+        crossSpatialIDs, err := GetExtendedSpatialIdsOnPoints(crossWgs84Points, r.hZoom, r.vZoom)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov0" title="0">logger.Debug(
+                "交点の拡張空間IDを取得: %s",
+                reflect.ValueOf(crossSpatialIDs),
+        )
+
+        r.allSpatialIDs = common.Union(r.allSpatialIDs, crossSpatialIDs)
+
+        return nil</span>
+}
+
+// CalcSpatialIDs 拡張空間IDの取得実行
+//
+// 戻り値(エラー)：
+//        以下の条件に当てはまる場合、エラーインスタンスが返却される。
+//         拡張空間IDフォーマット不正：拡張空間IDのフォーマットに違反する値が"拡張空間ID"に入力されていた場合。
+func (r *Rectangular) CalcSpatialIDs() error <span class="cov0" title="0">{
+        // 軸の初期化
+        r.initAxis()
+        // 直方体の境界面に対する交点取得
+        err := r.calcRectangularApex()
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        // 交点の拡張空間ID取得
+        <span class="cov0" title="0">err = r.calcCrossSpatialIDs()
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov0" title="0">return nil</span>
+}
+
+// GetSpatialIDs 拡張空間ID返却
+//
+// 戻り値：
+//  拡張空間ID：[]string
+func (r Rectangular) GetSpatialIDs() []string <span class="cov0" title="0">{
+        return common.Unique(r.allSpatialIDs)
+}</span>
+
+// Capsule カプセル構造体
+type Capsule struct {
+        *Rectangular                      // 直方体構造体の埋め込み
+        isCapsule         bool            // カプセル判定
+        isSphere          bool            // 球判定
+        object            physics.Physics // 衝突判定オブジェクト
+        apprVoxelNum      int64           //概算距離内のボクセル数
+        includeSpatialIDs []string        // 内部判定拡張空間ID
+}
+
+// NewCapsule カプセル構造体コンストラクタ
+//
+// カプセル構造体作成
+//
+// 引数：
+//  startPoint： 始点
+//  endPoint： 終点
+//  radius： 半径
+//  hZoom： 水平精度
+//  vZoom： 垂直精度
+//  isCapsule： カプセル判定
+//
+// 戻り値：
+//  カプセル構造体ポインタ
+func NewCapsule(
+        startPoint spatial.Point3,
+        endPoint spatial.Point3,
+        radius float64,
+        hZoom int64,
+        vZoom int64,
+        isCapsule bool,
+) *Capsule <span class="cov0" title="0">{
+
+        // 球判定
+        isSphere := false
+        // 物理オブジェクトインターフェース
+        var object physics.Physics
+
+        // 球の場合（始点と終点が同一の場合）
+        if startPoint.IsClose(endPoint, consts.Minima) </span><span class="cov0" title="0">{
+                // 物理オブジェクトを球物理オブジェクト
+                object = physics.NewSpherePhysics(radius, startPoint)
+                isSphere = true
+
+                // カプセルの場合
+        }</span> else<span class="cov0" title="0"> if isCapsule </span><span class="cov0" title="0">{
+                // 物理オブジェクトをカプセル物理オブジェクト
+                object = physics.NewCapsulePhysics(radius, startPoint, endPoint)
+
+                // 円柱の場合
+        }</span> else<span class="cov0" title="0"> {
+                // 物理オブジェクトを円柱物理オブジェクト
+                object = physics.NewCylinderPhysics(radius, startPoint, endPoint)
+        }</span>
+
+        <span class="cov0" title="0">capsule := new(Capsule)
+        capsule.Rectangular = NewRectangular(startPoint, endPoint, radius, hZoom, vZoom)
+        capsule.isCapsule = isCapsule
+        capsule.isSphere = isSphere
+        capsule.object = object
+
+        return capsule</span>
+}
+
+// IsEmpty 空確認
+//
+// オブジェクトが空であるかを確認
+//
+// 戻り値：
+//  True:オブジェクトが空 False:オブジェクトが空でない
+func (c Capsule) IsEmpty() bool <span class="cov0" title="0">{
+        return c.Rectangular == nil
+}</span>
+
+// 図形を構成する軸・ベクトルを初期化
+func (c *Capsule) initAxis() <span class="cov0" title="0">{
+        // 【直交座標空間】軸ベクトル
+        axis := spatial.NewVectorFromPoints(c.start, c.end)
+
+        // 縦の長さ
+        c.height = axis.Norm()
+        // カプセル/球の場合
+        if c.isCapsule || c.isSphere </span><span class="cov0" title="0">{
+                c.height += 2 * c.radius
+        }</span>
+
+        // 開始点の直交ベクトルを一つ求める
+        // 直交ベクトル
+        <span class="cov0" title="0">orth := spatial.Vector3{}
+        if math.Abs(axis.Y) &lt; consts.Minima || c.isSphere </span><span class="cov0" title="0">{
+                orth = spatial.Vector3{0.0, 1.0, 0.0}
+        }</span> else<span class="cov0" title="0"> if math.Abs(axis.Z) &lt; consts.Minima </span><span class="cov0" title="0">{
+                orth = spatial.Vector3{0.0, 0.0, 1.0}
+        }</span> else<span class="cov0" title="0"> {
+                orth = spatial.Vector3{0.0, -axis.Z, axis.Y}
+        }</span>
+
+        // 直交ベクトルを機体半径の大きさにする
+        <span class="cov0" title="0">c.rOrth = orth.Unit().Scale(c.radius)
+
+        // 単位軸ベクトル
+        if c.isSphere </span><span class="cov0" title="0">{
+                c.uAxis = spatial.Vector3{1.0, 0.0, 0.0}
+        }</span> else<span class="cov0" title="0"> {
+                c.uAxis = axis.Unit()
+        }</span>
+
+        // 半径軸ベクトル
+        <span class="cov0" title="0">rAxis := spatial.Vector3{}
+        // 円柱は半径軸ベクトルを零ベクトルとする
+        if !c.isCapsule &amp;&amp; !c.isSphere </span><span class="cov0" title="0">{
+                rAxis = spatial.Vector3{0.0, 0.0, 0.0}
+
+                // 球・カプセルは半径軸ベクトルを機体半径の大きさにする
+        }</span> else<span class="cov0" title="0"> {
+                rAxis = c.uAxis.Scale(c.radius)
+        }</span>
+
+        // 円との接点
+        <span class="cov0" title="0">c.contact = c.start.Translate(c.rOrth.Sub(rAxis))
+
+        // 軸ベクトルと直交ベクトルの法線ベクトル(大きさは機体半径)
+        c.rNormal = c.rOrth.Cross(c.uAxis).Unit().Scale(c.radius)</span>
+}
+
+// apprDistRadiusPoints 概算距離内の拡張空間ID取得
+//
+// 引数：
+//  spatialID: 概算距離の中心とする拡張空間ID
+//
+// 戻り値：
+//  概算距離内の拡張空間IDスライス
+func (c Capsule) apprDistRadiusPoints(spatialID string) []string <span class="cov0" title="0">{
+        // 概算距離内の拡張空間ID
+        apprDistRadiusPoints := make(map[string]struct{})
+
+        for xIndex := -c.apprVoxelNum; xIndex &lt;= c.apprVoxelNum; xIndex++ </span><span class="cov0" title="0">{
+                yRange := c.apprVoxelNum - int64(math.Abs(float64(xIndex)))
+                for yIndex := -yRange; yIndex &lt;= yRange; yIndex++ </span><span class="cov0" title="0">{
+                        zRange := yRange - int64(math.Abs(float64(yIndex)))
+                        for zIndex := -zRange; zIndex &lt;= zRange; zIndex++ </span><span class="cov0" title="0">{
+                                // 概算距離内のボクセル数を上限に拡張空間IDをシフト
+                                apprSpatialID := operated.GetShiftingSpatialID(
+                                        spatialID, xIndex, yIndex, zIndex,
+                                )
+                                apprDistRadiusPoints[apprSpatialID] = struct{}{}
+                        }</span>
+                }
+        }
+
+        // 概算距離内の拡張空間IDスライス
+        <span class="cov0" title="0">r := make([]string, 0, len(apprDistRadiusPoints))
+        for key := range apprDistRadiusPoints </span><span class="cov0" title="0">{
+                r = append(r, key)
+        }</span>
+
+        <span class="cov0" title="0">return r</span>
+}
+
+// calcValidSpatialIDs 直方体の拡張空間IDから実際の図形分の有効な拡張空間IDを取得
+//
+// 戻り値(エラー)：
+//        以下の条件に当てはまる場合、エラーインスタンスが返却される。
+//         拡張空間IDフォーマット不正：拡張空間IDのフォーマットに違反する値が"拡張空間ID"に入力されていた場合。
+func (c *Capsule) calcValidSpatialIDs() error <span class="cov0" title="0">{
+        // 【直交座標空間】対角線分の単位ボクセルの距離(概算距離)
+        unitVoxel, err := c.calcUnitVoxelVector()
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        // 【直交座標空間】始点から対角線分の単位ボクセルの座標
+        <span class="cov0" title="0">apprDist := unitVoxel.Norm()
+        // 【直交座標空間】概算ボクセル数（概算距離が機体半径内のボクセル数）
+        c.apprVoxelNum = int64(math.Floor(c.radius / apprDist))
+        logger.Debug(
+                "対角線分の単位ボクセルの距離(概算距離): %s",
+                reflect.ValueOf(apprDist),
+        )
+        logger.Debug(
+                "概算ボクセル数(概算距離が機体半径内のボクセル数): %s",
+                reflect.ValueOf(c.apprVoxelNum),
+        )
+
+        // 【直交座標空間⇒緯度経度空間】始点終の座標
+        projectesStart := convertSpatialProjectionPoint(c.start)
+        projectesEnd := convertSpatialProjectionPoint(c.end)
+        projectedPoints := []*object.ProjectedPoint{
+                &amp;projectesStart,
+                &amp;projectesEnd,
+        }
+        wgs84Points, err := ConvertProjectedPointListToPointList(projectedPoints, consts.OrthCrs)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        // 【直交座標空間】始点終点間の拡張空間ID取得
+        <span class="cov0" title="0">lineSpatialIDs := []string{}
+        // 円柱・カプセルの場合
+        if !c.isSphere </span><span class="cov0" title="0">{
+                lineSpatialIDs, err =
+                        GetSpatialIdsOnLine(wgs84Points[0], wgs84Points[1], c.hZoom, c.vZoom)
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+                <span class="cov0" title="0">logger.Debug("円柱・カプセルの場合、始点終点間の拡張空間ID取得: %s", reflect.ValueOf(lineSpatialIDs))</span>
+
+                // 球の場合
+        } else<span class="cov0" title="0"> {
+                lineSpatialIDs, err = GetExtendedSpatialIdsOnPoints(wgs84Points, c.hZoom, c.vZoom)
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+                <span class="cov0" title="0">logger.Debug("球の場合、接続点の拡張空間ID取得: %s", reflect.ValueOf(lineSpatialIDs))</span>
+        }
+
+        // 【直交空間】円柱の拡張空間ID簡易取得
+        <span class="cov0" title="0">for _, lineSpatialID := range lineSpatialIDs </span><span class="cov0" title="0">{
+                apprDistRadiusSpatialIDs := c.apprDistRadiusPoints(lineSpatialID)
+                logger.Debug("円柱の拡張空間ID簡易取得(起点): %s", reflect.ValueOf(lineSpatialID))
+                logger.Debug("円柱の拡張空間ID簡易取得(結果): %s", reflect.ValueOf(apprDistRadiusSpatialIDs))
+                validSpatialIDs := common.Intersect(apprDistRadiusSpatialIDs, c.allSpatialIDs)
+                c.includeSpatialIDs = common.Union(c.includeSpatialIDs, validSpatialIDs)
+        }</span>
+
+        // Azul3Dと衝突判定を行う拡張空間ID
+        <span class="cov0" title="0">excludeSpatialIDs := common.Difference(c.allSpatialIDs, c.includeSpatialIDs)
+
+        logger.Debug("Azul3Dと衝突判定を行う拡張空間ID: %s", reflect.ValueOf(excludeSpatialIDs))
+
+        // 【直交座標空間】ボクセルの対角線のベクトル
+        lens := unitVoxel
+
+        for _, excludeSpatialID := range excludeSpatialIDs </span><span class="cov0" title="0">{
+                // 【直交座標空間】ボクセルの中心座標
+                centers, err := GetPointOnExtendedSpatialId(excludeSpatialID, enum.Center)
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+                <span class="cov0" title="0">orthCenters, err := ConvertPointListToProjectedPointList(centers, consts.OrthCrs)
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+                <span class="cov0" title="0">orthCenter := spatial.Point3{orthCenters[0].X, orthCenters[0].Y, orthCenters[0].Alt}
+                logger.Debug("ボクセルの中心座標: %f, %f, %f", orthCenter.X, orthCenter.Y, orthCenter.Z)
+
+                // Azul3Dと衝突判定
+                if c.object.IsCollideVoxel(orthCenter, lens) </span><span class="cov0" title="0">{
+                        logger.Debug("Azul3Dと衝突: %s", reflect.ValueOf(excludeSpatialID))
+                        c.includeSpatialIDs = append(c.includeSpatialIDs, excludeSpatialID)
+                }</span>
+        }
+        <span class="cov0" title="0">return nil</span>
+}
+
+// calcUnitVoxelVector 概算距離用の単位ボクセルベクトルを算出
+//
+// 戻り値：
+//  単位ボクセルベクトル： spatial.Vector3
+//
+// 戻り値(エラー)：
+//        以下の条件に当てはまる場合、エラーインスタンスが返却される。
+//         拡張空間IDフォーマット不正：拡張空間IDのフォーマットに違反する値が"拡張空間ID"に入力されていた場合。
+func (c Capsule) calcUnitVoxelVector() (spatial.Vector3, error) <span class="cov0" title="0">{
+        // 任意の拡張空間IDの頂点座標を取得
+        spatialID := c.allSpatialIDs[0]
+        points, err := GetPointOnExtendedSpatialId(
+                spatialID,
+                enum.Vertex,
+        )
+        if err != nil </span><span class="cov0" title="0">{
+                return spatial.Vector3{}, err
+        }</span>
+        <span class="cov0" title="0">orthPoints, err := ConvertPointListToProjectedPointList(points, consts.OrthCrs)
+        if err != nil </span><span class="cov0" title="0">{
+                return spatial.Vector3{}, err
+        }</span>
+        // 各XYZ成分座標から単位ボクセルベクトルを算出
+        <span class="cov0" title="0">xApexes := make([]float64, 0, 8)
+        yApexes := make([]float64, 0, 8)
+        zApexes := make([]float64, 0, 8)
+        for _, orthPoint := range orthPoints </span><span class="cov0" title="0">{
+                xApexes = append(xApexes, orthPoint.X)
+                yApexes = append(yApexes, orthPoint.Y)
+                zApexes = append(zApexes, orthPoint.Alt)
+        }</span>
+        <span class="cov0" title="0">maxX, _ := common.Max(xApexes)
+        minX, _ := common.Min(xApexes)
+        maxY, _ := common.Max(yApexes)
+        minY, _ := common.Min(yApexes)
+        maxZ, _ := common.Max(zApexes)
+        minZ, _ := common.Min(zApexes)
+        return spatial.Vector3{
+                X: maxX - minX,
+                Y: maxY - minY,
+                Z: maxZ - minZ,
+        }, nil</span>
+}
+
+// ShaveSphere 球の拡張空間IDを削る
+//
+// 球の拡張空間IDから中心から点の方向へ半径分延ばした立方体分の拡張空間IDを削る
+//
+// 引数：
+//  direction： 削る方向の点
+//
+// 戻り値(エラー)：
+//        以下の条件に当てはまる場合、エラーインスタンスが返却される。
+//         拡張空間IDフォーマット不正：拡張空間IDのフォーマットに違反する値が"拡張空間ID"に入力されていた場合。
+func (c *Capsule) ShaveSphere(direction spatial.Point3) error <span class="cov0" title="0">{
+        // 【直交座標空間】単位軸ベクトル
+        uAxis := spatial.NewVectorFromPoints(c.start, direction).Unit()
+
+        // 【直交座標空間】直方体の終点
+        directEnd := c.start.Translate(uAxis.Scale(c.radius))
+
+        // 球の中心から終点方向へ半径分延ばした立方体分の拡張空間IDを取得
+        rect := NewRectangular(
+                c.start,
+                directEnd,
+                c.radius,
+                c.hZoom,
+                c.vZoom,
+        )
+        err := rect.CalcSpatialIDs()
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov0" title="0">logger.Debug(
+                "中心から半径分延ばした立方体分の拡張空間IDを取得: %s",
+                reflect.ValueOf(rect.GetSpatialIDs()),
+        )
+
+        // 拡張空間IDの削除
+        c.includeSpatialIDs = common.Difference(c.includeSpatialIDs, rect.GetSpatialIDs())
+
+        return nil</span>
+}
+
+// CalcSpatialIDs 拡張空間IDを計算取得
+//
+// カプセルの拡張空間IDを計算する
+//
+// 戻り値(エラー)：
+//        以下の条件に当てはまる場合、エラーインスタンスが返却される。
+//         拡張空間IDフォーマット不正：拡張空間IDのフォーマットに違反する値が"拡張空間ID"に入力されていた場合。
+func (c *Capsule) CalcSpatialIDs() error <span class="cov0" title="0">{
+        // 軸の初期化
+        c.initAxis()
+        // 直方体の境界面に対する交点取得
+        err := c.calcRectangularApex()
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        // 交点の拡張空間ID取得
+        <span class="cov0" title="0">err = c.calcCrossSpatialIDs()
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        // 交点の有効な拡張空間ID取得
+        <span class="cov0" title="0">err = c.calcValidSpatialIDs()
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov0" title="0">return nil</span>
+}
+
+// GetSpatialIDs 拡張空間ID取得
+//
+// カプセルの拡張空間IDを一意にして返却
+//
+// 戻り値：
+//  拡張空間IDのセット：[]string
+func (c Capsule) GetSpatialIDs() []string <span class="cov0" title="0">{
+        return common.Unique(c.includeSpatialIDs)
+}</span>
+
+// GetSpatialIdsOnCylinders 空間ID(円柱)取得
+//
+// 円柱を複数つなげた経路が通る空間IDを取得する。
+// 円柱間の接続面は球状とする。
+// ドローンの経路や地中埋設配管が通る経路を空間IDで表現する際に使用する。
+//
+// 引数：
+//        center   : 円柱の中心の接続点。Pointを複数指定するリスト。
+//                   2つ目の接続点は1つ目の円柱の終点となるが、2つ目の円柱の始点にもなる。
+//        radius   : 円柱の半径(単位:m)
+//        zoom     : 精度レベル
+//        isCapsule: 始点、終点が球状であるかを示す。True: カプセル / False: 円柱
+//
+// 戻り値：
+//  円柱を複数つなげた経路が通る空間IDのリスト
+//
+// 戻り値(エラー)：
+//        以下の条件に当てはまる場合、エラーインスタンスが返却される。
+//         入力数値不正： 座標の値が不正の場合、もしくは円柱の半径が0以下の場合、エラー
+//         精度閾値超過： 精度に 0 ～ 35 の整数値以外が入力されていた場合。
+//         注意: 経度180度をまたがる点をまたがる円柱は空間ID化できない。
+func GetSpatialIdsOnCylinders(
+        center []*object.Point,
+        radius float64,
+        zoom int64,
+        isCapsule bool,
+) ([]string, error) <span class="cov0" title="0">{
+        // 拡張空間IDを取得
+        ids, err := GetExtendedSpatialIdsOnCylinders(center, radius, zoom, zoom, isCapsule)
+
+        if err != nil </span><span class="cov0" title="0">{
+                // エラーが発生した場合エラーインスタンスを返却
+                return ids, err
+        }</span>
+
+        // 拡張空間IDを空間IDのフォーマットに変換
+        <span class="cov0" title="0">ids, err = ConvertExtendedSpatialIdsToSpatialIds(ids)
+
+        return ids, err</span>
+}
+
+// GetExtendedSpatialIdsOnCylinders 拡張空間ID(円柱)取得
+//
+// 円柱を複数つなげた経路が通る拡張空間IDを取得する。
+// 円柱間の接続面は球状とする。
+// ドローンの経路や地中埋設配管が通る経路を拡張空間IDで表現する際に使用する。
+//
+// 引数：
+//        center   : 円柱の中心の接続点。Pointを複数指定するリスト。
+//                   2つ目の接続点は1つ目の円柱の終点となるが、2つ目の円柱の始点にもなる。
+//        radius   : 円柱の半径(単位:m)
+//        hZoom    : 水平方向の精度レベル
+//        vZoom    : 垂直方向の精度レベル
+//        isCapsule: 始点、終点が球状であるかを示す。True: カプセル / False: 円柱
+//
+// 戻り値：
+//  円柱を複数つなげた経路が通る拡張空間IDのリスト
+//
+// 戻り値(エラー)：
+//        以下の条件に当てはまる場合、エラーインスタンスが返却される。
+//         入力数値不正： 座標の値が不正の場合、もしくは円柱の半径が0以下の場合、エラー
+//         精度閾値超過： 水平方向精度、または垂直方向精度に 0 ～ 35 の整数値以外が入力されていた場合。
+//         注意: 経度180度をまたがる点をまたがる円柱は拡張空間ID化できない。
+func GetExtendedSpatialIdsOnCylinders(
+        center []*object.Point,
+        radius float64,
+        hZoom int64,
+        vZoom int64,
+        isCapsule bool,
+) ([]string, error) <span class="cov0" title="0">{
+
+        // 拡張空間IDを格納するスライス
+        spatialIDs := []string{}
+
+        // 入力値チェック
+        // 引数のポインタにnilがある場合
+        if common.Include(center, nil) </span><span class="cov0" title="0">{
+                return spatialIDs, errors.NewSpatialIdError(
+                        errors.InputValueErrorCode, "",
+                )
+
+                // 水平、垂直方向精度のどちらかが範囲外の場合、空配列とエラーインスタンスを返却
+        }</span> else<span class="cov0" title="0"> if !CheckZoom(hZoom) || !CheckZoom(vZoom) </span><span class="cov0" title="0">{
+                return spatialIDs, errors.NewSpatialIdError(
+                        errors.InputValueErrorCode, "",
+                )
+
+                // 半径が0以下の場合は例外を投げる
+        }</span> else<span class="cov0" title="0"> if radius &lt;= consts.Minima </span><span class="cov0" title="0">{
+                logger.Debug("半径が0以下")
+                return spatialIDs, errors.NewSpatialIdError(
+                        errors.InputValueErrorCode, "",
+                )
+
+                // 接続点数が0の場合は空配列を返却
+        }</span> else<span class="cov0" title="0"> if len(center) == 0 </span><span class="cov0" title="0">{
+                logger.Debug("接続点数が0個")
+                return spatialIDs, nil
+        }</span>
+
+        // 接続点の球
+        <span class="cov0" title="0">sphere := new(Capsule)
+        // 接続点数
+        connectPointNum := 1
+        // 入力の接続点数-1の数だけループ
+        for i := range center[:len(center)-1] </span><span class="cov0" title="0">{
+                start := center[i]
+                end := center[i+1]
+                logger.Debug("接続点: %d～%d", connectPointNum, connectPointNum+1)
+                logger.Debug("始点(地理座標系): %f, %f, %f", start.Lon(), start.Lat(), start.Alt())
+                logger.Debug("終点(地理座標系): %f, %f, %f", end.Lon(), end.Lat(), end.Alt())
+
+                // 同じ座標が連続する場合は次の座標へスキップ
+                if start == end </span><span class="cov0" title="0">{
+                        logger.Debug("同一座標の接続点が連続しているためスキップ")
+                        continue</span>
+                }
+
+                // 接続点数をインクリメント
+                <span class="cov0" title="0">connectPointNum++
+
+                // 【直交座標空間】始点終点の座標
+                crsPoints, err := ConvertPointListToProjectedPointList(
+                        []*object.Point{start, end},
+                        consts.OrthCrs,
+                )
+                if err != nil </span><span class="cov0" title="0">{
+                        return spatialIDs, err
+                }</span>
+
+                <span class="cov0" title="0">startOrth := spatial.Point3{
+                        X: crsPoints[0].X,
+                        Y: crsPoints[0].Y,
+                        Z: crsPoints[0].Alt,
+                }
+                endOrth := spatial.Point3{
+                        X: crsPoints[1].X,
+                        Y: crsPoints[1].Y,
+                        Z: crsPoints[1].Alt,
+                }
+                logger.Debug("始点(投影座標系): %f, %f, %f", startOrth.X, startOrth.Y, startOrth.Z)
+                logger.Debug("終点(投影座標系): %f, %f, %f", endOrth.X, endOrth.Y, endOrth.Z)
+
+                // 始点終点の長さ
+                height := spatial.NewVectorFromPoints(startOrth, endOrth).Norm()
+
+                if !sphere.IsEmpty() </span><span class="cov0" title="0">{
+                        // 円柱の接続点で後方の円柱の長さが半径より短い場合
+                        if height &lt; radius </span><span class="cov0" title="0">{
+                                // 接続点の球の拡張空間IDより円柱の始点から終点方向へ
+                                // 半径距離延ばした直方体の拡張空間IDを除外する
+                                err := sphere.ShaveSphere(endOrth)
+                                if err != nil </span><span class="cov0" title="0">{
+                                        return spatialIDs, err
+                                }</span>
+                        }
+
+                        <span class="cov0" title="0">shaveSphereSpatialIDs := sphere.GetSpatialIDs()
+                        logger.Debug(
+                                "接続点の拡張空間ID: %s",
+                                reflect.ValueOf(shaveSphereSpatialIDs),
+                        )
+                        spatialIDs = common.Union(shaveSphereSpatialIDs, spatialIDs)</span>
+                }
+
+                // 【直交座標空間】始点終点からカプセルの拡張空間ID取得
+                <span class="cov0" title="0">capsule := NewCapsule(
+                        startOrth,
+                        endOrth,
+                        radius,
+                        hZoom,
+                        vZoom,
+                        isCapsule,
+                )
+                err = capsule.CalcSpatialIDs()
+                if err != nil </span><span class="cov0" title="0">{
+                        return spatialIDs, err
+                }</span>
+                <span class="cov0" title="0">capsuleSpatialIDs := capsule.GetSpatialIDs()
+                logger.Debug(
+                        "接続点間の拡張空間ID: %s",
+                        reflect.ValueOf(capsuleSpatialIDs),
+                )
+                // マージ処理
+                spatialIDs = common.Union(capsuleSpatialIDs, spatialIDs)
+
+                // 終点もしくはカプセルの場合は接続点の拡張空間IDは取得しない
+                if i == len(center[:len(center)-1])-1 || isCapsule </span><span class="cov0" title="0">{
+                        continue</span>
+                }
+
+                // 【直交座標空間】接続点の球の拡張空間ID取得
+                <span class="cov0" title="0">sphere = NewCapsule(
+                        endOrth,
+                        endOrth,
+                        radius,
+                        hZoom,
+                        vZoom,
+                        isCapsule,
+                )
+                err = sphere.CalcSpatialIDs()
+                if err != nil </span><span class="cov0" title="0">{
+                        return spatialIDs, err
+                }</span>
+
+                // 円柱の接続点で前方の円柱の長さが半径より短い場合
+                <span class="cov0" title="0">if height &lt; radius </span><span class="cov0" title="0">{
+                        // 接続点の球の拡張空間IDより円柱の終点から始点方向へ
+                        // 半径距離延ばした直方体の拡張空間IDを除外する
+                        err := sphere.ShaveSphere(startOrth)
+                        if err != nil </span><span class="cov0" title="0">{
+                                return spatialIDs, err
+                        }</span>
+                }
+        }
+
+        // 接続点数が1の場合
+        <span class="cov0" title="0">if connectPointNum == 1 </span><span class="cov0" title="0">{
+                logger.Debug("接続点数が1個")
+
+                // 【直交座標空間】中心の座標
+                orthCenters, err := ConvertPointListToProjectedPointList(
+                        []*object.Point{center[0]}, consts.OrthCrs,
+                )
+                if err != nil </span><span class="cov0" title="0">{
+                        return spatialIDs, err
+                }</span>
+
+                <span class="cov0" title="0">orthCenter := spatial.Point3{
+                        X: orthCenters[0].X,
+                        Y: orthCenters[0].Y,
+                        Z: orthCenters[0].Alt,
+                }
+                logger.Debug(
+                        "中心座標(地理座標系): %f, %f, %f",
+                        center[0].Lon(), center[0].Lat(), center[0].Alt(),
+                )
+                logger.Debug(
+                        "中心座標(投影座標系): %f, %f, %f",
+                        orthCenter.X, orthCenter.Y, orthCenter.Z,
+                )
+
+                // 【直交座標空間】接続点の球の拡張空間ID取得
+                sphere = NewCapsule(
+                        orthCenter,
+                        orthCenter,
+                        radius,
+                        hZoom,
+                        vZoom,
+                        isCapsule,
+                )
+                err = sphere.CalcSpatialIDs()
+                if err != nil </span><span class="cov0" title="0">{
+                        return spatialIDs, err
+                }</span>
+                <span class="cov0" title="0">spatialIDs = sphere.GetSpatialIDs()
+                logger.Debug(
+                        "球の拡張空間ID: %s",
+                        reflect.ValueOf(spatialIDs),
+                )</span>
+        }
+
+        <span class="cov0" title="0">return common.Unique(spatialIDs), nil</span>
+
+}
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package shape
+
+import (
+        "math"
+        "reflect"
+        "spatial-id/common"
+        "spatial-id/common/errors"
+        "spatial-id/common/logger"
+        "spatial-id/common/object"
+        "spatial-id/common/spatial"
+        "spatial-id/operated"
+)
+
+const (
+        // LonMinima 経度閾値
+        LonMinima = 0.00000002
+        // LatMinima 緯度閾値
+        LatMinima = 0.00000002
+        // AltMinima 高さ閾値
+        AltMinima = 0.003
+)
+
+// GetSpatialIdsOnLine 指定範囲の拡張空間ID変換(線分)を取得する。
+//
+// 引数：
+//  start： 始点
+//  end： 終点
+//  hZoom： 垂直方向の精度レベル
+//  vZoom： 水平方向の精度レベル
+//
+// 戻り値：
+//  拡張空間ID集合
+//
+// 戻り値（例外）：
+//        以下の条件に当てはまる場合、エラーインスタンスが返却される。
+//         精度閾値超過：水平方向精度、または垂直方向精度に 0 ～ 35 の整数値以外が入力されていた場合。
+func GetSpatialIdsOnLine(
+        start *object.Point,
+        end *object.Point,
+        hZoom int64,
+        vZoom int64,
+) ([]string, error) <span class="cov8" title="1">{
+
+        // nilチェック処理
+        if start == nil || end == nil </span><span class="cov8" title="1">{
+                return []string{}, errors.NewSpatialIdError(errors.InputValueErrorCode, "")
+        }</span>
+
+        <span class="cov8" title="1">logger.Debug("[START] 拡張空間ID変換(線分)")
+        logger.Debug("始点(地理座標系)=(%f, %f, %f)", start.Lon(), start.Lat(), start.Alt())
+        logger.Debug("終点(地理座標系)=(%f, %f, %f)", end.Lon(), end.Lat(), end.Alt())
+
+        // 始点・終点の拡張空間IDを格納
+        spatialIDs, e := GetExtendedSpatialIdsOnPoints([]*object.Point{start, end}, hZoom, vZoom)
+        if e != nil </span><span class="cov8" title="1">{
+                return spatialIDs, e
+        }</span>
+        <span class="cov8" title="1">logger.Debug("始点の拡張空間ID=%s", spatialIDs[0])
+        logger.Debug("終点の拡張空間ID=%s", spatialIDs[1])
+
+        // 拡張空間IDをユニーク化
+        spatialIDs = common.Unique(spatialIDs)
+
+        // 始点・終点が同じ拡張空間IDかチェック
+        if len(spatialIDs) == 1 </span><span class="cov8" title="1">{
+                logger.Debug("始点終点が同一")
+                logger.Debug("線分範囲の拡張空間ID=%s", reflect.ValueOf(spatialIDs))
+                logger.Debug("[END] 拡張空間ID変換(線分)")
+
+                // 同じ拡張空間IDの場合、 始点・終点の拡張空間IDを返却
+                return spatialIDs, nil
+        }</span>
+
+        <span class="cov8" title="1">startSpatial := spatial.Point3{start.Lon(), start.Lat(), start.Alt()}
+        endSpatial := spatial.Point3{end.Lon(), end.Lat(), end.Alt()}
+
+        // 【経度緯度空間】始点・終点の中点を拡張空間IDを再帰的に取得する。
+        middleSpatialIds(startSpatial, endSpatial, hZoom, vZoom, func(spatialID string) </span><span class="cov8" title="1">{
+                spatialIDs = append(spatialIDs, spatialID)
+        }</span>)
+
+        <span class="cov8" title="1">return common.Unique(spatialIDs), nil</span>
+}
+
+// middleSpatialIds 始点終点の中点の拡張空間IDを再帰的に取得する。
+//
+// 引数：
+//  start： 始点
+//  end： 終点
+//  hZoom： 垂直方向の精度レベル
+//  vZoom： 水平方向の精度レベル
+//  operate： 中点の拡張空間IDに対する処理関数
+func middleSpatialIds(
+        start, end spatial.Point3,
+        hZoom, vZoom int64,
+        operate func(string),
+) <span class="cov8" title="1">{
+
+        // 中点
+        middle := spatial.NewLineFromPoints(start, end).ToPoint(0.5)
+
+        // Pointオブジェクトへ型変換
+        startPoint, _ := object.NewPoint(start.X, start.Y, start.Z)
+        endPoint, _ := object.NewPoint(end.X, end.Y, end.Z)
+        middlePoint, _ := object.NewPoint(middle.X, middle.Y, middle.Z)
+
+        // 拡張空間ID取得
+        lineSpatialIDs, _ := GetExtendedSpatialIdsOnPoints(
+                []*object.Point{startPoint, endPoint, middlePoint},
+                hZoom,
+                vZoom,
+        )
+
+        // 中点の拡張空間ID
+        middleSpatialID := lineSpatialIDs[2]
+
+        // 中間拡張空間IDへの操作
+        operate(middleSpatialID)
+
+        // 始点・終点間のベクトル
+        vector := spatial.NewVectorFromPoints(start, end)
+        // ベクトルの成分が閾値未満の場合は処理終了
+        if math.Abs(vector.X) &lt; LonMinima &amp;&amp;
+                math.Abs(vector.Y) &lt; LatMinima &amp;&amp;
+                math.Abs(vector.Z) &lt; AltMinima </span><span class="cov8" title="1">{
+                logger.Debug("ベクトルの成分が閾値未満のため終了")
+                logger.Debug("ベクトル成分:X=%g, Y=%g, Z=%g", vector.X, vector.Y, vector.Z)
+                return
+        }</span>
+
+        // 始点の周囲6つの拡張空間ID
+        <span class="cov8" title="1">start6SpatialIDs := operated.Get6spatialIdsAdjacentToFaces(lineSpatialIDs[0])
+        // 始点自身も含める
+        start6SpatialIDs = append(start6SpatialIDs, lineSpatialIDs[0])
+
+        // 終点の周囲6つの拡張空間ID
+        end6SpatialIDs := operated.Get6spatialIdsAdjacentToFaces(lineSpatialIDs[1])
+        // 終点自身も含める
+        end6SpatialIDs = append(end6SpatialIDs, lineSpatialIDs[1])
+
+        // 中点が始点・終点の周囲にある場合
+        if common.Include(start6SpatialIDs, middleSpatialID) &amp;&amp;
+                common.Include(end6SpatialIDs, middleSpatialID) </span><span class="cov8" title="1">{
+                logger.Debug("中点が始点・終点の周囲にあるため終了")
+                logger.Debug("中点ID:%s", middleSpatialID)
+                return
+
+                // 中点が始点の周囲にある場合
+        }</span> else<span class="cov8" title="1"> if common.Include(start6SpatialIDs, middleSpatialID) </span><span class="cov8" title="1">{
+                // 中点と終点で再帰的に中間拡張空間ID取得
+                middleSpatialIds(spatial.Point3(middle), end, hZoom, vZoom, operate)
+
+                // 中点が終点の周囲にある場合
+        }</span> else<span class="cov8" title="1"> if common.Include(end6SpatialIDs, middleSpatialID) </span><span class="cov8" title="1">{
+                // 始点と中点で再帰的に中間拡張空間ID取得
+                middleSpatialIds(start, spatial.Point3(middle), hZoom, vZoom, operate)
+
+                // 中点が始点・終点の周囲にない場合
+        }</span> else<span class="cov8" title="1"> {
+                // 始点と中点で再帰的に中間拡張空間ID取得
+                middleSpatialIds(start, spatial.Point3(middle), hZoom, vZoom, operate)
+                // 中点と終点で再帰的に中間拡張空間ID取得
+                middleSpatialIds(spatial.Point3(middle), end, hZoom, vZoom, operate)
+        }</span>
+
+        <span class="cov8" title="1">return</span>
+}
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">// Package shape 空間IDを任意形状で操作するパッケージ。
+//
+// 本パッケージは水平、垂直方向精度を一意に設定する'空間ID'及び、
+// 水平、垂直方向精度を個別に指定可能な'拡張空間ID'の操作機能を持つ。
+//
+// 本書における'空間ID'、'拡張空間ID'は以下のフォーマットで構成される。
+//
+//        空間ID：
+//         [精度]/[高さの位置]/[経度の位置]/[緯度の位置]
+//
+//         例)
+//          10/15/20/30
+//
+//        拡張空間ID：
+//         [水平方向精度]/[経度の位置]/[緯度の位置]/[垂直方向精度]/[高さの位置]
+//
+//         例)
+//          10/20/30/10/15
+package shape
+
+import (
+        "math"
+        "reflect"
+        "sort"
+        "spatial-id/common"
+        "spatial-id/common/consts"
+        "spatial-id/common/enum"
+        "spatial-id/common/errors"
+        "spatial-id/common/logger"
+        "spatial-id/common/object"
+        "strconv"
+        "strings"
+
+        "github.com/wroge/wgs84"
+)
+
+// GetSpatialIdsOnPoints 空間ID取得関数
+//
+// 地理座標インスタンスのリストから空間IDのリストを取得する。
+//
+// 引数：
+//
+//        pointList：地理座標が格納されたインスタンスのリスト。
+//        zoom     ：精度レベル。
+//
+// 戻り値：
+//
+//        空間IDのリスト。
+//
+// 戻り値(エラー)：
+//
+//        以下の条件に当てはまる場合、エラーインスタンスが返却される。
+//         精度閾値超過：精度に 0 ～ 35 の整数値以外が入力されていた場合。
+func GetSpatialIdsOnPoints(
+        pointList []*object.Point,
+        zoom int64,
+) ([]string, error) <span class="cov8" title="1">{
+        // 拡張空間IDを取得
+        ids, err := GetExtendedSpatialIdsOnPoints(pointList, zoom, zoom)
+
+        if err != nil </span><span class="cov8" title="1">{
+                // エラーが発生した場合エラーインスタンスを返却
+                return ids, err
+        }</span>
+
+        // 拡張空間IDを空間IDのフォーマットに変換
+        <span class="cov8" title="1">ids, err = ConvertExtendedSpatialIdsToSpatialIds(ids)
+
+        return ids, err</span>
+}
+
+// GetPointOnSpatialId 空間IDの座標取得関数
+//
+// 単一の空間IDからその空間IDの頂点座標、または中心座標を取得する。
+// 頂点の座標は南緯、東経、上空方向は近接する頂点の座標と共有される。
+//
+// 座標は地理座標で返却される。
+//
+// 引数：
+//
+//        spatialId：空間ID。
+//        option   ：共通クラスから取得したPointOptionの値。
+//
+// 戻り値：
+//
+//        空間IDの各頂点の座標が格納されたインスタンスのリスト、または空間IDの中心点の座標が格納されたインスタンスのリスト。
+//
+// 戻り値(エラー)：
+//
+//        以下の条件に当てはまる場合、エラーインスタンスが返却される。
+//         精度閾値超過          ：水平方向精度、または垂直方向精度に 0 ～ 35 の整数値以外が入力されていた場合。
+//         空間IDフォーマット不正：空間IDのフォーマットに違反する値が"空間ID"に入力されていた場合。
+//         不正なoption入力      ：指定外のoptionを指定した場合。
+func GetPointOnSpatialId(
+        spatialId string,
+        option enum.PointOption,
+) ([]*object.Point, error) <span class="cov8" title="1">{
+        // 戻り値初期化
+        points := []*object.Point{}
+
+        // 空間IDを拡張空間IDのフォーマットに変換
+        id, err := ConvertSpatialIdsToExtendedSpatialIds([]string{spatialId})
+
+        // 入力値チェック
+        if err != nil </span><span class="cov8" title="1">{
+                // 空間IDのチェック時にエラーが返却された場合、空配列とエラーインスタンスを返却
+                return points, err
+        }</span>
+
+        // 座標を取得
+        <span class="cov8" title="1">points, err = GetPointOnExtendedSpatialId(id[0], option)
+
+        return points, err</span>
+}
+
+// GetExtendedSpatialIdsOnPoints 拡張空間ID取得関数
+//
+// 地理座標インスタンスのリストから拡張空間IDのリストを取得する。
+//
+// 引数：
+//
+//        pointList：地理座標が格納されたインスタンスのリスト。
+//        hZoom    ：水平方向の精度レベル。
+//        vZoom    ：垂直方向の精度レベル。
+//
+// 戻り値：
+//
+//        拡張空間IDのリスト。
+//
+// 戻り値(エラー)：
+//
+//        以下の条件に当てはまる場合、エラーインスタンスが返却される。
+//         精度閾値超過：水平方向精度、または垂直方向精度に 0 ～ 35 の整数値以外が入力されていた場合。
+func GetExtendedSpatialIdsOnPoints(
+        pointList []*object.Point,
+        hZoom int64,
+        vZoom int64,
+) ([]string, error) <span class="cov8" title="1">{
+
+        logger.Debug(
+                "pointList: %s, hZoom: %d, vZoom: %d",
+                reflect.ValueOf(pointList),
+                hZoom,
+                vZoom)
+
+        // 拡張空間IDを格納するスライス
+        spatialIds := make([]string, 0, len(pointList))
+
+        // 入力値チェック
+        // 水平、垂直方向精度のどちらかが範囲外の場合、空配列とエラーインスタンスを返却
+        if !CheckZoom(hZoom) || !CheckZoom(vZoom) </span><span class="cov8" title="1">{
+                return spatialIds, errors.NewSpatialIdError(errors.InputValueErrorCode, "")
+        }</span> else<span class="cov8" title="1"> if common.Include(pointList, nil) == true </span><span class="cov8" title="1">{
+                return spatialIds, errors.NewSpatialIdError(errors.InputValueErrorCode, "")
+        }</span>
+
+        // 先頭から拡張空間IDに変換する
+        <span class="cov8" title="1">for _, v := range pointList </span><span class="cov8" title="1">{
+                // 水平方向、垂直方向タイルID格納用スライス
+                ids := []string{}
+
+                // 水平方向のタイルを取得する
+                ids = append(ids, getHorizontalTileIdOnPoint(v.Lon(), v.Lat(), hZoom))
+
+                // 垂直方向のタイルを取得する
+                ids = append(ids, getVerticalTileIdOnAltitude(v.Alt(), vZoom))
+
+                // 変換した拡張空間IDを戻り値に格納
+                spatialIds = append(spatialIds, strings.Join(ids, consts.SpatialIDDelimiter))
+        }</span>
+
+        <span class="cov8" title="1">logger.Debug("return value: %s", reflect.ValueOf(spatialIds))
+        return spatialIds, nil</span>
+}
+
+// GetPointOnExtendedSpatialId 拡張空間IDの座標取得関数
+//
+// 単一の拡張空間IDからその空間IDの頂点座標、または中心座標を取得する。
+// 頂点の座標は南緯、東経、上空方向は近接する頂点の座標と共有される。
+//
+// 座標は地理座標で返却される。
+//
+// 引数：
+//
+//        extendedSpatialId：拡張空間ID。
+//        option           ：共通クラスから取得したPointOptionの値。
+//
+// 戻り値：
+//
+//        拡張空間IDの各頂点の座標が格納されたインスタンスのリスト、または拡張空間IDの中心点の座標が格納されたインスタンスのリスト。
+//
+// 戻り値(エラー)：
+//
+//        以下の条件に当てはまる場合、エラーインスタンスが返却される。
+//         精度閾値超過              ：水平方向精度、または垂直方向精度に 0 ～ 35 の整数値以外が入力されていた場合。
+//         拡張空間IDフォーマット不正：拡張空間IDのフォーマットに違反する値が"拡張空間ID"に入力されていた場合。
+//         不正なoption入力          ：指定外のoptionを指定した場合。
+func GetPointOnExtendedSpatialId(
+        extendedSpatialId string,
+        option enum.PointOption,
+) ([]*object.Point, error) <span class="cov8" title="1">{
+
+        logger.Debug("extendedSpatialId: %s, option: %d", extendedSpatialId, option)
+
+        // 座標を格納するスライス
+        outputPoint := []*object.Point{}
+
+        // 拡張空間IDから座標成分を取得する。
+        // 拡張空間IDは"[水平精度]/[経度インデックス]/[緯度インデックス]/[垂直精度]/[高さインデックス]"形式とする。
+        // 拡張空間IDをx水平方向、y水平方向、垂直方向に分割する。
+        id, err := getExtendedSpatialIdAttrs(extendedSpatialId)
+
+        // 入力値チェック
+        if err != nil </span><span class="cov8" title="1">{
+                // 拡張空間IDの成分取得時にエラーが返却された場合、空配列とエラーインスタンスを返却
+                return outputPoint, err
+        }</span>
+
+        // IDから水平方向の位置と精度を取得する。前方2桁は精度。
+        <span class="cov8" title="1">hZoom := id[0]
+        lonIndex := id[1]
+        latIndex := id[2]
+
+        // IDから垂直方向の位置、分解能を取得する。前方2桁は精度。
+        vZoom := id[3]
+        altIndex := id[4]
+
+        // 入力値チェック
+        if !CheckZoom(hZoom) || !CheckZoom(vZoom) </span><span class="cov8" title="1">{
+                // 水平、垂直方向精度のどちらかが範囲外の場合、空配列とエラーインスタンスを返却。
+                return outputPoint, errors.NewSpatialIdError(errors.InputValueErrorCode, "")
+        }</span>
+
+        // 垂直方向インスタンス取得。
+        <span class="cov8" title="1">vPoint := getAltitudeOnVerticalIndexAndZoom(altIndex, vZoom)
+
+        // オプションで呼び出しの分岐。
+        if option == enum.Center </span><span class="cov8" title="1">{
+                // 中心点の座標を取得する。
+                outputPoint = append(outputPoint, getCenterPointOnVoxelOffset(
+                        lonIndex, latIndex, hZoom, vPoint))
+
+        }</span> else<span class="cov8" title="1"> if option == enum.Vertex </span><span class="cov8" title="1">{
+                // 頂点の座標(計8個)を取得する。
+                outputPoint = getVertexOnVoxelOffset(lonIndex, latIndex, hZoom, vPoint)
+
+        }</span> else<span class="cov8" title="1"> {
+                // サポート対象外のオプションが指定された場合、空配列とエラーインスタンスを返却。
+                return outputPoint,
+                        errors.NewSpatialIdError(errors.OptionFailedErrorCode, "")
+        }</span>
+
+        <span class="cov8" title="1">logger.Debug("return value: %s", reflect.ValueOf(outputPoint))
+
+        // 拡張空間IDから取得した座標群を返却。
+        return outputPoint, nil</span>
+}
+
+// ConvertPointListToProjectedPointList 地理座標系リストを投影座標系リストに変換する関数
+//
+// 地理座標系のリストをユーザ指定の投影座標のリストに変換する。
+// 変換前の地理座標のCRSはEPSG:4326固定。
+//
+// 引数：
+//
+//        pointList   ：地理座標のデータクラスインスタンスのリスト。
+//        projectedCrs：出力の投影座標のCRSのEPSGコード。
+//
+// 戻り値：
+//
+//        投影座標のデータクラスインスタンスのリストを返却する。
+//
+// 戻り値(エラー)：
+//
+//        以下の条件に当てはまる場合、エラーインスタンスが返却される。
+//         不正なEPSG入力：入力されたEPSGコードが存在しない場合。
+//         座標変換に失敗：投影座標への座標変換に失敗した場合。
+func ConvertPointListToProjectedPointList(
+        pointList []*object.Point,
+        projectedCrs int,
+) ([]*object.ProjectedPoint, error) <span class="cov8" title="1">{
+
+        logger.Debug(
+                "pointList: %s, projectedCrs: %d",
+                reflect.ValueOf(pointList),
+                projectedCrs)
+
+        // 戻り値格納用変数
+        proPointList := make([]*object.ProjectedPoint, 0, len(pointList))
+
+        // 地理座標系、投影座標系をwgs84の座標参照型でインスタンス化
+        geoCrsCode := wgs84.EPSG().Code(consts.GeoCrs)
+        proCrsCode := wgs84.EPSG().Code(projectedCrs)
+
+        // 入力された地理座標リスト参照
+        for _, p := range pointList </span><span class="cov8" title="1">{
+
+                // 地理座標を投影座標に変換する。
+                x, y, _, err := wgs84.SafeTransform(geoCrsCode, proCrsCode)(p.Lon(), p.Lat(), p.Alt())
+
+                if err != nil </span><span class="cov8" title="1">{
+                        // 座標変換に失敗した場合エラーインスタンスを返却
+                        return proPointList,
+                                errors.NewSpatialIdError(errors.ValueConvertErrorCode, "")
+                }</span>
+
+                // 高さは変換前後で不変のため、返還前の値を使用する
+                <span class="cov8" title="1">proPointList = append(proPointList, &amp;object.ProjectedPoint{
+                        X:   x,
+                        Y:   y,
+                        Alt: p.Alt(),
+                })</span>
+        }
+
+        <span class="cov8" title="1">logger.Debug("return value: %s", reflect.ValueOf(proPointList))
+
+        return proPointList, nil</span>
+}
+
+// ConvertProjectedPointListToPointList 投影座標系リストを地理座標系リストに変換する関数
+//
+// ユーザ指定の投影座標系のリストを地理座標のリストに変換する。
+// 変換後の地理座標のCRSはEPSG:4326固定。
+//
+// 引数：
+//
+//        projectedPointList：投影座標のデータクラスインスタンスのリスト。
+//        projectedCrs      ：入力の投影座標のCRSのEPSGコード。
+//
+// 戻り値：
+//
+//        地理座標のデータクラスインスタンスのリストを返却する。
+//
+// 戻り値(エラー)：
+//
+//        以下の条件に当てはまる場合、エラーインスタンスが返却される。
+//         不正なEPSG入力：入力されたEPSGコードが存在しない場合。
+//         座標変換に失敗：地理座標への座標変換に失敗した場合。
+func ConvertProjectedPointListToPointList(
+        projectedPointList []*object.ProjectedPoint,
+        projectedCrs int,
+) ([]*object.Point, error) <span class="cov8" title="1">{
+
+        logger.Debug(
+                "pointList: %s, projectedCrs: %d",
+                reflect.ValueOf(projectedPointList),
+                projectedCrs)
+
+        // 戻り値格納用変数
+        pointList := make([]*object.Point, 0, len(projectedPointList))
+
+        // 地理座標系、投影座標系をwgs84の座標参照型でインスタンス化
+        geoCrsCode := wgs84.EPSG().Code(consts.GeoCrs)
+        proCrsCode := wgs84.EPSG().Code(projectedCrs)
+
+        // 入力された投影座標リスト参照
+        for _, p := range projectedPointList </span><span class="cov8" title="1">{
+
+                // 投影座標を地理座標に変換する。
+                x, y, _, err := wgs84.SafeTransform(proCrsCode, geoCrsCode)(p.X, p.Y, p.Alt)
+
+                if err != nil </span><span class="cov8" title="1">{
+                        // 座標変換に失敗した場合エラーインスタンスを返却
+                        return pointList,
+                                errors.NewSpatialIdError(errors.ValueConvertErrorCode, "")
+                }</span>
+
+                // 変換後の座標を持つ投影座標用インスタンスを戻り値に格納
+                <span class="cov8" title="1">newPoint, _ := object.NewPoint(x, y, p.Alt)
+                pointList = append(pointList, newPoint)</span>
+        }
+
+        <span class="cov8" title="1">logger.Debug("return value: %s", reflect.ValueOf(pointList))
+
+        return pointList, nil</span>
+}
+
+// CheckZoom 入力精度チェック関数
+//
+// 入力の精度が0-35の範囲内か判定をする。
+//
+// 引数：
+//
+//        zoom：入力された精度
+//
+// 戻り値：
+//
+//        入力された精度が0-35の範囲内の場合True、それ以外の場合Falseを返却する。
+func CheckZoom(zoom int64) bool <span class="cov8" title="1">{
+        // 精度が0-35に収まっている場合はTrueを返却
+        return 0 &lt;= zoom &amp;&amp; zoom &lt;= 35
+}</span>
+
+// getExtendedSpatialIdAttrs 拡張空間IDフォーマットチェック関数
+//
+// 入力された拡張空間IDの各成分を格納した配列を返却する。
+// 以下の条件に当てはまる場合はフォーマット違反となりエラーインスタンスが返却される。
+//        ・拡張空間IDの各成分に数値が入力されていない場合
+//        ・区切り文字の数が4つで無い場合
+//
+// 引数：
+//
+//        extendedSpatialId：拡張空間ID
+//
+// 戻り値：
+//
+//        拡張空間IDに含まれる水平、垂直精度、X, Y, Z成分を格納した以下の配列
+//         [水平精度, X成分, Y成分, 垂直精度, Z成分]
+//        入力された拡張空間IDのフォーマットが不正な場合、エラーインスタンスを返却。
+func getExtendedSpatialIdAttrs(extendedSpatialId string) ([]int64, error) <span class="cov8" title="1">{
+        // 戻り値格納用
+        result := []int64{}
+
+        // 拡張空間IDをx水平方向、y水平方向、垂直方向に分割する。
+        id := strings.Split(extendedSpatialId, consts.SpatialIDDelimiter)
+
+        // 拡張空間IDのフォーマットチェック
+        if len(id) != 5 </span><span class="cov8" title="1">{
+                // 拡張空間ID区切り文字の数が不足していた場合エラーインスタンスを返却
+                return result, errors.NewSpatialIdError(errors.InputValueErrorCode, "")
+        }</span>
+
+        <span class="cov8" title="1">for _, s := range id </span><span class="cov8" title="1">{
+                // 空間IDの成分を整数型に変換
+                i, err := strconv.ParseInt(s, 10, 64)
+
+                if err == nil </span><span class="cov8" title="1">{
+                        // 成分の整数型変換結果を戻り値に格納
+                        result = append(result, i)
+                }</span> else<span class="cov8" title="1"> {
+                        // 変換時にエラーが発生した場合、エラーインスタンスを返却
+                        return result, errors.NewSpatialIdError(errors.InputValueErrorCode, "")
+                }</span>
+        }
+
+        <span class="cov8" title="1">return result, nil</span>
+}
+
+// getHorizontalTileIdOnPoint 水平方向タイルID取得関数
+//
+// 経度緯度から水平方向のタイルIDを計算する。
+// 水平方向のタイルIDは「[精度]/[x位置]/[y位置]」となる。
+//
+// 引数：
+//
+//        lon  ：空間座標系の経度(単位:度)
+//        lat  ：空間座標系の緯度(単位:度)
+//        hZoom：水平方向の精度
+//
+// 戻り値：
+//
+//        水平方向のタイルID
+func getHorizontalTileIdOnPoint(lon float64, lat float64, hZoom int64) string <span class="cov8" title="1">{
+        logger.Debug("lon: %v, lat: %v, hZoom: %v", lon, lat, hZoom)
+
+        // 経度に180が入力されているとタイルインデックス+1の値が出力されるため、補正する
+        if lon == 180 </span><span class="cov8" title="1">{
+                lon = -lon
+        }</span>
+
+        // 経度方向のインデックスの計算
+        <span class="cov8" title="1">lonIndex := math.Floor(math.Pow(2, float64(hZoom)) * ((lon + 180.0) / 360.0))
+
+        // 緯度をラジアンに変換
+        latRadian := common.DegreeToRadian(lat)
+
+        // 緯度方向のインデックスの計算
+        latIndex := math.Floor(
+                math.Pow(2, float64(hZoom)) *
+                        (1 - math.Log(math.Tan(latRadian)+(1/math.Cos(latRadian)))/math.Pi) / 2)
+
+        // 水平精度、経度方向、緯度方向のインデクスをスライスに格納
+        idParams := []string{
+                strconv.FormatInt(hZoom, 10),
+                strconv.FormatInt(int64(lonIndex), 10),
+                strconv.FormatInt(int64(latIndex), 10),
+        }
+
+        // 水平精度及び、経度方向と緯度方向のIDを結合して水平方向タイルIDを生成
+        tileId := strings.Join(idParams, consts.SpatialIDDelimiter)
+
+        logger.Debug("return value: %s", tileId)
+
+        // 水平方向タイルIDを返却
+        return tileId</span>
+}
+
+// getVerticalTileIdOnAltitude 垂直方向タイルID取得関数
+//
+// 垂直方向のタイルIDを計算する。
+// 垂直方向のタイルIDは「[精度]/[位置]」となる。
+//
+// 引数：
+//
+//        alt  ：高さ(単位:m)
+//        vZoom：垂直方向の精度
+//
+// 戻り値：
+//
+//        垂直方向のタイルID
+func getVerticalTileIdOnAltitude(alt float64, vZoom int64) string <span class="cov8" title="1">{
+        logger.Debug("alt: %v, vZoom: %d", alt, vZoom)
+
+        // 高さ全体の精度あたりの垂直方向の精度
+        altResolution := math.Pow(2, 25.0) / math.Pow(2, float64(vZoom))
+
+        // 垂直方向の位置を計算する
+        vIndex := math.Floor(alt / altResolution)
+
+        // 垂直精度、高さ方向のインデクスをスライスに格納
+        idParams := []string{
+                strconv.FormatInt(vZoom, 10),
+                strconv.FormatInt(int64(vIndex), 10),
+        }
+
+        // 垂直精度及び、高さ方向のIDを結合して垂直方向タイルIDを生成
+        tileId := strings.Join(idParams, consts.SpatialIDDelimiter)
+
+        logger.Debug("return value: %s", tileId)
+
+        // 垂直方向タイルIDを返却
+        return tileId
+}</span>
+
+// getAltitudeOnVerticalIndexAndZoom 高さ及び分解能取得関数
+//
+// 垂直方向の位置と精度から原点に近い高さと分解能を取得する。
+// 入力された位置が負の場合は、原点に遠い高さと分解能を取得する。
+//
+// 引数：
+//
+//        altIndex：高さの位置
+//        vZoom   ：垂直方向精度
+//
+// 戻り値：
+//
+//        高さ(単位:m)と分解能が格納されたインスタンス
+func getAltitudeOnVerticalIndexAndZoom(
+        altIndex int64,
+        vZoom int64,
+) object.VerticalPoint <span class="cov8" title="1">{
+
+        logger.Debug("altIndex: %d, vZoom: %d", altIndex, vZoom)
+
+        // 垂直方向位置用の構造体初期化
+        vPoint := object.VerticalPoint{}
+
+        // 高さ全体の精度あたりの分解能を取得する
+        vPoint.Resolution = math.Pow(2, 25.0) / math.Pow(2, float64(vZoom))
+
+        // 高さを取得
+        vPoint.Alt = float64(altIndex) * vPoint.Resolution
+
+        logger.Debug("return value: %s", reflect.ValueOf(vPoint))
+
+        // 垂直方向インスタンスを返却
+        return vPoint
+}</span>
+
+// getCenterPointOnVoxelOffset ボクセル中心座標取得関数
+//
+// 緯度、経度、高さから精度ごとの一辺の長さのボクセルの中心点の座標を取得する。
+//
+// 引数：
+//
+//        lonIndex：経度方向のインデックス
+//        latIndex：緯度方向のインデックス
+//        hZoom   ：水平方向の精度
+//        vPoint  ：垂直方向インスタンス
+//
+// 戻り値：
+//
+//        空間の中心点の座標が格納されたインスタンス
+func getCenterPointOnVoxelOffset(
+        lonIndex int64,
+        latIndex int64,
+        hZoom int64,
+        vPoint object.VerticalPoint,
+) *object.Point <span class="cov8" title="1">{
+
+        logger.Debug(
+                "lonIndex: %d, latIndex: %d, hZoom: %d, vPoint %s",
+                lonIndex,
+                latIndex,
+                hZoom,
+                reflect.ValueOf(vPoint))
+
+        // 頂点座標から最大値と最小値を取得する。
+        pList := getVertexOnVoxelOffset(lonIndex, latIndex, hZoom, vPoint)
+
+        // 頂点座標格納用。
+        lonList := []float64{}
+        latList := []float64{}
+        altList := []float64{}
+
+        // 頂点座標を配列に格納
+        for _, v := range pList </span><span class="cov8" title="1">{
+                lonList = append(lonList, v.Lon())
+                latList = append(latList, v.Lat())
+                altList = append(altList, v.Alt())
+        }</span>
+
+        // 頂点座標をソートし、最大値と最小値を取得する。
+        <span class="cov8" title="1">sort.Float64s(lonList)
+        sort.Float64s(latList)
+        sort.Float64s(altList)
+
+        lonMin := lonList[0]
+        lonMax := lonList[len(lonList)-1]
+        latMin := latList[0]
+        latMax := latList[len(latList)-1]
+        altMin := altList[0]
+        altMax := altList[len(altList)-1]
+
+        // ボクセルの中心座標を計算
+        centerLon := (lonMax + lonMin) / 2
+        centerLat := (latMax + latMin) / 2
+        centerAlt := (altMax + altMin) / 2
+        point, _ := object.NewPoint(centerLon, centerLat, centerAlt)
+
+        logger.Debug("return value: %s", reflect.ValueOf(point))
+
+        // 中心点の座標を返却
+        return point</span>
+}
+
+// getVertexOnVoxelOffset ボクセル頂点座標取得関数
+//
+// 緯度、経度、高さから分解能を一辺の長さとしたボクセルの頂点を取得する。
+//
+// 引数：
+//
+//        lonIndex：経度方向のインデックス
+//        latIndex：緯度方向のインデックス
+//        hZoom   ：水平方向の精度
+//        vPoint  ：垂直方向インスタンス
+//
+// 戻り値：
+//
+//        各頂点の座標が設定されたインスタンスのリスト
+func getVertexOnVoxelOffset(
+        lonIndex int64,
+        latIndex int64,
+        hZoom int64,
+        vPoint object.VerticalPoint,
+) []*object.Point <span class="cov8" title="1">{
+
+        logger.Debug(
+                "lonIndex: %d, latIndex: %d, hZoom: %d, vPoint %s",
+                lonIndex,
+                latIndex,
+                hZoom,
+                reflect.ValueOf(vPoint))
+
+        // 返却用のリスト。要素数は頂点の数に設定
+        pList := make([]*object.Point, 0, 8)
+
+        // 経度、緯度の判定用の境界値
+        hLimit := math.Pow(2, float64(hZoom))
+
+        // 内部計算用の経度方向、緯度方向インデックス格納用
+        lonIndexFloat := float64(lonIndex)
+        latIndexFloat := float64(latIndex)
+
+        // 緯度の取得
+        if (hLimit - 1) &lt;= latIndexFloat </span><span class="cov8" title="1">{
+                latIndexFloat = hLimit - 1
+        }</span> else<span class="cov8" title="1"> if latIndexFloat &lt; 0.0 </span><span class="cov8" title="1">{
+                latIndexFloat = 0.0
+        }</span>
+
+        // タイルの上辺の緯度
+        <span class="cov8" title="1">northLat := common.RadianToDegree(
+                math.Atan(math.Sinh(math.Pi * (1 - 2*latIndexFloat/hLimit))))
+
+        // タイルの下辺の緯度
+        southLat := common.RadianToDegree(
+                math.Atan(math.Sinh(math.Pi * (1 - 2*(latIndexFloat+1)/hLimit))))
+
+        // 経度の取得
+        if (hLimit-1) &lt;= lonIndexFloat || lonIndexFloat &lt; 0.0 </span><span class="cov8" title="1">{
+                // インデックスの範囲を超えている場合はn周分を無視する
+                for lonIndexFloat &lt; 0 </span><span class="cov8" title="1">{
+                        lonIndexFloat += hLimit
+                }</span>
+                <span class="cov8" title="1">lonIndexFloat = math.Mod(lonIndexFloat, hLimit)</span>
+        }
+
+        <span class="cov8" title="1">westLon := lonIndexFloat*360/hLimit - 180
+        eastLon := (lonIndexFloat+1.0)*360/hLimit - 180
+
+        // ボクセル上面の高さを求める
+        vTopAlt := vPoint.Alt + vPoint.Resolution
+
+        // ボクセルの各頂点を定義
+        northWestBottom, _ := object.NewPoint(westLon, northLat, vPoint.Alt)
+        northEastBottom, _ := object.NewPoint(eastLon, northLat, vPoint.Alt)
+        southEastBottom, _ := object.NewPoint(eastLon, southLat, vPoint.Alt)
+        southWestBottom, _ := object.NewPoint(westLon, southLat, vPoint.Alt)
+        northWestTop, _ := object.NewPoint(westLon, northLat, vTopAlt)
+        northEastTop, _ := object.NewPoint(eastLon, northLat, vTopAlt)
+        southEastTop, _ := object.NewPoint(eastLon, southLat, vTopAlt)
+        southWestTop, _ := object.NewPoint(westLon, southLat, vTopAlt)
+
+        // ボクセルの各頂点を計算して返却用のリストに格納する。
+        // ボクセルを上から見下ろし左上から時計回りの順かつ、底面4頂点→上面4頂点の順に格納する。
+        pList = append(pList, northWestBottom)
+        pList = append(pList, northEastBottom)
+        pList = append(pList, southEastBottom)
+        pList = append(pList, southWestBottom)
+        pList = append(pList, northWestTop)
+        pList = append(pList, northEastTop)
+        pList = append(pList, southEastTop)
+        pList = append(pList, southWestTop)
+
+        logger.Debug("return value: %s", reflect.ValueOf(pList))
+
+        // 頂点座標群を返却
+        return pList</span>
+}
+
+// ConvertSpatialIdsToExtendedSpatialIds 空間IDフォーマット変換関数
+//
+// 空間IDのフォーマットを拡張空間IDのフォーマットに変換する。
+//
+// 引数：
+//
+//        spatialIds：空間IDのリスト。
+//
+// 戻り値：
+//
+//        拡張空間IDのリスト。
+//
+// 戻り値(エラー)：
+//
+//        以下の条件に当てはまる場合、エラーインスタンスが返却される。
+//         入力された空間IDのフォーマットが不正な場合。
+func ConvertSpatialIdsToExtendedSpatialIds(spatialIds []string) ([]string, error) <span class="cov8" title="1">{
+        // 拡張空間IDを格納するスライス
+        resultIds := make([]string, 0, len(spatialIds))
+
+        for _, s := range spatialIds </span><span class="cov8" title="1">{
+                // 空間IDを拡張空間IDのフォーマットに変換して戻り値に格納
+                c := strings.Split(s, consts.SpatialIDDelimiter)
+
+                // 空間IDのフォーマットチェック
+                if len(c) != 4 </span><span class="cov8" title="1">{
+                        // 空間ID区切り文字の数が不足していた場合エラーインスタンスを返却
+                        return resultIds, errors.NewSpatialIdError(errors.InputValueErrorCode, "")
+                }</span>
+
+                <span class="cov8" title="1">l := []string{c[0], c[2], c[3], c[0], c[1]}
+                i := strings.Join(l, consts.SpatialIDDelimiter)
+                resultIds = append(resultIds, i)</span>
+        }
+
+        <span class="cov8" title="1">return resultIds, nil</span>
+}
+
+// ConvertExtendedSpatialIdsToSpatialIds 拡張空間IDフォーマット変換関数
+//
+// 拡張空間IDのフォーマットを空間IDのフォーマットに変換する。
+//
+// 引数：
+//
+//        extendedSpatialIds：拡張空間IDのリスト。
+//
+// 戻り値：
+//
+//        空間IDのリスト。
+//
+// 戻り値(エラー)：
+//
+//        以下の条件に当てはまる場合、エラーインスタンスが返却される。
+//         入力された拡張空間IDのフォーマットが不正な場合。
+func ConvertExtendedSpatialIdsToSpatialIds(
+        extendedSpatialIds []string,
+) ([]string, error) <span class="cov8" title="1">{
+        // 空間IDを格納するスライス
+        resultIds := make([]string, 0, len(extendedSpatialIds))
+
+        for _, s := range extendedSpatialIds </span><span class="cov8" title="1">{
+                // 拡張空間IDを空間IDのフォーマットに変換して戻り値に格納
+                c := strings.Split(s, consts.SpatialIDDelimiter)
+
+                // 拡張空間IDのフォーマットチェック
+                if len(c) != 5 </span><span class="cov8" title="1">{
+                        // 拡張空間ID区切り文字の数が不足していた場合エラーインスタンスを返却
+                        return resultIds, errors.NewSpatialIdError(errors.InputValueErrorCode, "")
+                }</span>
+
+                <span class="cov8" title="1">l := []string{c[0], c[4], c[1], c[2]}
+                i := strings.Join(l, consts.SpatialIDDelimiter)
+                resultIds = append(resultIds, i)</span>
+        }
+
+        <span class="cov8" title="1">return resultIds, nil</span>
+}
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>

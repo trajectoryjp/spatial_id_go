@@ -1,0 +1,763 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>integrate: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">spatial-id/integrate/change_zoom.go (100.0%)</option>
+				
+				<option value="file1">spatial-id/integrate/merge_zoom.go (100.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">// Package integrate 空間IDパッケージ
+package integrate
+
+import (
+        "math"
+        "spatial-id/common"
+        "spatial-id/common/errors"
+        "spatial-id/common/object"
+        "spatial-id/shape"
+        "strconv"
+        "strings"
+)
+
+// ChangeSpatialIdsZoom 空間IDの精度変換関数
+//
+// 変換対象として入力された空間IDを、指定された精度の空間IDに変換する。
+// 変換対象には複数の空間IDを指定可能、精度が異なる空間IDが混在している場合も入力を許容する。
+//
+// 精度を上げる場合、入力された空間IDボクセルを変換後の精度で分割し、
+// 入力された空間IDに内包される空間IDを返却する。
+//
+// 精度を下げる場合、入力された空間IDボクセルを変換後の精度となるよう拡大し、
+// 入力された空間IDを内包している空間IDを返却する。
+//
+// 引数の入力値がAPIの仕様に違反していた場合、精度変換失敗となりエラーインスタンスが返却される。
+//
+// 引数：
+//
+//        spatialIds：精度変換対象の空間ID。複数の空間IDを指定可能、空間ID毎に精度が異なっている入力も許容。
+//        zoom      ：変換後の精度。空間IDの精度の閾値である 0 ～ 35 の整数値を指定可能。
+//
+// 戻り値：
+//
+//        精度変換後の全空間IDを格納した配列が返却される。IDの重複は解消された形で返却される。
+//
+// 戻り値(エラー)：
+//
+//        以下の条件に当てはまる場合、エラーインスタンスが返却される。
+//         精度閾値超過          ：精度に 0 ～ 35 の整数値以外が入力されていた場合。
+//         空間IDフォーマット不正：空間IDのフォーマットに違反する値が"変換対象空間ID"に入力されていた場合。
+//
+// 補足事項：
+//
+//        複数空間ID変換時の入出力対応について：
+//         本APIでは、入力された全空間IDの精度変換結果をまとめて返却している。
+//         そのため、複数の空間IDを入力とした場合、精度変換前後の空間IDの対応を取ることはできない。
+//         精度変換前後の空間IDの対応を保持したい場合は、空間IDを1つずつ変換する必要がある。
+//
+//        精度値を上げる場合について：
+//         空間IDにおける精度を上げる場合、精度が1上がるごとに8のべき乗で空間ID数が増加する。
+//         そのため、低い精度から高い精度に変換する際、精度差が大きすぎると変換後の空間ID数は大幅に増大する。
+//         動作環境によってはメモリ不足となる可能性があるため、注意すること。
+func ChangeSpatialIdsZoom(spatialIds []string, zoom int64) ([]string, error) <span class="cov8" title="1">{
+        // 変換後の空間ID格納用のスライス
+        resultIDList := []string{}
+
+        // 拡張空間ID変換結果
+        extendedSpatialIds, convertErr :=
+                shape.ConvertSpatialIdsToExtendedSpatialIds(spatialIds)
+
+        if convertErr != nil </span><span class="cov8" title="1">{
+                // 変換に失敗した場合エラーインスタンスを返却
+                return resultIDList, convertErr
+        }</span>
+
+        // 拡張空間IDの精度変換を実行
+        <span class="cov8" title="1">changeIDList, changeZoomErr := ChangeExtendedSpatialIdsZoom(
+                extendedSpatialIds,
+                zoom,
+                zoom,
+        )
+
+        if changeZoomErr != nil </span><span class="cov8" title="1">{
+                // 変換に失敗した場合エラーインスタンスを返却
+                return resultIDList, changeZoomErr
+        }</span>
+
+        // 拡張空間IDを空間IDに変換
+        <span class="cov8" title="1">resultIDList, _ = shape.ConvertExtendedSpatialIdsToSpatialIds(changeIDList)
+
+        return resultIDList, nil</span>
+}
+
+// ChangeExtendedSpatialIdsZoom 拡張空間IDの精度変換関数
+//
+// 変換対象として入力された拡張空間IDを、指定された水平/垂直方向精度の拡張空間IDに変換する。
+// 変換対象には複数の拡張空間IDを指定可能、精度が異なる拡張空間IDが混在している場合も入力を許容する。
+//
+// 精度を上げる場合、入力された拡張空間IDボクセルを変換後の精度で分割し、
+// 入力された拡張空間IDに内包される拡張空間IDを返却する。
+//
+// 精度を下げる場合、入力された拡張空間IDボクセルを変換後の精度となるよう拡大し、
+// 入力された拡張空間IDを内包している拡張空間IDを返却する。
+//
+// 水平/垂直方向精度について、一方の精度が上がり一方の精度が下がる場合、
+// 精度が上がった方向はボクセルを分割、精度が下がった方向はボクセルの拡大がされた拡張空間IDを返却する。
+//
+// 引数の入力値がAPIの仕様に違反していた場合、精度変換失敗となりエラーインスタンスが返却される。
+//
+// 引数：
+//
+//        extendedSpatialIds：精度変換対象の拡張空間ID。複数の拡張空間IDを指定可能、拡張空間ID毎に精度が異なっている入力も許容。
+//        hZoom             ：変換後の水平方向精度。拡張空間IDの精度の閾値である 0 ～ 35 の整数値を指定可能。
+//        vZoom             ：変換後の垂直方向精度。拡張空間IDの精度の閾値である 0 ～ 35 の整数値を指定可能。
+//
+// 戻り値：
+//
+//        精度変換後の全拡張空間IDを格納した配列が返却される。IDの重複は解消された形で返却される。
+//
+// 戻り値(エラー)：
+//
+//        以下の条件に当てはまる場合、エラーインスタンスが返却される。
+//         精度閾値超過              ：水平方向精度、または垂直方向精度に 0 ～ 35 の整数値以外が入力されていた場合。
+//         拡張空間IDフォーマット不正：拡張空間IDのフォーマットに違反する値が"変換対象の拡張空間ID"に入力されていた場合。
+//
+// 補足事項：
+//
+//        複数変換時の入出力対応について：
+//         本APIでは、入力された全拡張空間IDの精度変換結果をまとめて返却している。
+//         そのため、複数の拡張空間IDを入力とした場合、精度変換前後の拡張空間IDの対応を取ることはできない。
+//         精度変換前後の拡張空間IDの対応を保持したい場合は、変換対象を1つずつ変換する必要がある。
+//
+//        精度値を上げる場合について：
+//         拡張空間IDにおける精度を上げる場合、水平精度が1上がるごとに4のべき乗、垂直方向精度が1上がるごとに2のべき乗で拡張空間ID数が増加する。
+//         そのため、低い精度から高い精度に変換する際、精度差が大きすぎると変換後の拡張空間ID数は大幅に増大する。
+//         動作環境によってはメモリ不足となる可能性があるため、注意すること。
+func ChangeExtendedSpatialIdsZoom(
+        extendedSpatialIds []string,
+        hZoom int64,
+        vZoom int64,
+) ([]string, error) <span class="cov8" title="1">{
+        // 変換後の拡張空間ID格納用のスライス
+        resultIDList := []string{}
+
+        // 入力値チェック
+        // 水平、垂直方向精度のどちらかが範囲外の場合、空配列とエラーインスタンスを返却
+        if !shape.CheckZoom(hZoom) || !shape.CheckZoom(vZoom) </span><span class="cov8" title="1">{
+                return resultIDList, errors.NewSpatialIdError(errors.InputValueErrorCode, "")
+        }</span>
+
+        // 空間IDインスタンス初期化
+        <span class="cov8" title="1">s := &amp;object.ExtendedSpatialID{}
+
+        for _, id := range extendedSpatialIds </span><span class="cov8" title="1">{
+                // 拡張空間ID再設定
+                if err := s.ResetExtendedSpatialID(id); err != nil </span><span class="cov8" title="1">{
+                        // 拡張空間IDの再設定時にエラーが返却された場合、エラーインスタンスを返却
+                        return resultIDList, err
+                }</span>
+
+                // 拡張空間IDの成分取得
+                <span class="cov8" title="1">components := s.FieldParams()
+
+                // 水平方向成分の精度変換結果取得
+                hComponents := HorizontalZoom(
+                        components[0],
+                        components[1],
+                        components[2],
+                        hZoom,
+                )
+
+                // 垂直方向成分の精度変換結果取得
+                vComponents := VerticalZoom(
+                        components[3],
+                        components[4],
+                        vZoom,
+                )
+
+                for _, h := range hComponents </span><span class="cov8" title="1">{
+                        for _, v := range vComponents </span><span class="cov8" title="1">{
+                                // 水平、垂直方向の精度変換結果から拡張空間IDを生成
+                                resultID := strings.Join([]string{h, v}, "/")
+                                resultIDList = append(resultIDList, resultID)
+                        }</span>
+                }
+        }
+
+        <span class="cov8" title="1">return common.Unique(resultIDList), nil</span>
+}
+
+// HorizontalZoom 拡張空間IDの水平方向の精度変換関数
+//
+// 変換対象として入力された拡張空間IDの水平方向成分を、指定された精度に変換する。
+// 精度を上げる場合、入力された拡張空間IDボクセルを変換後の精度で分割し、
+// 入力された拡張空間IDに内包される拡張空間IDを返却する。
+//
+// 精度を下げる場合、入力された拡張空間IDボクセルを変換後の精度となるよう拡大し、
+// 入力された拡張空間IDを内包している拡張空間IDを返却する。
+//
+// 引数：
+//
+//        inputZoom ：精度変換対象の拡張空間IDの水平方向精度。
+//        xIndex    ：精度変換対象の拡張空間IDのxIndex成分。
+//        yIndex    ：精度変換対象の拡張空間IDのyIndex成分。
+//        outputZoom：変換後の水平方向精度。
+//
+// 戻り値：
+//
+//        精度変換後の全拡張空間IDの水平方向成分を格納したスライスが返却される。
+//
+// 補足事項：
+//
+//        精度値を上げる場合について：
+//         拡張空間IDにおける精度を上げる場合、水平精度が1上がるごとに4のべき乗で拡張空間ID数が増加する。
+//         そのため、低い精度から高い精度に変換する際、精度差が大きすぎると変換後の拡張空間ID数は大幅に増大する。
+//         動作環境によってはメモリ不足となる可能性があるため、注意すること。
+func HorizontalZoom(
+        inputZoom int64,
+        xIndex int64,
+        yIndex int64,
+        outputZoom int64,
+) []string <span class="cov8" title="1">{
+        // 変換後の拡張空間ID格納用のスライス
+        horizontalIDs := []string{}
+
+        // 精度の差異を取得
+        hZoomDiff := outputZoom - inputZoom
+
+        // 変換後の x, y, z 成分の最小値を初期化
+        minXparam := xIndex
+        minYparam := yIndex
+
+        // 変換後の x, y, z 成分の最大値を初期化
+        maxXparam := xIndex
+        maxYparam := yIndex
+
+        // 水平方向の拡張空間ID分割数を定義
+        hVoxelNum := int64(math.Pow(2, math.Abs(float64(hZoomDiff))))
+
+        // 精度の増減によって処理を分岐
+        if hZoomDiff &gt; 0 </span><span class="cov8" title="1">{
+                // 水平精度が上がった場合
+                // 変換後の x, y 成分の最小値を定義
+                minXparam = xIndex * hVoxelNum
+                minYparam = yIndex * hVoxelNum
+
+                // 変換後の x, y 成分の最大値を定義
+                maxXparam = minXparam + hVoxelNum - 1
+                maxYparam = minYparam + hVoxelNum - 1
+        }</span> else<span class="cov8" title="1"> if hZoomDiff &lt; 0 </span><span class="cov8" title="1">{
+                // 水平精度が下がった場合
+                // 変換後の x, y 成分の最小値を定義
+                minXparam = xIndex / hVoxelNum
+                minYparam = yIndex / hVoxelNum
+
+                // 変換後の x, y 成分の最大値を定義
+                maxXparam = minXparam
+                maxYparam = minYparam
+        }</span>
+
+        // 変換後の拡張空間IDを定義
+        <span class="cov8" title="1">for y := minYparam; y &lt;= maxYparam; y++ </span><span class="cov8" title="1">{
+                for x := minXparam; x &lt;= maxXparam; x++ </span><span class="cov8" title="1">{
+                        horizontalIDs = append(
+                                horizontalIDs,
+                                strconv.FormatInt(outputZoom, 10)+
+                                        "/"+strconv.FormatInt(x, 10)+
+                                        "/"+strconv.FormatInt(y, 10))
+                }</span>
+        }
+        <span class="cov8" title="1">return horizontalIDs</span>
+}
+
+// VerticalZoom 拡張空間IDの垂直方向の精度変換関数
+//
+// 変換対象として入力された拡張空間IDの高さ方向成分を、指定された精度に変換する。
+// 精度を上げる場合、入力された拡張空間IDボクセルを変換後の精度で分割し、
+// 入力された拡張空間IDに内包される拡張空間IDを返却する。
+//
+// 精度を下げる場合、入力された拡張空間IDボクセルを変換後の精度となるよう拡大し、
+// 入力された拡張空間IDを内包している拡張空間IDを返却する。
+//
+// 引数：
+//
+//        inputZoom ：精度変換対象の拡張空間IDの垂直方向精度成分。
+//        vIndex    ：精度変換対象の拡張空間IDのvIndex成分。
+//        outputZoom：変換後の垂直方向精度。
+//
+// 戻り値：
+//
+//        精度変換後の全拡張空間IDの垂直方向成分を格納したスライスが返却される。
+//
+// 補足事項：
+//
+//        精度値を上げる場合について：
+//         拡張空間IDにおける精度を上げる場合、垂直方向精度が1上がるごとに2のべき乗で拡張空間ID数が増加する。
+//         そのため、低い精度から高い精度に変換する際、精度差が大きすぎると変換後の拡張空間ID数は大幅に増大する。
+//         動作環境によってはメモリ不足となる可能性があるため、注意すること。
+func VerticalZoom(inputZoom int64, vIndex int64, outputZoom int64) []string <span class="cov8" title="1">{
+        verticalIDs := []string{}
+
+        // 精度の差異を取得
+        vZoomDiff := outputZoom - inputZoom
+
+        minVparam := vIndex
+        maxVparam := vIndex
+
+        // 垂直方向の拡張空間ID分割数を定義
+        vVoxelNum := int64(math.Pow(2, math.Abs(float64(vZoomDiff))))
+
+        if vZoomDiff &gt; 0 </span><span class="cov8" title="1">{
+                // 垂直精度が上がった場合
+                // 変換後の v 成分の最小値を定義
+                minVparam = vIndex * vVoxelNum
+
+                // 変換後の v 成分の最大値を定義
+                maxVparam = minVparam + vVoxelNum - 1
+        }</span> else<span class="cov8" title="1"> if vZoomDiff &lt; 0 </span><span class="cov8" title="1">{
+                // 垂直精度が下がった場合
+                // 変換後の v 成分の最小値を定義
+                minVparam = vIndex / vVoxelNum
+
+                // 変換後の z 成分の最大値を定義
+                maxVparam = minVparam
+        }</span>
+        // 変換後の拡張空間IDを定義
+        <span class="cov8" title="1">for v := minVparam; v &lt;= maxVparam; v++ </span><span class="cov8" title="1">{
+                // 生成した拡張空間IDを戻り値に格納
+                verticalIDs = append(
+                        verticalIDs,
+                        strconv.FormatInt(outputZoom, 10)+"/"+strconv.FormatInt(v, 10))
+        }</span>
+        <span class="cov8" title="1">return verticalIDs</span>
+}
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package integrate
+
+import (
+        "math"
+        "spatial-id/common"
+        "spatial-id/common/errors"
+        "spatial-id/common/object"
+        "spatial-id/shape"
+)
+
+// UnitDividedSpatialID 単位分割拡張空間ID構造体
+// 拡張空間IDを最小の空間IDである単位拡張空間IDへ分割した情報を保持する構造体
+type UnitDividedSpatialID struct {
+        *object.ExtendedSpatialID                     // 元の拡張空間ID
+        hDiff                     int64               // 水平精度差分
+        vDiff                     int64               // 垂直精度差分
+        unitIDs                   map[string]struct{} // 単位拡張空間ID集合
+}
+
+// NewUnitDividedSpatialID 単位分割拡張空間ID構造体のコンストラクタ
+//
+// UnitDividedSpatialIDオブジェクトを返却する。
+//
+// 引数：
+//
+//  s    ：拡張空間ID
+//        hDiff：水平方向精度差分
+//        vDiff：垂直方向精度差分
+//
+// 戻り値：
+//
+//        UnitDividedSpatialIDオブジェクトのポインタ
+func NewUnitDividedSpatialID(
+        s *object.ExtendedSpatialID,
+        hDiff, vDiff int64,
+) *UnitDividedSpatialID <span class="cov8" title="1">{
+
+        // 単位拡張空間IDの個数
+        hDiffIndex := int64(math.Pow(2, float64(hDiff)))
+        vDiffIndex := int64(math.Pow(2, float64(vDiff)))
+        // 単位空間ID集合
+        unitIDs := map[string]struct{}{}
+        for x := s.X() * hDiffIndex; x &lt; (s.X()+1)*hDiffIndex; x++ </span><span class="cov8" title="1">{
+                for y := s.Y() * hDiffIndex; y &lt; (s.Y()+1)*hDiffIndex; y++ </span><span class="cov8" title="1">{
+                        for z := s.Z() * vDiffIndex; z &lt; (s.Z()+1)*vDiffIndex; z++ </span><span class="cov8" title="1">{
+                                spatialStr :=
+                                        shape.GetSpatialIDOnAxisIDs(x, y, z, hDiff+s.HZoom(), vDiff+s.VZoom())
+                                unitIDs[spatialStr] = struct{}{}
+                        }</span>
+                }
+        }
+
+        <span class="cov8" title="1">return &amp;UnitDividedSpatialID{
+                ExtendedSpatialID: s,
+                hDiff:             hDiff,
+                vDiff:             vDiff,
+                unitIDs:           unitIDs,
+        }</span>
+}
+
+// HighSpatialID 最適化後拡張空間ID構造体
+// 拡張空間IDのマージ候補である精度が粗い最適化後の拡張空間IDの構造体
+// マージ元の拡張空間IDは最適化元拡張空間として保持する。
+type HighSpatialID struct {
+        *object.ExtendedSpatialID                     // 最適化後の拡張空間ID
+        threshold                 int64               // 単位拡張空間IDの個数の閾値
+        lowIDs                    []string            // 最適化元拡張空間ID配列
+        unitIDs                   map[string]struct{} // 単位拡張空間ID集合
+}
+
+// NewHighSpatialID 最適化後拡張空間ID構造体のコンストラクタ
+//
+// HighSpatialIDオブジェクトを返却する。
+//
+// 引数：
+//
+//  u    ：単位分割拡張空間ID
+//        hDiff：単位分割拡張空間IDからの水平方向精度差分
+//        vDiff：単位分割拡張空間IDからの垂直方向精度差分
+//
+// 戻り値：
+//
+//        HighSpatialIDオブジェクトのポインタ
+func NewHighSpatialID(u *UnitDividedSpatialID, hDiff, vDiff int64) *HighSpatialID <span class="cov8" title="1">{
+
+        // 最適化後拡張空間IDを求める
+        highID := u.Higher(hDiff, vDiff)
+        // 単位拡張空間IDの個数
+        hDiffIndex := int64(math.Pow(2, float64(hDiff+u.hDiff)))
+        vDiffIndex := int64(math.Pow(2, float64(vDiff+u.vDiff)))
+        // 単位拡張空間IDの個数の閾値
+        threshold := hDiffIndex * hDiffIndex * vDiffIndex
+
+        // 最適化元拡張空間ID配列
+        lowIDs := []string{u.ID()}
+        // 単位拡張空間ID集合
+        unitIDs := u.unitIDs
+
+        return &amp;HighSpatialID{
+                ExtendedSpatialID: highID,
+                threshold:         threshold,
+                lowIDs:            lowIDs,
+                unitIDs:           unitIDs,
+        }
+}</span>
+
+// Merge 最適化後拡張空間ID構造体の結合
+//
+// 拡張空間IDが同一の最適化後拡張空間IDの最適化元・単位拡張空間IDをマージする
+//
+// 引数：
+//
+//  s：マージ対象の最適化後拡張空間ID
+func (r *HighSpatialID) Merge(s *HighSpatialID) <span class="cov8" title="1">{
+        // 最適化元拡張空間ID配列を結合
+        r.lowIDs = append(r.lowIDs, s.lowIDs...)
+        // 単位拡張空間ID集合を結合
+        for k := range s.unitIDs </span><span class="cov8" title="1">{
+                r.unitIDs[k] = struct{}{}
+        }</span>
+}
+
+// IsDense 最適化後拡張空間ID構造体が単位拡張空間ID集合で稠密であるかの判定
+//
+// 最適化後拡張空間ID構造体が単位拡張空間ID集合で稠密であるかの判定結果を返却する
+//
+// 戻り値：
+//
+//  True：最適化後拡張空間ID構造体が単位拡張空間ID集合で稠密
+//  False：最適化後拡張空間ID構造体が単位拡張空間ID集合で稠密でない
+func (r HighSpatialID) IsDense() bool <span class="cov8" title="1">{
+        return int64(len(r.unitIDs)) == r.threshold
+}</span>
+
+// MergeSpatialIds 空間IDの最適化（マージ）関数
+//
+// 入力された空間ID配列をより大きな空間IDにマージし、最適化した結果を返却する。
+// マージ後の空間IDの精度は、引数で指定された精度となる。
+//
+// 入力された空間ID配列の内、以下の条件を満たす空間IDがマージ対象となる。
+//  ・空間IDの精度が、マージ後の精度以上。
+//
+// 入力された空間ID配列がマージされる条件は以下となる。
+//  ・マージ後の精度の空間IDボクセルを完全に満たす空間ID群が、入力された空間ID配列に含まれている場合
+//     ボクセル内を満たす空間ID群を、マージ後の精度の空間IDにマージする。
+//
+// マージ条件に合致しなかった空間ID、マージ対象外の空間IDはそのまま返却される。
+// マージ後に重複する空間IDが存在した場合は、重複を解消したうえで返却する。
+//
+// 引数：
+//  spatialIds：マージ対象の空間ID文字列配列
+//  zoom      ：マージ後の精度。空間IDの精度の閾値である 0 ～ 35 の整数値を指定可能。
+//
+// 戻り値：
+//  マージ後の空間IDを格納した配列が返却される。IDの重複は解消された形で返却される。
+//
+// 戻り値(エラー)：
+//  以下の条件に当てはまる場合、エラーインスタンスが返却される。
+//   精度閾値超過          ：精度に 0 ～ 35 の整数値以外が入力されていた場合。
+//   空間IDフォーマット不正：空間IDのフォーマットに違反する値が"空間ID配列"に入力されていた場合。
+//
+// 補足事項：
+//  多数の空間IDのマージを行う場合について：
+//   空間IDのマージ処理では内部で空間IDを配列内の一番小さい空間IDに合わせて精度を上げて分割する処理を行っている。
+//   空間IDにおける精度を上げる場合、精度が1上がるごとに8のべき乗で空間ID数が増加する。
+//   そのため、以下のような場合に分割後の空間ID数は大幅に増大する。
+//    * 入力の空間ID配列全体での精度の幅が大きい場合。
+//    * 空間IDが大量に入力された場合。
+//   動作環境によってはメモリ不足となる可能性があるため、注意すること。
+func MergeSpatialIds(spatialIds []string, zoom int64) ([]string, error) <span class="cov8" title="1">{
+        // マージ後の空間ID格納用のスライス
+        resultIDs := []string{}
+
+        // 拡張空間ID変換結果
+        extendedSpatialIds, convertErr :=
+                shape.ConvertSpatialIdsToExtendedSpatialIds(spatialIds)
+
+        if convertErr != nil </span><span class="cov8" title="1">{
+                // 変換に失敗した場合エラーインスタンスを返却
+                return resultIDs, convertErr
+        }</span>
+
+        // 拡張空間IDのマージを実行
+        <span class="cov8" title="1">mergeIDs, mergeZoomErr := MergeExtendedSpatialIds(
+                extendedSpatialIds,
+                zoom,
+                zoom,
+        )
+
+        if mergeZoomErr != nil </span><span class="cov8" title="1">{
+                // マージに失敗した場合エラーインスタンスを返却
+                return resultIDs, mergeZoomErr
+        }</span>
+
+        // 拡張空間IDを空間IDに変換
+        <span class="cov8" title="1">resultIDs, _ = shape.ConvertExtendedSpatialIdsToSpatialIds(mergeIDs)
+
+        return resultIDs, nil</span>
+}
+
+// MergeExtendedSpatialIds 拡張空間IDの最適化（マージ）関数
+//
+// 入力された拡張空間ID配列をより大きな拡張空間IDにマージし、最適化した結果を返却する。
+// マージ後の拡張空間IDの精度は、引数で指定された水平方向精度、垂直方向精度となる。
+//
+// 入力された拡張空間ID配列の内、以下の条件を満たす拡張空間IDがマージ対象となる。
+//  ・拡張空間IDの水平方向精度が、マージ後の水平方向精度以上。
+//  ・拡張空間IDの垂直方向精度が、マージ後の垂直方向精度以上。
+//
+// 入力された拡張空間ID配列がマージされる条件は以下となる。
+//  ・マージ後の精度の拡張空間IDボクセルを完全に満たす拡張空間ID群が、入力された拡張空間ID配列に含まれている場合
+//     ボクセル内を満たす拡張空間ID群を、マージ後の精度の拡張空間IDにマージする。
+//
+// マージ条件に合致しなかった拡張空間ID、マージ対象外の拡張空間IDはそのまま返却される。
+// マージ後に重複する拡張空間IDが存在した場合は、重複を解消したうえで返却する。
+//
+// 引数：
+//  extendedSpatialIds：マージ対象の拡張空間ID文字列配列
+//  hZoom             ：マージ後の水平方向精度。拡張空間IDの精度の閾値である 0 ～ 35 の整数値を指定可能。
+//  vZoom             ：マージ後の垂直方向精度。拡張空間IDの精度の閾値である 0 ～ 35 の整数値を指定可能。
+//
+// 戻り値：
+//  マージ後の拡張空間IDを格納した配列が返却される。IDの重複は解消された形で返却される。
+//
+// 戻り値(エラー)：
+//  以下の条件に当てはまる場合、エラーインスタンスが返却される。
+//   精度閾値超過              ：精度に 0 ～ 35 の整数値以外が入力されていた場合。
+//   拡張空間IDフォーマット不正：拡張空間IDのフォーマットに違反する値が"拡張空間ID配列"に入力されていた場合。
+//
+// 補足事項：
+//  多数の拡張空間IDのマージを行う場合について：
+//   拡張空間IDのマージ処理では内部で拡張空間IDを配列内の一番小さい拡張空間IDに合わせて精度を上げて分割する処理を行っている。
+//   拡張空間IDにおける精度を上げる場合、水平精度が1上がるごとに4のべき乗、垂直方向精度が1上がるごとに2のべき乗で拡張空間ID数が増加する。
+//   そのため、以下のような場合に分割後の拡張空間ID数は大幅に増大する。
+//    * 入力の拡張空間ID配列全体での精度の幅が大きい場合。
+//    * 入力の拡張空間ID内の水平精度と垂直精度に大きい差分がある場合。
+//    * 拡張空間IDが大量に入力された場合。
+//   動作環境によってはメモリ不足となる可能性があるため、注意すること。
+func MergeExtendedSpatialIds(extendedSpatialIds []string, hZoom, vZoom int64) ([]string, error) <span class="cov8" title="1">{
+        // 変換後の拡張空間ID格納用のスライス
+        resultIDs := []string{}
+        // 拡張空間ID配列
+        spatialIDs := []*object.ExtendedSpatialID{}
+
+        // 入力値チェック
+        // 水平、垂直方向精度のどちらかが範囲外の場合、空配列とエラーインスタンスを返却
+        if !shape.CheckZoom(hZoom) || !shape.CheckZoom(vZoom) </span><span class="cov8" title="1">{
+                return resultIDs, errors.NewSpatialIdError(errors.InputValueErrorCode, "")
+        }</span>
+
+        // 最大水平精度
+        <span class="cov8" title="1">maxHZoom := int64(0)
+        // 最大垂直精度
+        maxVZoom := int64(0)
+        // 拡張空間ID配列を作成しつつ、最大水平/垂直精度を算出
+        for _, extendedSpatialID := range extendedSpatialIds </span><span class="cov8" title="1">{
+                spatialID, err := object.NewExtendedSpatialID(extendedSpatialID)
+
+                if err != nil </span><span class="cov8" title="1">{
+                        // 拡張空間ID初期化時にエラーが発生した場合、フォーマットチェックエラーとしてエラーインスタンスを返却
+                        return resultIDs, err
+                }</span>
+
+                // 入力精度より細かい精度もしくは等しい精度の場合はマージ対象の空間IDとする。
+                <span class="cov8" title="1">if spatialID.HZoom() &gt;= hZoom &amp;&amp; spatialID.VZoom() &gt;= vZoom </span><span class="cov8" title="1">{
+                        spatialIDs = append(spatialIDs, spatialID)
+
+                        // 入力精度より粗い精度の場合は処理を行わず、結果空間IDに格納
+                }</span> else<span class="cov8" title="1"> {
+                        resultIDs = append(resultIDs, spatialID.ID())
+                }</span>
+
+                // 最大水平/垂直精度を更新
+                <span class="cov8" title="1">if spatialID.HZoom() &gt; maxHZoom </span><span class="cov8" title="1">{
+                        maxHZoom = spatialID.HZoom()
+                }</span>
+                <span class="cov8" title="1">if spatialID.VZoom() &gt; maxVZoom </span><span class="cov8" title="1">{
+                        maxVZoom = spatialID.VZoom()
+                }</span>
+        }
+
+        <span class="cov8" title="1">unitSpatialIDs := []*UnitDividedSpatialID{}
+        for _, spatialID := range spatialIDs </span><span class="cov8" title="1">{
+                // 最大水平/垂直精度を単位分割の単位になるようにして、単位分割空間ID作成
+                unitSpatialID := NewUnitDividedSpatialID(
+                        spatialID,
+                        maxHZoom-spatialID.HZoom(),
+                        maxVZoom-spatialID.VZoom(),
+                )
+                unitSpatialIDs = append(unitSpatialIDs, unitSpatialID)
+        }</span>
+
+        // 最適化後空間ID辞書
+        <span class="cov8" title="1">highSpatialIDs := map[string]*HighSpatialID{}
+        for _, unitSpatialID := range unitSpatialIDs </span><span class="cov8" title="1">{
+
+                // 最適化後空間ID
+                highSpatialID := NewHighSpatialID(
+                        unitSpatialID,
+                        unitSpatialID.HZoom()-hZoom,
+                        unitSpatialID.VZoom()-vZoom,
+                )
+
+                // 最適化後空間IDが辞書に登録済みの場合は最適化後空間ID構造体を結合
+                if val, ok := highSpatialIDs[highSpatialID.ID()]; ok </span><span class="cov8" title="1">{
+                        val.Merge(highSpatialID)
+
+                        // 未登録の場合は辞書に登録
+                }</span> else<span class="cov8" title="1"> {
+                        highSpatialIDs[highSpatialID.ID()] = highSpatialID
+                }</span>
+        }
+
+        // 最適化後空間IDごとに処理
+        <span class="cov8" title="1">for _, highSpatialID := range highSpatialIDs </span><span class="cov8" title="1">{
+                // 単位分割数が単位空間ID集合の数に等しい場合
+                if highSpatialID.IsDense() </span><span class="cov8" title="1">{
+                        // 最適化後空間IDを結果空間ID配列に格納
+                        resultIDs = append(resultIDs, highSpatialID.ID())
+
+                        // 単位分割数が単位空間ID集合の数と異なる場合
+                }</span> else<span class="cov8" title="1"> {
+                        // 最適化元空間ID配列を結果空間ID配列に格納
+                        resultIDs = append(resultIDs, highSpatialID.lowIDs...)
+                }</span>
+        }
+
+        // 重複する空間IDを削除
+        <span class="cov8" title="1">resultIDs = common.Unique(resultIDs)
+
+        return resultIDs, nil</span>
+}
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>

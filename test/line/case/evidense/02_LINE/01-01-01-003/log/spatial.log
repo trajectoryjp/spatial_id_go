@@ -1,0 +1,4 @@
+2023-03-24T01:41:16.044Z	DEBUG	shape/line.go:92	[START] 拡張空間ID変換(線分)
+2023-03-24T01:41:16.044Z	DEBUG	shape/line.go:93	始点(地理座標系)=(0.000000, 0.000000, 0.000000)
+2023-03-24T01:41:16.044Z	DEBUG	shape/line.go:94	終点(地理座標系)=(45.000000, 75.821946, 4193404.000000)
+2023-03-24T01:41:16.044Z	DEBUG	shape/point.go:140	pointList: [%!s(*object.Point=&{0 0 0}) %!s(*object.Point=&{45 75.821946114 4.193404e+06})], hZoom: 10, vZoom: 36

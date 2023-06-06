@@ -1,0 +1,284 @@
+2023-03-24T01:47:45.425Z	DEBUG	shape/line.go:92	[START] 拡張空間ID変換(線分)
+2023-03-24T01:47:45.425Z	DEBUG	shape/line.go:93	始点(地理座標系)=(-180.000000, 85.051129, 0.000488)
+2023-03-24T01:47:45.425Z	DEBUG	shape/line.go:94	終点(地理座標系)=(-180.000000, 85.051129, 0.000488)
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:140	pointList: [%!s(*object.Point=&{-179.9999999947613 85.0511287793 0.00048828125}) %!s(*object.Point=&{-179.99999993189704 85.0511287738 0.00048828125})], hZoom: 35, vZoom: 35
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:454	lon: -179.9999999947613, lat: 85.0511287793, hZoom: 35
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:482	return value: 35/0/0
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:454	lon: -179.99999993189704, lat: 85.0511287738, hZoom: 35
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:482	return value: 35/6/6
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:172	return value: [35/0/0/35/0 35/6/6/35/0]
+2023-03-24T01:47:45.425Z	DEBUG	shape/line.go:101	始点の拡張空間ID=35/0/0/35/0
+2023-03-24T01:47:45.425Z	DEBUG	shape/line.go:102	終点の拡張空間ID=35/6/6/35/0
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:140	pointList: [%!s(*object.Point=&{-179.9999999947613 85.0511287793 0.00048828125}) %!s(*object.Point=&{-179.99999993189704 85.0511287738 0.00048828125}) %!s(*object.Point=&{-179.99999996332917 85.0511287765 0.00048828125})], hZoom: 35, vZoom: 35
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:454	lon: -179.9999999947613, lat: 85.0511287793, hZoom: 35
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:482	return value: 35/0/0
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:454	lon: -179.99999993189704, lat: 85.0511287738, hZoom: 35
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:482	return value: 35/6/6
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:454	lon: -179.99999996332917, lat: 85.0511287765, hZoom: 35
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:482	return value: 35/3/3
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:172	return value: [35/0/0/35/0 35/6/6/35/0 35/3/3/35/0]
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:140	pointList: [%!s(*object.Point=&{-179.9999999947613 85.0511287793 0.00048828125}) %!s(*object.Point=&{-179.99999996332917 85.0511287765 0.00048828125}) %!s(*object.Point=&{-179.99999997904524 85.0511287779 0.00048828125})], hZoom: 35, vZoom: 35
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:454	lon: -179.9999999947613, lat: 85.0511287793, hZoom: 35
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:482	return value: 35/0/0
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:454	lon: -179.99999996332917, lat: 85.0511287765, hZoom: 35
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:482	return value: 35/3/3
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:454	lon: -179.99999997904524, lat: 85.0511287779, hZoom: 35
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:482	return value: 35/2/2
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:172	return value: [35/0/0/35/0 35/3/3/35/0 35/2/2/35/0]
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:140	pointList: [%!s(*object.Point=&{-179.9999999947613 85.0511287793 0.00048828125}) %!s(*object.Point=&{-179.99999997904524 85.0511287779 0.00048828125}) %!s(*object.Point=&{-179.99999998690328 85.0511287786 0.00048828125})], hZoom: 35, vZoom: 35
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:454	lon: -179.9999999947613, lat: 85.0511287793, hZoom: 35
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:482	return value: 35/0/0
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:454	lon: -179.99999997904524, lat: 85.0511287779, hZoom: 35
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:482	return value: 35/2/2
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:454	lon: -179.99999998690328, lat: 85.0511287786, hZoom: 35
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:482	return value: 35/1/1
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:172	return value: [35/0/0/35/0 35/2/2/35/0 35/1/1/35/0]
+2023-03-24T01:47:45.425Z	DEBUG	shape/point.go:140	pointList: [%!s(*object.Point=&{-179.9999999947613 85.0511287793 0.00048828125}) %!s(*object.Point=&{-179.99999998690328 85.0511287786 0.00048828125}) %!s(*object.Point=&{-179.9999999908323 85.0511287789 0.00048828125})], hZoom: 35, vZoom: 35
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:454	lon: -179.9999999947613, lat: 85.0511287793, hZoom: 35
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:482	return value: 35/0/0
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:454	lon: -179.99999998690328, lat: 85.0511287786, hZoom: 35
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:482	return value: 35/1/1
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:454	lon: -179.9999999908323, lat: 85.0511287789, hZoom: 35
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:482	return value: 35/0/1
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:172	return value: [35/0/0/35/0 35/1/1/35/0 35/0/1/35/0]
+2023-03-24T01:47:45.426Z	DEBUG	shape/line.go:214	中点が始点・終点の周囲にあるため終了
+2023-03-24T01:47:45.426Z	DEBUG	shape/line.go:215	中点ID:35/0/1/35/0
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:140	pointList: [%!s(*object.Point=&{-179.99999998690328 85.0511287786 0.00048828125}) %!s(*object.Point=&{-179.99999997904524 85.0511287779 0.00048828125}) %!s(*object.Point=&{-179.99999998297426 85.0511287782 0.00048828125})], hZoom: 35, vZoom: 35
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:454	lon: -179.99999998690328, lat: 85.0511287786, hZoom: 35
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:482	return value: 35/1/1
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:454	lon: -179.99999997904524, lat: 85.0511287779, hZoom: 35
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:482	return value: 35/2/2
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:454	lon: -179.99999998297426, lat: 85.0511287782, hZoom: 35
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:482	return value: 35/1/1
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:172	return value: [35/1/1/35/0 35/2/2/35/0 35/1/1/35/0]
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:140	pointList: [%!s(*object.Point=&{-179.99999998297426 85.0511287782 0.00048828125}) %!s(*object.Point=&{-179.99999997904524 85.0511287779 0.00048828125}) %!s(*object.Point=&{-179.99999998100975 85.051128778 0.00048828125})], hZoom: 35, vZoom: 35
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:454	lon: -179.99999998297426, lat: 85.0511287782, hZoom: 35
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:482	return value: 35/1/1
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:454	lon: -179.99999997904524, lat: 85.0511287779, hZoom: 35
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:482	return value: 35/2/2
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:454	lon: -179.99999998100975, lat: 85.051128778, hZoom: 35
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:482	return value: 35/1/1
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:172	return value: [35/1/1/35/0 35/2/2/35/0 35/1/1/35/0]
+2023-03-24T01:47:45.426Z	DEBUG	shape/line.go:195	ベクトルの成分が閾値未満のため終了
+2023-03-24T01:47:45.426Z	DEBUG	shape/line.go:196	ベクトル成分:X=3.92901711165905e-09, Y=-3.4374636470602127e-10, Z=0
+2023-03-24T01:47:45.426Z	DEBUG	shape/line.go:197	ベクトル閾値:X=5e-09, Y=5e-10, Z=0.0005
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:140	pointList: [%!s(*object.Point=&{-179.99999997904524 85.0511287779 0.00048828125}) %!s(*object.Point=&{-179.99999996332917 85.0511287765 0.00048828125}) %!s(*object.Point=&{-179.9999999711872 85.0511287772 0.00048828125})], hZoom: 35, vZoom: 35
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:454	lon: -179.99999997904524, lat: 85.0511287779, hZoom: 35
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:482	return value: 35/2/2
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:454	lon: -179.99999996332917, lat: 85.0511287765, hZoom: 35
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:482	return value: 35/3/3
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:454	lon: -179.9999999711872, lat: 85.0511287772, hZoom: 35
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:482	return value: 35/2/2
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:172	return value: [35/2/2/35/0 35/3/3/35/0 35/2/2/35/0]
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:140	pointList: [%!s(*object.Point=&{-179.9999999711872 85.0511287772 0.00048828125}) %!s(*object.Point=&{-179.99999996332917 85.0511287765 0.00048828125}) %!s(*object.Point=&{-179.9999999672582 85.0511287768 0.00048828125})], hZoom: 35, vZoom: 35
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:454	lon: -179.9999999711872, lat: 85.0511287772, hZoom: 35
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:482	return value: 35/2/2
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:454	lon: -179.99999996332917, lat: 85.0511287765, hZoom: 35
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:482	return value: 35/3/3
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:454	lon: -179.9999999672582, lat: 85.0511287768, hZoom: 35
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:482	return value: 35/3/3
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:172	return value: [35/2/2/35/0 35/3/3/35/0 35/3/3/35/0]
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:140	pointList: [%!s(*object.Point=&{-179.9999999711872 85.0511287772 0.00048828125}) %!s(*object.Point=&{-179.9999999672582 85.0511287768 0.00048828125}) %!s(*object.Point=&{-179.9999999692227 85.051128777 0.00048828125})], hZoom: 35, vZoom: 35
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:454	lon: -179.9999999711872, lat: 85.0511287772, hZoom: 35
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:482	return value: 35/2/2
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:454	lon: -179.9999999672582, lat: 85.0511287768, hZoom: 35
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:482	return value: 35/3/3
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:454	lon: -179.9999999692227, lat: 85.051128777, hZoom: 35
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:482	return value: 35/2/3
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:172	return value: [35/2/2/35/0 35/3/3/35/0 35/2/3/35/0]
+2023-03-24T01:47:45.426Z	DEBUG	shape/line.go:195	ベクトルの成分が閾値未満のため終了
+2023-03-24T01:47:45.426Z	DEBUG	shape/line.go:196	ベクトル成分:X=3.92901711165905e-09, Y=-3.4374636470602127e-10, Z=0
+2023-03-24T01:47:45.426Z	DEBUG	shape/line.go:197	ベクトル閾値:X=5e-09, Y=5e-10, Z=0.0005
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:140	pointList: [%!s(*object.Point=&{-179.99999996332917 85.0511287765 0.00048828125}) %!s(*object.Point=&{-179.99999993189704 85.0511287738 0.00048828125}) %!s(*object.Point=&{-179.9999999476131 85.0511287751 0.00048828125})], hZoom: 35, vZoom: 35
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:454	lon: -179.99999996332917, lat: 85.0511287765, hZoom: 35
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:482	return value: 35/3/3
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:454	lon: -179.99999993189704, lat: 85.0511287738, hZoom: 35
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:482	return value: 35/6/6
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:454	lon: -179.9999999476131, lat: 85.0511287751, hZoom: 35
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:482	return value: 35/5/5
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.426Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:172	return value: [35/3/3/35/0 35/6/6/35/0 35/5/5/35/0]
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:140	pointList: [%!s(*object.Point=&{-179.99999996332917 85.0511287765 0.00048828125}) %!s(*object.Point=&{-179.9999999476131 85.0511287751 0.00048828125}) %!s(*object.Point=&{-179.99999995547114 85.0511287758 0.00048828125})], hZoom: 35, vZoom: 35
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:454	lon: -179.99999996332917, lat: 85.0511287765, hZoom: 35
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:482	return value: 35/3/3
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:454	lon: -179.9999999476131, lat: 85.0511287751, hZoom: 35
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:482	return value: 35/5/5
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:454	lon: -179.99999995547114, lat: 85.0511287758, hZoom: 35
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:482	return value: 35/4/4
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:172	return value: [35/3/3/35/0 35/5/5/35/0 35/4/4/35/0]
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:140	pointList: [%!s(*object.Point=&{-179.99999996332917 85.0511287765 0.00048828125}) %!s(*object.Point=&{-179.99999995547114 85.0511287758 0.00048828125}) %!s(*object.Point=&{-179.99999995940016 85.0511287762 0.00048828125})], hZoom: 35, vZoom: 35
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:454	lon: -179.99999996332917, lat: 85.0511287765, hZoom: 35
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:482	return value: 35/3/3
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:454	lon: -179.99999995547114, lat: 85.0511287758, hZoom: 35
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:482	return value: 35/4/4
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:454	lon: -179.99999995940016, lat: 85.0511287762, hZoom: 35
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:482	return value: 35/3/3
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:172	return value: [35/3/3/35/0 35/4/4/35/0 35/3/3/35/0]
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:140	pointList: [%!s(*object.Point=&{-179.99999995940016 85.0511287762 0.00048828125}) %!s(*object.Point=&{-179.99999995547114 85.0511287758 0.00048828125}) %!s(*object.Point=&{-179.99999995743565 85.051128776 0.00048828125})], hZoom: 35, vZoom: 35
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:454	lon: -179.99999995940016, lat: 85.0511287762, hZoom: 35
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:482	return value: 35/3/3
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:454	lon: -179.99999995547114, lat: 85.0511287758, hZoom: 35
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:482	return value: 35/4/4
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:454	lon: -179.99999995743565, lat: 85.051128776, hZoom: 35
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:482	return value: 35/4/4
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:172	return value: [35/3/3/35/0 35/4/4/35/0 35/4/4/35/0]
+2023-03-24T01:47:45.427Z	DEBUG	shape/line.go:195	ベクトルの成分が閾値未満のため終了
+2023-03-24T01:47:45.427Z	DEBUG	shape/line.go:196	ベクトル成分:X=3.92901711165905e-09, Y=-3.4374636470602127e-10, Z=0
+2023-03-24T01:47:45.427Z	DEBUG	shape/line.go:197	ベクトル閾値:X=5e-09, Y=5e-10, Z=0.0005
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:140	pointList: [%!s(*object.Point=&{-179.99999995547114 85.0511287758 0.00048828125}) %!s(*object.Point=&{-179.9999999476131 85.0511287751 0.00048828125}) %!s(*object.Point=&{-179.99999995154212 85.0511287755 0.00048828125})], hZoom: 35, vZoom: 35
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:454	lon: -179.99999995547114, lat: 85.0511287758, hZoom: 35
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:482	return value: 35/4/4
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:454	lon: -179.9999999476131, lat: 85.0511287751, hZoom: 35
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:482	return value: 35/5/5
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:454	lon: -179.99999995154212, lat: 85.0511287755, hZoom: 35
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:482	return value: 35/4/4
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:172	return value: [35/4/4/35/0 35/5/5/35/0 35/4/4/35/0]
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:140	pointList: [%!s(*object.Point=&{-179.99999995154212 85.0511287755 0.00048828125}) %!s(*object.Point=&{-179.9999999476131 85.0511287751 0.00048828125}) %!s(*object.Point=&{-179.9999999495776 85.0511287753 0.00048828125})], hZoom: 35, vZoom: 35
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:454	lon: -179.99999995154212, lat: 85.0511287755, hZoom: 35
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:482	return value: 35/4/4
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:454	lon: -179.9999999476131, lat: 85.0511287751, hZoom: 35
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:482	return value: 35/5/5
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:454	lon: -179.9999999495776, lat: 85.0511287753, hZoom: 35
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:482	return value: 35/4/4
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:172	return value: [35/4/4/35/0 35/5/5/35/0 35/4/4/35/0]
+2023-03-24T01:47:45.427Z	DEBUG	shape/line.go:195	ベクトルの成分が閾値未満のため終了
+2023-03-24T01:47:45.427Z	DEBUG	shape/line.go:196	ベクトル成分:X=3.92901711165905e-09, Y=-3.4374636470602127e-10, Z=0
+2023-03-24T01:47:45.427Z	DEBUG	shape/line.go:197	ベクトル閾値:X=5e-09, Y=5e-10, Z=0.0005
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:140	pointList: [%!s(*object.Point=&{-179.9999999476131 85.0511287751 0.00048828125}) %!s(*object.Point=&{-179.99999993189704 85.0511287738 0.00048828125}) %!s(*object.Point=&{-179.99999993975507 85.0511287744 0.00048828125})], hZoom: 35, vZoom: 35
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:454	lon: -179.9999999476131, lat: 85.0511287751, hZoom: 35
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:482	return value: 35/5/5
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:454	lon: -179.99999993189704, lat: 85.0511287738, hZoom: 35
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:482	return value: 35/6/6
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:454	lon: -179.99999993975507, lat: 85.0511287744, hZoom: 35
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:482	return value: 35/5/5
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:172	return value: [35/5/5/35/0 35/6/6/35/0 35/5/5/35/0]
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:140	pointList: [%!s(*object.Point=&{-179.99999993975507 85.0511287744 0.00048828125}) %!s(*object.Point=&{-179.99999993189704 85.0511287738 0.00048828125}) %!s(*object.Point=&{-179.99999993582605 85.0511287741 0.00048828125})], hZoom: 35, vZoom: 35
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:454	lon: -179.99999993975507, lat: 85.0511287744, hZoom: 35
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:482	return value: 35/5/5
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.427Z	DEBUG	shape/point.go:454	lon: -179.99999993189704, lat: 85.0511287738, hZoom: 35
+2023-03-24T01:47:45.428Z	DEBUG	shape/point.go:482	return value: 35/6/6
+2023-03-24T01:47:45.428Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.428Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.428Z	DEBUG	shape/point.go:454	lon: -179.99999993582605, lat: 85.0511287741, hZoom: 35
+2023-03-24T01:47:45.428Z	DEBUG	shape/point.go:482	return value: 35/6/6
+2023-03-24T01:47:45.428Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.428Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.428Z	DEBUG	shape/point.go:172	return value: [35/5/5/35/0 35/6/6/35/0 35/6/6/35/0]
+2023-03-24T01:47:45.428Z	DEBUG	shape/point.go:140	pointList: [%!s(*object.Point=&{-179.99999993975507 85.0511287744 0.00048828125}) %!s(*object.Point=&{-179.99999993582605 85.0511287741 0.00048828125}) %!s(*object.Point=&{-179.99999993779056 85.0511287743 0.00048828125})], hZoom: 35, vZoom: 35
+2023-03-24T01:47:45.428Z	DEBUG	shape/point.go:454	lon: -179.99999993975507, lat: 85.0511287744, hZoom: 35
+2023-03-24T01:47:45.428Z	DEBUG	shape/point.go:482	return value: 35/5/5
+2023-03-24T01:47:45.428Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.428Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.428Z	DEBUG	shape/point.go:454	lon: -179.99999993582605, lat: 85.0511287741, hZoom: 35
+2023-03-24T01:47:45.428Z	DEBUG	shape/point.go:482	return value: 35/6/6
+2023-03-24T01:47:45.428Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.428Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.428Z	DEBUG	shape/point.go:454	lon: -179.99999993779056, lat: 85.0511287743, hZoom: 35
+2023-03-24T01:47:45.428Z	DEBUG	shape/point.go:482	return value: 35/5/6
+2023-03-24T01:47:45.428Z	DEBUG	shape/point.go:502	alt: 0.00048828125, vZoom: 35
+2023-03-24T01:47:45.428Z	DEBUG	shape/point.go:519	return value: 35/0
+2023-03-24T01:47:45.428Z	DEBUG	shape/point.go:172	return value: [35/5/5/35/0 35/6/6/35/0 35/5/6/35/0]
+2023-03-24T01:47:45.428Z	DEBUG	shape/line.go:195	ベクトルの成分が閾値未満のため終了
+2023-03-24T01:47:45.428Z	DEBUG	shape/line.go:196	ベクトル成分:X=3.92901711165905e-09, Y=-3.4374636470602127e-10, Z=0
+2023-03-24T01:47:45.428Z	DEBUG	shape/line.go:197	ベクトル閾値:X=5e-09, Y=5e-10, Z=0.0005

@@ -1,0 +1,8 @@
+2022-12-06T00:39:33.833Z	DEBUG	shape/point.go:203	extendedSpatialId: 26/59606297/26425045/26/0, option: 1
+2022-12-06T00:39:33.833Z	DEBUG	shape/point.go:582	altIndex: 0, vZoom: 26
+2022-12-06T00:39:33.834Z	DEBUG	shape/point.go:593	return value: {%!s(float64=0) %!s(float64=0.5)}
+2022-12-06T00:39:33.834Z	DEBUG	shape/point.go:620	lonIndex: 59606297, latIndex: 26425045, hZoom: 26, vPoint {%!s(float64=0) %!s(float64=0.5)}
+2022-12-06T00:39:33.834Z	DEBUG	shape/point.go:687	lonIndex: 59606297, latIndex: 26425045, hZoom: 26, vPoint {%!s(float64=0) %!s(float64=0.5)}
+2022-12-06T00:39:33.834Z	DEBUG	shape/point.go:755	return value: [%!s(*object.Point=&{139.75309431552887 35.6853743329 0}) %!s(*object.Point=&{139.7530996799469 35.6853743329 0}) %!s(*object.Point=&{139.7530996799469 35.6853699758 0}) %!s(*object.Point=&{139.75309431552887 35.6853699758 0}) %!s(*object.Point=&{139.75309431552887 35.6853743329 0.5}) %!s(*object.Point=&{139.7530996799469 35.6853743329 0.5}) %!s(*object.Point=&{139.7530996799469 35.6853699758 0.5}) %!s(*object.Point=&{139.75309431552887 35.6853699758 0.5})]
+2022-12-06T00:39:33.834Z	DEBUG	shape/point.go:660	return value: &{%!s(float64=139.75309699773788) %!s(float64=35.6853721543) %!s(float64=0.25)}
+2022-12-06T00:39:33.834Z	DEBUG	shape/point.go:253	return value: [%!s(*object.Point=&{139.75309699773788 35.6853721543 0.25})]

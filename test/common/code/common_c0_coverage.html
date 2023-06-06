@@ -1,0 +1,401 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>common: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">spatial-id/common/util.go (100.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">// Package common 共通処理パッケージ。
+package common
+
+import (
+        "math"
+        "spatial-id/common/errors"
+)
+
+// AlmostEqual 同値確認関数
+//
+// 引数に入力された数値の浮動小数点誤差以内かを判定する
+//
+// 引数：
+//  x： 数値1
+//  y： 数値2
+//  absTol： 浮動小数点誤差
+//
+// 戻り値：
+//  判定結果(True:浮動小数点誤差内、False:浮動小数点誤差範囲外)
+func AlmostEqual(x, y, absTol float64) bool <span class="cov8" title="1">{
+        return x == y || math.Abs(x-y) &lt;= absTol
+}</span>
+
+// Number 数値のインターフェース
+type Number interface {
+        int | int32 | int64 | float32 | float64
+}
+
+// Max 最大値取得関数
+//
+// 引数に入力された数値スライスの最大値を返却する
+//
+// 引数：
+//  numbers：数値スライス
+//
+// 戻り値：
+//  数値スライスの最大値
+//
+// 戻り値（エラー）：
+//        以下の条件に当てはまる場合、エラーインスタンスが返却される。
+//         入力不正：入力スライスが空の場合。
+//
+// 使用例：
+//  nums := []int{1, 2, 3}
+//  // 最大値取得
+//  max := common.Max(nums)
+func Max[T Number](numbers []T) (T, error) <span class="cov8" title="1">{
+        // スライスが空の場合はエラー
+        if len(numbers) == 0 </span><span class="cov8" title="1">{
+                var v T
+                return v, errors.NewSpatialIdError(errors.InputValueErrorCode, "")
+        }</span>
+
+        <span class="cov8" title="1">max := numbers[0]
+        for _, number := range numbers </span><span class="cov8" title="1">{
+                if max &lt; number </span><span class="cov8" title="1">{
+                        max = number
+                }</span>
+        }
+
+        <span class="cov8" title="1">return max, nil</span>
+}
+
+// Min 最小値取得関数
+//
+// 引数に入力された数値スライスの最小値を返却する
+//
+// 引数：
+//  numbers：数値スライス
+//
+// 戻り値：
+//  数値スライスの最小値
+//
+// 戻り値（エラー）：
+//        以下の条件に当てはまる場合、エラーインスタンスが返却される。
+//         入力不正：入力スライスが空の場合。
+//
+// 使用例：
+//  nums := []int{1, 2, 3}
+//  // 最小値取得
+//  min := common.Min(nums)
+func Min[T Number](numbers []T) (T, error) <span class="cov8" title="1">{
+        // スライスが空の場合はエラー
+        if len(numbers) == 0 </span><span class="cov8" title="1">{
+                var v T
+                return v, errors.NewSpatialIdError(errors.InputValueErrorCode, "")
+        }</span>
+
+        <span class="cov8" title="1">min := numbers[0]
+        for _, number := range numbers </span><span class="cov8" title="1">{
+                if min &gt; number </span><span class="cov8" title="1">{
+                        min = number
+                }</span>
+        }
+
+        <span class="cov8" title="1">return min, nil</span>
+}
+
+// DegreeToRadian ラジアン取得関数
+//
+// 引数に入力された角度をラジアンに変換して返却する
+//
+// 引数：
+//  degree：角度
+//
+// 戻り値：
+//  引数に入力した角度をラジアンに変換した結果
+func DegreeToRadian(degree float64) float64 <span class="cov8" title="1">{
+        return degree * (math.Pi / 180)
+}</span>
+
+// RadianToDegree 角度取得関数
+//
+// 引数に入力されたラジアンを角度に変換して返却する
+//
+// 引数：
+//  radian：ラジアン
+//
+// 戻り値：
+//  引数に入力したラジアンを角度に変換した結果
+func RadianToDegree(radian float64) float64 <span class="cov8" title="1">{
+        return radian * (180 / math.Pi)
+}</span>
+
+// Union 和集合取得関数
+//
+// 引数に入力されたスライスの和集合スライスを返却する
+//
+// 引数：
+//  l1：スライス1
+//  l2：スライス2
+//
+// 戻り値：
+//  和集合スライス
+func Union[T comparable](l1, l2 []T) []T <span class="cov8" title="1">{
+        s := make(map[T]struct{}, len(l1))
+
+        for _, data := range l1 </span><span class="cov8" title="1">{
+                s[data] = struct{}{}
+        }</span>
+
+        <span class="cov8" title="1">for _, data := range l2 </span><span class="cov8" title="1">{
+                s[data] = struct{}{}
+        }</span>
+
+        // 和集合スライス
+        <span class="cov8" title="1">r := make([]T, 0, len(s))
+
+        for key := range s </span><span class="cov8" title="1">{
+                r = append(r, key)
+        }</span>
+
+        <span class="cov8" title="1">return r</span>
+}
+
+// Difference 差集合取得関数
+//
+// 引数に入力されたスライスの差集合スライスを返却する
+//
+// 引数：
+//  l1：差分を出すスライス1
+//  l2：差とするスライス2
+//
+// 戻り値：
+//  差集合スライス
+func Difference[T comparable](l1, l2 []T) []T <span class="cov8" title="1">{
+        s := make(map[T]struct{}, len(l2))
+
+        for _, data := range l2 </span><span class="cov8" title="1">{
+                s[data] = struct{}{}
+        }</span>
+
+        // 差集合スライス
+        <span class="cov8" title="1">r := make([]T, 0, len(l1))
+
+        for _, data := range l1 </span><span class="cov8" title="1">{
+
+                if _, ok := s[data]; ok </span><span class="cov8" title="1">{
+                        continue</span>
+                }
+                <span class="cov8" title="1">r = append(r, data)</span>
+        }
+
+        <span class="cov8" title="1">return r</span>
+}
+
+// Intersect 積集合取得関数
+//
+// 引数に入力されたスライスの積集合スライスを返却する
+//
+// 引数：
+//  l1：スライス1
+//  l2：スライス2
+//
+// 戻り値：
+//  積集合スライス
+func Intersect[T comparable](l1, l2 []T) []T <span class="cov8" title="1">{
+        s := make(map[T]struct{}, len(l1))
+
+        for _, data := range l1 </span><span class="cov8" title="1">{
+                s[data] = struct{}{}
+        }</span>
+
+        // 積集合スライス
+        <span class="cov8" title="1">r := make([]T, 0)
+
+        for _, data := range l2 </span><span class="cov8" title="1">{
+                if _, ok := s[data]; ok </span><span class="cov8" title="1">{
+                        r = append(r, data)
+                }</span>
+        }
+
+        <span class="cov8" title="1">return r</span>
+}
+
+// Unique ユニーク化関数
+//
+// 引数に入力されたスライスのユニークスライスを返却する
+//
+// 引数：
+//  target：スライス
+//
+// 戻り値：
+//  ユニークスライス
+func Unique[T comparable](target []T) []T <span class="cov8" title="1">{
+        s := make(map[T]struct{}, len(target))
+
+        for _, data := range target </span><span class="cov8" title="1">{
+                s[data] = struct{}{}
+        }</span>
+
+        <span class="cov8" title="1">r := make([]T, 0, len(s))
+
+        for key := range s </span><span class="cov8" title="1">{
+                r = append(r, key)
+        }</span>
+
+        <span class="cov8" title="1">return r</span>
+}
+
+// Include 内包関数
+//
+// 引数に入力されたスライスに対象が含まれるかを返却する
+//
+// 引数：
+//  slice：スライス
+//  target： 対象
+//
+// 戻り値：
+//  True：スライスに対象が含まれる場合
+//  False：スライスに対象が含まれない場合
+func Include[T comparable](slice []T, target T) bool <span class="cov8" title="1">{
+        for _, value := range slice </span><span class="cov8" title="1">{
+                if value == target </span><span class="cov8" title="1">{
+                        return true
+                }</span>
+        }
+        <span class="cov8" title="1">return false</span>
+}
+
+// Combinations 組み合わせ関数
+//
+// 引数に入力された組み合わせを返却する
+//
+// 引数：
+//  n： 組み合わせる数（位数）
+//  k： 選択数
+//  f： 組み合わせに対する処理
+func Combinations(n, k int64, f func([]int64)) <span class="cov8" title="1">{
+        pattern := make([]int64, k)
+        for i := range pattern </span><span class="cov8" title="1">{
+                pattern[i] = int64(i)
+        }</span>
+
+        <span class="cov8" title="1">for </span><span class="cov8" title="1">{
+                f(pattern)
+
+                pos := k - 1
+                for </span><span class="cov8" title="1">{
+                        if pos == -1 </span><span class="cov8" title="1">{
+                                return
+                        }</span>
+
+                        <span class="cov8" title="1">oldNum := pattern[pos]
+                        if oldNum == n+pos-k </span><span class="cov8" title="1">{
+                                pos--
+                                continue</span>
+                        }
+
+                        <span class="cov8" title="1">pattern[pos]++
+                        break</span>
+                }
+
+                <span class="cov8" title="1">for pos++; pos &lt; k; pos++ </span><span class="cov8" title="1">{
+                        pattern[pos] = pattern[pos-1] + 1
+                }</span>
+        }
+}
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>

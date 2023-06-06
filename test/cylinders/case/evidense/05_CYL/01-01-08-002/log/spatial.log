@@ -1,0 +1,56 @@
+2023-03-09T01:20:06.574Z	DEBUG	shape/point.go:203	extendedSpatialId: 25/29798223/13211885/25/10, option: 1
+2023-03-09T01:20:06.574Z	DEBUG	shape/point.go:543	altIndex: 10, vZoom: 25
+2023-03-09T01:20:06.574Z	DEBUG	shape/point.go:554	return value: {%!s(float64=10) %!s(float64=1)}
+2023-03-09T01:20:06.574Z	DEBUG	shape/point.go:581	lonIndex: 29798223, latIndex: 13211885, hZoom: 25, vPoint {%!s(float64=10) %!s(float64=1)}
+2023-03-09T01:20:06.574Z	DEBUG	shape/point.go:648	lonIndex: 29798223, latIndex: 13211885, hZoom: 25, vPoint {%!s(float64=10) %!s(float64=1)}
+2023-03-09T01:20:06.574Z	DEBUG	shape/point.go:716	return value: [%!s(*object.Point=&{139.70024943351746 35.6909295114 10}) %!s(*object.Point=&{139.70026016235352 35.6909295114 10}) %!s(*object.Point=&{139.70026016235352 35.6909207977 10}) %!s(*object.Point=&{139.70024943351746 35.6909207977 10}) %!s(*object.Point=&{139.70024943351746 35.6909295114 11}) %!s(*object.Point=&{139.70026016235352 35.6909295114 11}) %!s(*object.Point=&{139.70026016235352 35.6909207977 11}) %!s(*object.Point=&{139.70024943351746 35.6909207977 11})]
+2023-03-09T01:20:06.574Z	DEBUG	shape/point.go:621	return value: &{%!s(float64=139.7002547979355) %!s(float64=35.6909251545) %!s(float64=10.5)}
+2023-03-09T01:20:06.574Z	DEBUG	shape/point.go:253	return value: [%!s(*object.Point=&{139.7002547979355 35.6909251545 10.5})]
+2023-03-09T01:20:06.574Z	DEBUG	shape/point.go:203	extendedSpatialId: 25/29798223/13211885/25/10, option: 1
+2023-03-09T01:20:06.574Z	DEBUG	shape/point.go:543	altIndex: 10, vZoom: 25
+2023-03-09T01:20:06.574Z	DEBUG	shape/point.go:554	return value: {%!s(float64=10) %!s(float64=1)}
+2023-03-09T01:20:06.574Z	DEBUG	shape/point.go:581	lonIndex: 29798223, latIndex: 13211885, hZoom: 25, vPoint {%!s(float64=10) %!s(float64=1)}
+2023-03-09T01:20:06.574Z	DEBUG	shape/point.go:648	lonIndex: 29798223, latIndex: 13211885, hZoom: 25, vPoint {%!s(float64=10) %!s(float64=1)}
+2023-03-09T01:20:06.574Z	DEBUG	shape/point.go:716	return value: [%!s(*object.Point=&{139.70024943351746 35.6909295114 10}) %!s(*object.Point=&{139.70026016235352 35.6909295114 10}) %!s(*object.Point=&{139.70026016235352 35.6909207977 10}) %!s(*object.Point=&{139.70024943351746 35.6909207977 10}) %!s(*object.Point=&{139.70024943351746 35.6909295114 11}) %!s(*object.Point=&{139.70026016235352 35.6909295114 11}) %!s(*object.Point=&{139.70026016235352 35.6909207977 11}) %!s(*object.Point=&{139.70024943351746 35.6909207977 11})]
+2023-03-09T01:20:06.574Z	DEBUG	shape/point.go:621	return value: &{%!s(float64=139.7002547979355) %!s(float64=35.6909251545) %!s(float64=10.5)}
+2023-03-09T01:20:06.574Z	DEBUG	shape/point.go:253	return value: [%!s(*object.Point=&{139.7002547979355 35.6909251545 10.5})]
+2023-03-09T01:20:06.574Z	DEBUG	shape/cylinders.go:699	メルカトル係数: 1.2312603082601323
+2023-03-09T01:20:06.574Z	DEBUG	shape/cylinders.go:709	接続点: 1～2
+2023-03-09T01:20:06.574Z	DEBUG	shape/cylinders.go:710	始点(地理座標系): 139.700255, 35.690925, 10.800000
+2023-03-09T01:20:06.574Z	DEBUG	shape/cylinders.go:711	終点(地理座標系): 139.700255, 35.690925, 10.200000
+2023-03-09T01:20:06.574Z	DEBUG	shape/point.go:283	pointList: [%!s(*object.Point=&{139.7002547979355 35.6909251545 10.8}) %!s(*object.Point=&{139.7002547979355 35.6909251545 10.2})], projectedCrs: 3857
+2023-03-09T01:20:06.575Z	DEBUG	shape/point.go:315	return value: [%!s(*object.ProjectedPoint=&{1.555136122779675e+07 4.258176066775867e+06 10.8}) %!s(*object.ProjectedPoint=&{1.555136122779675e+07 4.258176066775867e+06 10.2})]
+2023-03-09T01:20:06.575Z	DEBUG	shape/cylinders.go:738	始点(投影座標系): 15551361.227797, 4258176.066776, 13.297611
+2023-03-09T01:20:06.575Z	DEBUG	shape/cylinders.go:739	終点(投影座標系): 15551361.227797, 4258176.066776, 12.558855
+2023-03-09T01:20:06.575Z	DEBUG	shape/point.go:344	pointList: [%!s(*object.ProjectedPoint=&{1.555136122779675e+07 4.258176066775867e+06 10.8}) %!s(*object.ProjectedPoint=&{1.555136122779675e+07 4.258176066775867e+06 10.2})], projectedCrs: 3857
+2023-03-09T01:20:06.575Z	DEBUG	shape/point.go:373	return value: [%!s(*object.Point=&{139.70025479793546 35.6909251544 10.8}) %!s(*object.Point=&{139.70025479793546 35.6909251544 10.2})]
+2023-03-09T01:20:06.575Z	DEBUG	shape/line.go:55	[START] 拡張空間ID変換(線分)
+2023-03-09T01:20:06.575Z	DEBUG	shape/line.go:56	始点(地理座標系)=(139.700255, 35.690925, 10.800000)
+2023-03-09T01:20:06.575Z	DEBUG	shape/line.go:57	終点(地理座標系)=(139.700255, 35.690925, 10.200000)
+2023-03-09T01:20:06.575Z	DEBUG	shape/point.go:140	pointList: [%!s(*object.Point=&{139.70025479793546 35.6909251544 10.8}) %!s(*object.Point=&{139.70025479793546 35.6909251544 10.2})], hZoom: 25, vZoom: 25
+2023-03-09T01:20:06.575Z	DEBUG	shape/point.go:454	lon: 139.70025479793546, lat: 35.6909251544, hZoom: 25
+2023-03-09T01:20:06.575Z	DEBUG	shape/point.go:482	return value: 25/29798223/13211885
+2023-03-09T01:20:06.575Z	DEBUG	shape/point.go:502	alt: 10.8, vZoom: 25
+2023-03-09T01:20:06.575Z	DEBUG	shape/point.go:519	return value: 25/10
+2023-03-09T01:20:06.575Z	DEBUG	shape/point.go:454	lon: 139.70025479793546, lat: 35.6909251544, hZoom: 25
+2023-03-09T01:20:06.575Z	DEBUG	shape/point.go:482	return value: 25/29798223/13211885
+2023-03-09T01:20:06.575Z	DEBUG	shape/point.go:502	alt: 10.2, vZoom: 25
+2023-03-09T01:20:06.575Z	DEBUG	shape/point.go:519	return value: 25/10
+2023-03-09T01:20:06.575Z	DEBUG	shape/point.go:172	return value: [25/29798223/13211885/25/10 25/29798223/13211885/25/10]
+2023-03-09T01:20:06.575Z	DEBUG	shape/line.go:64	始点の拡張空間ID=25/29798223/13211885/25/10
+2023-03-09T01:20:06.575Z	DEBUG	shape/line.go:65	終点の拡張空間ID=25/29798223/13211885/25/10
+2023-03-09T01:20:06.575Z	DEBUG	shape/line.go:72	始点終点が同一
+2023-03-09T01:20:06.575Z	DEBUG	shape/line.go:73	線分範囲の拡張空間ID=[25/29798223/13211885/25/10]
+2023-03-09T01:20:06.575Z	DEBUG	shape/line.go:74	[END] 拡張空間ID変換(線分)
+2023-03-09T01:20:06.575Z	DEBUG	shape/cylinders.go:323	カプセルの場合、始点終点間の空間ID取得: [25/29798223/13211885/25/10]
+2023-03-09T01:20:06.575Z	DEBUG	shape/point.go:203	extendedSpatialId: 25/0/16777216/25/0, option: 0
+2023-03-09T01:20:06.575Z	DEBUG	shape/point.go:543	altIndex: 0, vZoom: 25
+2023-03-09T01:20:06.575Z	DEBUG	shape/point.go:554	return value: {%!s(float64=0) %!s(float64=1)}
+2023-03-09T01:20:06.575Z	DEBUG	shape/point.go:648	lonIndex: 0, latIndex: 16777216, hZoom: 25, vPoint {%!s(float64=0) %!s(float64=1)}
+2023-03-09T01:20:06.575Z	DEBUG	shape/point.go:716	return value: [%!s(*object.Point=&{-180 0 0}) %!s(*object.Point=&{-179.99998927116394 0 0}) %!s(*object.Point=&{-179.99998927116394 -1.07288e-05 0}) %!s(*object.Point=&{-180 -1.07288e-05 0}) %!s(*object.Point=&{-180 0 1}) %!s(*object.Point=&{-179.99998927116394 0 1}) %!s(*object.Point=&{-179.99998927116394 -1.07288e-05 1}) %!s(*object.Point=&{-180 -1.07288e-05 1})]
+2023-03-09T01:20:06.575Z	DEBUG	shape/point.go:253	return value: [%!s(*object.Point=&{-180 0 0}) %!s(*object.Point=&{-179.99998927116394 0 0}) %!s(*object.Point=&{-179.99998927116394 -1.07288e-05 0}) %!s(*object.Point=&{-180 -1.07288e-05 0}) %!s(*object.Point=&{-180 0 1}) %!s(*object.Point=&{-179.99998927116394 0 1}) %!s(*object.Point=&{-179.99998927116394 -1.07288e-05 1}) %!s(*object.Point=&{-180 -1.07288e-05 1})]
+2023-03-09T01:20:06.575Z	DEBUG	shape/point.go:283	pointList: [%!s(*object.Point=&{-180 0 0}) %!s(*object.Point=&{-179.99998927116394 0 0}) %!s(*object.Point=&{-179.99998927116394 -1.07288e-05 0}) %!s(*object.Point=&{-180 -1.07288e-05 0}) %!s(*object.Point=&{-180 0 1}) %!s(*object.Point=&{-179.99998927116394 0 1}) %!s(*object.Point=&{-179.99998927116394 -1.07288e-05 1}) %!s(*object.Point=&{-180 -1.07288e-05 1})], projectedCrs: 3857
+2023-03-09T01:20:06.575Z	DEBUG	shape/point.go:315	return value: [%!s(*object.ProjectedPoint=&{-2.0037508342789244e+07 0 0}) %!s(*object.ProjectedPoint=&{-2.0037507148460675e+07 0 0}) %!s(*object.ProjectedPoint=&{-2.0037507148460675e+07 -1.1943245546656143 0}) %!s(*object.ProjectedPoint=&{-2.0037508342789244e+07 -1.1943245546656143 0}) %!s(*object.ProjectedPoint=&{-2.0037508342789244e+07 0 1}) %!s(*object.ProjectedPoint=&{-2.0037507148460675e+07 0 1}) %!s(*object.ProjectedPoint=&{-2.0037507148460675e+07 -1.1943245546656143 1}) %!s(*object.ProjectedPoint=&{-2.0037508342789244e+07 -1.1943245546656143 1})]
+2023-03-09T01:20:06.575Z	DEBUG	shape/cylinders.go:168	単位ボクセルベクトル(X: 1.194328, Y: 1.194324, Z: 1.2312603082601323)
+2023-03-09T01:20:06.575Z	DEBUG	shape/cylinders.go:374	X軸シフト数: 1.000000, Y軸シフト数: 1.000000, Z軸シフト数: 1.000000
+2023-03-09T01:20:06.575Z	DEBUG	shape/cylinders.go:763	接続点間の空間ID: [25/29798223/13211886/25/10 25/29798224/13211885/25/11 25/29798223/13211885/25/9 25/29798224/13211886/25/9 25/29798222/13211884/25/11 25/29798222/13211885/25/10 25/29798222/13211886/25/9 25/29798223/13211885/25/10 25/29798223/13211886/25/11 25/29798224/13211886/25/10 25/29798222/13211884/25/10 25/29798222/13211885/25/11 25/29798223/13211884/25/11 25/29798224/13211884/25/10 25/29798224/13211885/25/9 25/29798224/13211886/25/11 25/29798222/13211885/25/9 25/29798223/13211885/25/11 25/29798223/13211884/25/9 25/29798222/13211884/25/9 25/29798223/13211884/25/10 25/29798223/13211886/25/9 25/29798224/13211884/25/9 25/29798222/13211886/25/10 25/29798222/13211886/25/11 25/29798224/13211884/25/11 25/29798224/13211885/25/10]

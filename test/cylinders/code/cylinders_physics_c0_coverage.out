@@ -1,0 +1,9 @@
+mode: set
+spatial-id/shape/physics/base_physics.go:30.36,43.2 5 1
+spatial-id/shape/physics/base_physics.go:51.40,53.2 1 1
+spatial-id/shape/physics/base_physics.go:65.87,75.19 5 1
+spatial-id/shape/physics/base_physics.go:79.2,81.26 2 1
+spatial-id/shape/physics/base_physics.go:75.19,77.3 1 1
+spatial-id/shape/physics/capsule_physics.go:25.98,54.2 12 1
+spatial-id/shape/physics/cylinder_physics.go:25.100,53.2 12 1
+spatial-id/shape/physics/sphere_physics.go:24.77,39.2 7 1

@@ -1,0 +1,6 @@
+sample_ChangeSpatialIdsZoom_SingleID : ChangeSpatialIdsZoomメソッド(空間ID単体)試験用(正常系)
+sample_ChangeSpatialIdsZoom_MultipleIDs : ChangeSpatialIdsZoomメソッド(空間ID複数)試験用(正常系)
+sample_ChangeSpatialIdsZoom_err : ChangeSpatialIdsZoomメソッド試験用(異常系)
+sample_ChangeExtendedSpatialIdsZoom_SingleID : ChangeExtendedSpatialIdsZoomメソッド(拡張空間ID単体)試験用(正常系)
+sample_ChangeExtendedSpatialIdsZoom_MultipleIDs : ChangeExtendedSpatialIdsZoomメソッド(拡張空間ID複数)試験用(正常系)
+sample_ChangeExtendedSpatialIdsZoom_err : ChangeExtendedSpatialIdsZoomメソッド試験用(異常系)

@@ -1,0 +1,12 @@
+2022-12-08T04:19:10.398Z	DEBUG	shape/point.go:140	pointList: [%!s(*object.Point=&{180 -85.0511287798 1})], hZoom: 10, vZoom: 35
+2022-12-08T04:19:10.398Z	DEBUG	shape/point.go:499	lon: 180, lat: -85.0511287798, hZoom: 10
+2022-12-08T04:19:10.398Z	DEBUG	shape/point.go:527	return value: 10/0/1023
+2022-12-08T04:19:10.398Z	DEBUG	shape/point.go:547	alt: 1, vZoom: 35
+2022-12-08T04:19:10.398Z	DEBUG	shape/point.go:564	return value: 35/1024
+2022-12-08T04:19:10.398Z	DEBUG	shape/point.go:172	return value: [10/0/1023/35/1024]
+2022-12-08T04:19:10.398Z	DEBUG	shape/point.go:140	pointList: [%!s(*object.Point=&{-180 85.0511287798 -1300})], hZoom: 24, vZoom: 25
+2022-12-08T04:19:10.398Z	DEBUG	shape/point.go:499	lon: -180, lat: 85.0511287798, hZoom: 24
+2022-12-08T04:19:10.398Z	DEBUG	shape/point.go:527	return value: 24/0/0
+2022-12-08T04:19:10.398Z	DEBUG	shape/point.go:547	alt: -1300, vZoom: 25
+2022-12-08T04:19:10.398Z	DEBUG	shape/point.go:564	return value: 25/-1300
+2022-12-08T04:19:10.398Z	DEBUG	shape/point.go:172	return value: [24/0/0/25/-1300]

@@ -1,0 +1,13 @@
+sample_GetCombi : 「空間ID→点座標→空間ID」試験用
+sample_GetPointOnExtendedSpatialId_Center : GetPointOnExtendedSpatialIdメソッド(ボクセル中心)試験用(正常系)
+sample_GetPointOnExtendedSpatialId_Vertex : GetPointOnExtendedSpatialIdメソッド(ボクセル頂点)試験用(正常系)
+sample_GetPointOnExtendedSpatialId_err : GetPointOnExtendedSpatialIdメソッド試験用(異常系)
+sample_GetPointOnSpatialId_Center : GetPointOnSpatialIdメソッド(ボクセル中心)試験用(正常系)
+sample_GetPointOnSpatialId_Vertex : GetPointOnSpatialIdメソッド(ボクセル頂点)試験用(正常系)
+sample_GetPointOnSpatialId_err : GetPointOnSpatialIdメソッド試験用(異常系)
+sample_GetExtendedSpatialIdsOnPoints : GetExtendedSpatialIdsOnPointsメソッド試験用(正常系)
+sample_GetExtendedSpatialIdsOnPoints_err : GetExtendedSpatialIdsOnPointsメソッド試験用(異常系)
+sample_GetSpatialIdsOnPoints : GetSpatialIdsOnPointsメソッド試験用(正常系)
+sample_GetSpatialIdsOnPoints_err : GetSpatialIdsOnPointsメソッド試験用(異常系)
+sample_NewPoint : NewPointメソッド試験用(正常系)
+sample_NewPoint_err : NewPointメソッド試験用(異常系)

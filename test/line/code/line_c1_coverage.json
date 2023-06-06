@@ -1,0 +1,110 @@
+[
+	{
+		"Start": "shape/line.go:53:5",
+		"Code": "err != nil",
+		"TrueCount": 1,
+		"FalseCount": 1
+	},
+	{
+		"Start": "shape/line.go:88:5",
+		"Code": "start == nil || end == nil",
+		"TrueCount": 2,
+		"FalseCount": 37
+	},
+	{
+		"Start": "shape/line.go:88:5",
+		"Code": "start == nil",
+		"TrueCount": 1,
+		"FalseCount": 38
+	},
+	{
+		"Start": "shape/line.go:88:21",
+		"Code": "end == nil",
+		"TrueCount": 1,
+		"FalseCount": 37
+	},
+	{
+		"Start": "shape/line.go:98:5",
+		"Code": "e != nil",
+		"TrueCount": 5,
+		"FalseCount": 32
+	},
+	{
+		"Start": "shape/line.go:108:5",
+		"Code": "len(spatialIDs) == 1",
+		"TrueCount": 4,
+		"FalseCount": 28
+	},
+	{
+		"Start": "shape/line.go:126:5",
+		"Code": "hZoom >= 31",
+		"TrueCount": 1,
+		"FalseCount": 27
+	},
+	{
+		"Start": "shape/line.go:131:5",
+		"Code": "vZoom >= 34",
+		"TrueCount": 1,
+		"FalseCount": 27
+	},
+	{
+		"Start": "shape/line.go:192:5",
+		"Code": "math.Abs(vector.X) < lonMinima &&\n\t\tmath.Abs(vector.Y) < latMinima &&\n\t\tmath.Abs(vector.Z) < altMinima",
+		"TrueCount": 5,
+		"FalseCount": 1722
+	},
+	{
+		"Start": "shape/line.go:192:5",
+		"Code": "math.Abs(vector.X) < lonMinima &&\n\t\tmath.Abs(vector.Y) < latMinima",
+		"TrueCount": 15,
+		"FalseCount": 1712
+	},
+	{
+		"Start": "shape/line.go:194:3",
+		"Code": "math.Abs(vector.Z) < altMinima",
+		"TrueCount": 5,
+		"FalseCount": 10
+	},
+	{
+		"Start": "shape/line.go:192:5",
+		"Code": "math.Abs(vector.X) < lonMinima",
+		"TrueCount": 19,
+		"FalseCount": 1708
+	},
+	{
+		"Start": "shape/line.go:193:3",
+		"Code": "math.Abs(vector.Y) < latMinima",
+		"TrueCount": 15,
+		"FalseCount": 4
+	},
+	{
+		"Start": "shape/line.go:212:5",
+		"Code": "common.Include(start6SpatialIDs, middleSpatialID) &&\n\t\tcommon.Include(end6SpatialIDs, middleSpatialID)",
+		"TrueCount": 531,
+		"FalseCount": 1191
+	},
+	{
+		"Start": "shape/line.go:212:5",
+		"Code": "common.Include(start6SpatialIDs, middleSpatialID)",
+		"TrueCount": 931,
+		"FalseCount": 791
+	},
+	{
+		"Start": "shape/line.go:213:3",
+		"Code": "common.Include(end6SpatialIDs, middleSpatialID)",
+		"TrueCount": 531,
+		"FalseCount": 400
+	},
+	{
+		"Start": "shape/line.go:219:12",
+		"Code": "common.Include(start6SpatialIDs, middleSpatialID)",
+		"TrueCount": 400,
+		"FalseCount": 791
+	},
+	{
+		"Start": "shape/line.go:226:12",
+		"Code": "common.Include(end6SpatialIDs, middleSpatialID)",
+		"TrueCount": 296,
+		"FalseCount": 495
+	}
+]

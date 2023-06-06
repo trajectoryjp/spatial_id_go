@@ -1,0 +1,37 @@
+2023-03-24T01:43:30.563Z	DEBUG	shape/point.go:203	extendedSpatialId: 10/10/10/10/10, option: 0
+2023-03-24T01:43:30.563Z	DEBUG	shape/point.go:543	altIndex: 10, vZoom: 10
+2023-03-24T01:43:30.563Z	DEBUG	shape/point.go:554	return value: {%!s(float64=327680) %!s(float64=32768)}
+2023-03-24T01:43:30.563Z	DEBUG	shape/point.go:648	lonIndex: 10, latIndex: 10, hZoom: 10, vPoint {%!s(float64=327680) %!s(float64=32768)}
+2023-03-24T01:43:30.563Z	DEBUG	shape/point.go:716	return value: [%!s(*object.Point=&{-176.484375 84.7383871209 327680}) %!s(*object.Point=&{-176.1328125 84.7383871209 327680}) %!s(*object.Point=&{-176.1328125 84.706048935 327680}) %!s(*object.Point=&{-176.484375 84.706048935 327680}) %!s(*object.Point=&{-176.484375 84.7383871209 360448}) %!s(*object.Point=&{-176.1328125 84.7383871209 360448}) %!s(*object.Point=&{-176.1328125 84.706048935 360448}) %!s(*object.Point=&{-176.484375 84.706048935 360448})]
+2023-03-24T01:43:30.563Z	DEBUG	shape/point.go:253	return value: [%!s(*object.Point=&{-176.484375 84.7383871209 327680}) %!s(*object.Point=&{-176.1328125 84.7383871209 327680}) %!s(*object.Point=&{-176.1328125 84.706048935 327680}) %!s(*object.Point=&{-176.484375 84.706048935 327680}) %!s(*object.Point=&{-176.484375 84.7383871209 360448}) %!s(*object.Point=&{-176.1328125 84.7383871209 360448}) %!s(*object.Point=&{-176.1328125 84.706048935 360448}) %!s(*object.Point=&{-176.484375 84.706048935 360448})]
+2023-03-24T01:43:30.563Z	DEBUG	shape/line.go:92	[START] 拡張空間ID変換(線分)
+2023-03-24T01:43:30.563Z	DEBUG	shape/line.go:93	始点(地理座標系)=(-176.132812, 84.706049, 327680.000000)
+2023-03-24T01:43:30.563Z	DEBUG	shape/line.go:94	終点(地理座標系)=(-176.484375, 84.706049, 360448.000000)
+2023-03-24T01:43:30.563Z	DEBUG	shape/point.go:140	pointList: [%!s(*object.Point=&{-176.1328125 84.706048935 327680}) %!s(*object.Point=&{-176.484375 84.706048935 360448})], hZoom: 10, vZoom: 10
+2023-03-24T01:43:30.563Z	DEBUG	shape/point.go:454	lon: -176.1328125, lat: 84.706048935, hZoom: 10
+2023-03-24T01:43:30.563Z	DEBUG	shape/point.go:482	return value: 10/11/11
+2023-03-24T01:43:30.564Z	DEBUG	shape/point.go:502	alt: 327680, vZoom: 10
+2023-03-24T01:43:30.564Z	DEBUG	shape/point.go:519	return value: 10/10
+2023-03-24T01:43:30.564Z	DEBUG	shape/point.go:454	lon: -176.484375, lat: 84.706048935, hZoom: 10
+2023-03-24T01:43:30.564Z	DEBUG	shape/point.go:482	return value: 10/10/11
+2023-03-24T01:43:30.564Z	DEBUG	shape/point.go:502	alt: 360448, vZoom: 10
+2023-03-24T01:43:30.564Z	DEBUG	shape/point.go:519	return value: 10/11
+2023-03-24T01:43:30.564Z	DEBUG	shape/point.go:172	return value: [10/11/11/10/10 10/10/11/10/11]
+2023-03-24T01:43:30.564Z	DEBUG	shape/line.go:101	始点の拡張空間ID=10/11/11/10/10
+2023-03-24T01:43:30.564Z	DEBUG	shape/line.go:102	終点の拡張空間ID=10/10/11/10/11
+2023-03-24T01:43:30.564Z	DEBUG	shape/point.go:140	pointList: [%!s(*object.Point=&{-176.1328125 84.706048935 327680}) %!s(*object.Point=&{-176.484375 84.706048935 360448}) %!s(*object.Point=&{-176.30859375 84.706048935 344064})], hZoom: 10, vZoom: 10
+2023-03-24T01:43:30.564Z	DEBUG	shape/point.go:454	lon: -176.1328125, lat: 84.706048935, hZoom: 10
+2023-03-24T01:43:30.564Z	DEBUG	shape/point.go:482	return value: 10/11/11
+2023-03-24T01:43:30.564Z	DEBUG	shape/point.go:502	alt: 327680, vZoom: 10
+2023-03-24T01:43:30.564Z	DEBUG	shape/point.go:519	return value: 10/10
+2023-03-24T01:43:30.564Z	DEBUG	shape/point.go:454	lon: -176.484375, lat: 84.706048935, hZoom: 10
+2023-03-24T01:43:30.564Z	DEBUG	shape/point.go:482	return value: 10/10/11
+2023-03-24T01:43:30.564Z	DEBUG	shape/point.go:502	alt: 360448, vZoom: 10
+2023-03-24T01:43:30.564Z	DEBUG	shape/point.go:519	return value: 10/11
+2023-03-24T01:43:30.564Z	DEBUG	shape/point.go:454	lon: -176.30859375, lat: 84.706048935, hZoom: 10
+2023-03-24T01:43:30.564Z	DEBUG	shape/point.go:482	return value: 10/10/11
+2023-03-24T01:43:30.564Z	DEBUG	shape/point.go:502	alt: 344064, vZoom: 10
+2023-03-24T01:43:30.564Z	DEBUG	shape/point.go:519	return value: 10/10
+2023-03-24T01:43:30.564Z	DEBUG	shape/point.go:172	return value: [10/11/11/10/10 10/10/11/10/11 10/10/11/10/10]
+2023-03-24T01:43:30.564Z	DEBUG	shape/line.go:214	中点が始点・終点の周囲にあるため終了
+2023-03-24T01:43:30.564Z	DEBUG	shape/line.go:215	中点ID:10/10/11/10/10

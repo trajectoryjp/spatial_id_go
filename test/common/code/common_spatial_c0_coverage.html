@@ -1,0 +1,659 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>spatial: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">spatial-id/common/spatial/line3.go (100.0%)</option>
+				
+				<option value="file1">spatial-id/common/spatial/matrix3.go (100.0%)</option>
+				
+				<option value="file2">spatial-id/common/spatial/point3.go (100.0%)</option>
+				
+				<option value="file3">spatial-id/common/spatial/quat.go (100.0%)</option>
+				
+				<option value="file4">spatial-id/common/spatial/vector3.go (100.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">// Package spatial 空間座標操作パッケージ
+package spatial
+
+
+// Line3 線の構造体
+type Line3 struct {
+        Point Point3      // 始点
+        Direction Vector3 // 方向ベクトル
+}
+
+// NewLineFromPoints 2点から線オブジェクト作成
+//
+// 2点から線オブジェクト作成
+//
+// 引数：
+//  start： 始点
+//  end： 終点
+//
+// 戻り値：
+//  2点間の線オブジェクト
+func NewLineFromPoints(start Point3, end Point3) Line3 <span class="cov8" title="1">{
+        // 方向ベクトル
+        vec := NewVectorFromPoints(start, end)
+
+        return Line3{start, vec}
+}</span>
+
+// ToPoint 線に沿った点を返却
+//
+// パラメータtを使用して、線に沿った点を返却
+//
+// 引数：
+//  t： パラメータ
+//
+// 戻り値：
+//  線に沿った点
+func (l Line3) ToPoint(t float64) Point3 <span class="cov8" title="1">{
+        // 線に沿った分平行移動するベクトル
+        vec := l.Direction.Scale(t)
+
+        return l.Point.Translate(vec)
+}</span>
+
+// End 終点取得
+//
+// 線の終点を返却する
+//
+// 戻り値：
+//  線の終点
+func (l Line3) End() Point3 <span class="cov8" title="1">{
+        return l.Point.Translate(l.Direction)
+}</span>
+
+// Start 始点取得
+//
+// 線の始点を返却する
+//
+// 戻り値：
+//  線の始点
+func (l Line3) Start() Point3 <span class="cov8" title="1">{
+        return l.Point
+}</span>
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">// Package spatial 空間座標操作パッケージ
+package spatial
+
+// Matrix3 3×3行列の構造体
+type Matrix3 [3][3]float64 // 行列成分
+
+// NewMatrix3 コンストラクタ
+//
+// 3×3行列の構造体のコンストラクタ
+//
+// 引数：
+//  m00~m22：行列成分
+//
+// 戻り値：
+//  3×3行列の構造体
+func NewMatrix3(m00, m01, m02, m10, m11, m12, m20, m21, m22 float64) Matrix3 <span class="cov8" title="1">{
+        return Matrix3{
+                {m00, m01, m02},
+                {m10, m11, m12},
+                {m20, m21, m22},
+        }
+}</span>
+
+// NewUnitMatrix3 単位行列コンストラクタ
+//
+// 3×3単位行列の構造体のコンストラクタ
+//
+// 戻り値：
+//  3×3単位行列の構造体
+func NewUnitMatrix3() Matrix3 <span class="cov8" title="1">{
+        return NewMatrix3(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0)
+}</span>
+
+// Mul 行列積
+//
+// 3×3行列の行列積 a * b を返却
+//
+// 引数：
+//  b：3×3行列
+//
+// 戻り値：
+//  3×3行列の行列積
+func (a Matrix3) Mul(b Matrix3) Matrix3 <span class="cov8" title="1">{
+        var out Matrix3
+        out[0][0] = a[0][0]*b[0][0] + a[0][1]*b[1][0] + a[0][2]*b[2][0]
+        out[0][1] = a[0][0]*b[0][1] + a[0][1]*b[1][1] + a[0][2]*b[2][1]
+        out[0][2] = a[0][0]*b[0][2] + a[0][1]*b[1][2] + a[0][2]*b[2][2]
+        out[1][0] = a[1][0]*b[0][0] + a[1][1]*b[1][0] + a[1][2]*b[2][0]
+        out[1][1] = a[1][0]*b[0][1] + a[1][1]*b[1][1] + a[1][2]*b[2][1]
+        out[1][2] = a[1][0]*b[0][2] + a[1][1]*b[1][2] + a[1][2]*b[2][2]
+        out[2][0] = a[2][0]*b[0][0] + a[2][1]*b[1][0] + a[2][2]*b[2][0]
+        out[2][1] = a[2][0]*b[0][1] + a[2][1]*b[1][1] + a[2][2]*b[2][1]
+        out[2][2] = a[2][0]*b[0][2] + a[2][1]*b[1][2] + a[2][2]*b[2][2]
+        return out
+}</span>
+
+// MulVec ベクトルの行列変換
+//
+// ベクトルを行列変換した値 a・v を返却する
+//
+// 引数：
+//  v ：変換元のベクトル
+//
+// 戻り値：
+//  行列返還後のベクトル
+func (a Matrix3) MulVec(v Vector3) Vector3 <span class="cov8" title="1">{
+        return Vector3{
+                v.X*a[0][0] + v.Y*a[0][1] + v.Z*a[0][2],
+                v.X*a[1][0] + v.Y*a[1][1] + v.Z*a[1][2],
+                v.X*a[2][0] + v.Y*a[2][1] + v.Z*a[2][2],
+        }
+}</span>
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">// Package spatial 空間座標操作パッケージ
+package spatial
+
+import (
+        "spatial-id/common"
+        "spatial-id/common/errors"
+)
+
+// UniqueAppend 点のユニークを保持した配列追加
+//
+// 点のスライスへユニークを保持して点を追加
+//
+// 引数：
+//  points ：点のスライス
+//  addPoint: 追加する点
+//  epsilon： ユニーク判定時の小数点誤差
+//
+// 戻り値：
+//  点のスライス
+func UniqueAppend(points []*Point3, addPoint *Point3, epsilon float64) []*Point3 <span class="cov8" title="1">{
+        // 追加点のユニークであるかの判定
+        isUnique := true
+
+        for _, point := range points </span><span class="cov8" title="1">{
+                // スライス内に既に同一点がある場合
+                if point.IsClose(*addPoint, epsilon) </span><span class="cov8" title="1">{
+                        isUnique = false
+                        break</span>
+                }
+
+        }
+
+        // 追加点のユニークである場合はスライスに追加
+        <span class="cov8" title="1">if isUnique </span><span class="cov8" title="1">{
+                points = append(points, addPoint)
+        }</span>
+
+        <span class="cov8" title="1">return points</span>
+}
+
+// MaxPoint 最大点取得関数
+//
+// 引数に入力されたPoint3スライスの最大値を返却する
+//
+// 引数：
+//  points： Point3スライス
+//  vec： Point3の比較値を出すためのベクトル
+//
+// 戻り値：
+//  Point3スライスの最大値
+//
+// 戻り値（エラー）：
+//        以下の条件に当てはまる場合、エラーインスタンスが返却される。
+//         入力不正：入力スライスが空の場合。
+func MaxPoint(points []*Point3, vec Vector3) (*Point3, error) <span class="cov8" title="1">{
+        // スライスが空の場合はエラー
+        if len(points) == 0 </span><span class="cov8" title="1">{
+                return new(Point3), errors.NewSpatialIdError(errors.InputValueErrorCode, "")
+        }</span>
+
+        <span class="cov8" title="1">max := points[0]
+        maxValue := Vector3(*max).Dot(vec)
+        for _, point := range points </span><span class="cov8" title="1">{
+                value := Vector3(*point).Dot(vec)
+                if maxValue &lt; value </span><span class="cov8" title="1">{
+                        max = point
+                        maxValue = value
+                }</span>
+        }
+
+        <span class="cov8" title="1">return max, nil</span>
+}
+
+// MinPoint 最小点取得関数
+//
+// 引数に入力されたPoint3スライスの最小値を返却する
+//
+// 引数：
+//  points： Point3スライス
+//  vec： Point3の比較値を出すためのベクトル
+//
+// 戻り値：
+//  Point3スライスの最小値
+//
+// 戻り値（エラー）：
+//        以下の条件に当てはまる場合、エラーインスタンスが返却される。
+//         入力不正：入力スライスが空の場合。
+func MinPoint(points []*Point3, vec Vector3) (*Point3, error) <span class="cov8" title="1">{
+        // スライスが空の場合はエラー
+        if len(points) == 0 </span><span class="cov8" title="1">{
+                return new(Point3), errors.NewSpatialIdError(errors.InputValueErrorCode, "")
+        }</span>
+
+        <span class="cov8" title="1">min := points[0]
+        minValue := Vector3(*min).Dot(vec)
+        for _, point := range points </span><span class="cov8" title="1">{
+                value := Vector3(*point).Dot(vec)
+                if minValue &gt; value </span><span class="cov8" title="1">{
+                        min = point
+                        minValue = value
+                }</span>
+        }
+
+        <span class="cov8" title="1">return min, nil</span>
+}
+
+// Point3 点座標構造体
+type Point3 struct {
+        X, Y, Z float64 // X・Y・Z座標
+}
+
+// IsClose 点が同一であるかの確認
+//
+// 2点が浮動小数点誤差epsilonだけ許容して一致しているかを返却
+//
+// 引数：
+//  q ：同一確認する点
+//
+// 戻り値：
+//  true：2点が同一 false：2点が同一でない
+func (p Point3) IsClose(q Point3, epsilon float64) bool <span class="cov8" title="1">{
+        return common.AlmostEqual(p.X, q.X, epsilon) &amp;&amp; common.AlmostEqual(p.Y, q.Y, epsilon) &amp;&amp; common.AlmostEqual(p.Z, q.Z, epsilon)
+}</span>
+
+
+// Translate 点の平行移動
+//
+// 点をベクトルに沿って平行移動する
+//
+// 引数：
+//  a ：平行移動するベクトル
+//
+// 戻り値：
+//  平行移動した点
+func (p Point3) Translate(a Vector3) Point3 <span class="cov8" title="1">{
+        return Point3(Vector3(p).Add(a))
+}</span>
+
+// DistancePoint 2点間の距離
+//
+// 2点間の距離を返却する
+//
+// 引数：
+//  q ：間の距離を求める点
+//
+// 戻り値：
+//  2点間の距離
+func (p Point3) DistancePoint(q Point3) float64 <span class="cov8" title="1">{
+        return NewVectorFromPoints(p, q).Norm()
+}</span>
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">// Package spatial 空間座標操作パッケージ
+package spatial
+
+import "math"
+import "spatial-id/common/consts"
+
+// Quat 四元数の構造体
+type Quat struct {
+        W, X, Y, Z float64
+}
+
+// 四元数の計算結果確認用メソッド
+// 実装では使用しないためコメントアウト
+// // Mul 四元数の積
+// //
+// // 四元数の積を算出して返却する。
+// //
+// // 引数：
+// //  b： 掛け合わせる四元数
+// //
+// // 戻り値：
+// //  四元数の積
+// func (a Quat) Mul(b Quat) Quat {
+//         return Quat{
+//                 (b.W * a.W) - (b.X * a.X) - (b.Y * a.Y) - (b.Z * a.Z),
+//                 (b.X * a.W) + (b.W * a.X) - (b.Z * a.Y) + (b.Y * a.Z),
+//                 (b.Y * a.W) + (b.Z * a.X) + (b.W * a.Y) - (b.X * a.Z),
+//                 (b.Z * a.W) - (b.Y * a.X) + (b.X * a.Y) + (b.W * a.Z),
+//         }
+// }
+
+// // Conjugate 四元数の共役
+// //
+// // 共役四元数を算出して返却する。
+// //
+// // 戻り値：
+// //  共役四元数
+// func (a Quat) Conjugate() Quat {
+//         return Quat{
+//                 a.W,
+//                 -a.X,
+//                 -a.Y,
+//                 -a.Z,
+//         }
+// }
+
+// // TransformVec3 四元数でのベクトル変換
+// //
+// // 入力のベクトルを四元数で変換した値を返却する。
+// //
+// // 引数：
+// //  v： 入力ベクトル
+// //
+// // 戻り値：
+// //  変換後のベクトル
+// func (a Quat) TransformVec3(v Vector3) Vector3 {
+//         vecQuat := Quat{0.0, v.X, v.Y, v.Z}
+//         conjugate := a.Conjugate()
+//         vecQuat = conjugate.Mul(vecQuat).Mul(a)
+//         return Vector3{vecQuat.X, vecQuat.Y, vecQuat.Z}
+// }
+
+// RotateBetweenVector 2ベクトル間の四元数算出処理
+//
+// 2ベクトル間の四元数を算出して返却する。
+//
+// 引数：
+//  start： 開始ベクトル
+//  end： 終了ベクトル
+//
+// 戻り値：
+//  2ベクトル間の四元数
+func RotateBetweenVector(start, end Vector3) Quat <span class="cov8" title="1">{
+        // ベクトルを正規化
+        startUnit := start.Unit()
+        endUnit := end.Unit()
+        // ベクトル間のcosを算出
+        cos := startUnit.Cos(endUnit)
+
+        // 法線ベクトルを回転軸ベクトルとする
+        axis := startUnit.Cross(endUnit)
+
+        // ベクトルが正反対方向を向いている場合
+        if cos + 1 &lt; consts.Minima </span><span class="cov8" title="1">{
+                // 垂直になるベクトルを回転軸ベクトルとする
+                axis = startUnit.Cross(Vector3{0.0, 0.0, 1.0})
+                if axis.Norm() &lt; consts.Minima </span><span class="cov8" title="1">{
+                        axis = start.Cross(Vector3{1.0, 0.0, 0.0})
+                }</span>
+
+                <span class="cov8" title="1">return QuatFromAxisAngle(axis, math.Pi)</span>
+        }
+
+        <span class="cov8" title="1">s := math.Sqrt(2 * (1 + cos))
+        inv := 1 / s
+        return Quat{
+                s * 0.5,
+                axis.X * inv,
+                axis.Y * inv,
+                axis.Z * inv,
+        }</span>
+}
+
+// QuatFromAxisAngle 回転ベクトルの四元数算出処理
+//
+// 回転ベクトルの四元数を算出して返却する。
+//
+// 引数：
+//  axis： 回転軸ベクトル
+//  angle： 回転角度(ラジアン)
+//
+// 戻り値：
+//  回転ベクトルの四元数
+func QuatFromAxisAngle(axis Vector3, angle float64) Quat <span class="cov8" title="1">{
+        // 回転軸ベクトルを正規化
+        axis = axis.Unit()
+        // 半角のsinを算出
+        sinHalfAngle := math.Sin(angle * 0.5)
+        return Quat{
+                math.Cos(angle * 0.5),
+                axis.X * sinHalfAngle,
+                axis.Y * sinHalfAngle,
+                axis.Z * sinHalfAngle,
+        }
+}</pre>
+		
+		<pre class="file" id="file4" style="display: none">// Package spatial 空間座標操作パッケージ
+package spatial
+
+import (
+        "math"
+        "gonum.org/v1/gonum/spatial/r3"
+)
+
+// Vector3 ベクトル構造体
+type Vector3 r3.Vec
+
+// NewVectorFromPoints 点からのベクトル作成
+//
+// 2点からベクトル初期化する
+//
+// 引数：
+//  p ：ベクトルの始点
+//  q ：ベクトルの終点
+//
+// 戻り値：
+//  始点から終点へのベクトル
+func NewVectorFromPoints(p, q Point3) Vector3 <span class="cov8" title="1">{
+        return Vector3(r3.Sub(r3.Vec(q), r3.Vec(p)))
+}</span>
+
+// Add ベクトルの加算
+//
+// ベクトルを成分ごとに加算し、a + b を返却する
+//
+// 引数：
+//  b ：加算するベクトル
+//
+// 戻り値：
+//  加算したベクトル
+func (a Vector3) Add(b Vector3) Vector3 <span class="cov8" title="1">{
+        return Vector3(r3.Add(r3.Vec(a), r3.Vec(b)))
+}</span>
+
+// Sub ベクトルの減算
+//
+// ベクトルを成分ごとに減算し、a - b を返却する
+//
+// 引数：
+//  b ：減算するベクトル
+//
+// 戻り値：
+//  減算したベクトル
+func (a Vector3) Sub(b Vector3) Vector3 <span class="cov8" title="1">{
+        return Vector3(r3.Sub(r3.Vec(a), r3.Vec(b)))
+}</span>
+
+// Scale ベクトルのスカラー倍
+//
+// ベクトルを成分ごとにスカラー倍し、f * a を返却する
+//
+// 引数：
+//  f ：乗算するスカラー値
+//
+// 戻り値：
+//  スカラー倍したベクトル
+func (a Vector3) Scale(f float64) Vector3 <span class="cov8" title="1">{
+        return Vector3(r3.Scale(f, r3.Vec(a)))
+}</span>
+
+// Dot ベクトルの内積
+//
+// ベクトルの内積を算出し、a・b を返却する
+//
+// 引数：
+//  b ：内積として掛けるベクトル
+//
+// 戻り値：
+//  ベクトル内積
+func (a Vector3) Dot(b Vector3) float64 <span class="cov8" title="1">{
+        return r3.Dot(r3.Vec(a), r3.Vec(b))
+}</span>
+
+// Cross ベクトルの外積
+//
+// ベクトルの外積を算出し、a×b を返却する
+//
+// 引数：
+//  b ：外積として掛けるベクトル
+//
+// 戻り値：
+//  ベクトル外積
+func (a Vector3) Cross(b Vector3) Vector3 <span class="cov8" title="1">{
+        return Vector3(r3.Cross(r3.Vec(a), r3.Vec(b)))
+}</span>
+
+// Norm ベクトルのユークリッドノルム
+//
+// ベクトルのユークリッドノルムを算出し、|a| を返却する
+//
+// 戻り値：
+//  ベクトルのユークリッドノルム
+func (a Vector3) Norm() float64 <span class="cov8" title="1">{
+        return r3.Norm(r3.Vec(a))
+}</span>
+
+// L1Norm ベクトルのL1ノルム
+//
+// ベクトルのL1ノルムを算出し、返却する
+//
+// 戻り値：
+//  ベクトルのL1ノルム
+func (a Vector3) L1Norm() float64 <span class="cov8" title="1">{
+        return math.Abs(a.X) + math.Abs(a.Y) + math.Abs(a.Z)
+}</span>
+
+// Unit ベクトルの正規化
+//
+// ベクトルを正規化し、単位ベクトル a/|a| を返却する
+//
+// 戻り値：
+//  ベクトルの単位ベクトル
+func (a Vector3) Unit() Vector3 <span class="cov8" title="1">{
+        return Vector3(r3.Unit(r3.Vec(a)))
+}</span>
+
+// Cos ベクトル間の余弦(cos)
+//
+// ベクトル間の余弦(cos)を返却する
+//
+// 引数：
+//  b ：間の角度を求めるベクトル
+//
+// 戻り値：
+//  ベクトル間の余弦(cos)
+func (a Vector3) Cos(b Vector3) float64 <span class="cov8" title="1">{
+        return r3.Cos(r3.Vec(a), r3.Vec(b))
+}</span>
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>

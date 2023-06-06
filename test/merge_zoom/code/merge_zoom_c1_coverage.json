@@ -1,0 +1,104 @@
+[
+	{
+		"Start": "integrate/merge_zoom.go:43:31",
+		"Code": "x < (s.X()+1)*hDiffIndex",
+		"TrueCount": 23,
+		"FalseCount": 15
+	},
+	{
+		"Start": "integrate/merge_zoom.go:44:32",
+		"Code": "y < (s.Y()+1)*hDiffIndex",
+		"TrueCount": 45,
+		"FalseCount": 23
+	},
+	{
+		"Start": "integrate/merge_zoom.go:45:33",
+		"Code": "z < (s.Z()+1)*vDiffIndex",
+		"TrueCount": 137,
+		"FalseCount": 45
+	},
+	{
+		"Start": "integrate/merge_zoom.go:132:9",
+		"Code": "int64(len(r.unitIDs)) == r.threshold",
+		"TrueCount": 2,
+		"FalseCount": 7
+	},
+	{
+		"Start": "integrate/merge_zoom.go:178:5",
+		"Code": "convertErr != nil",
+		"TrueCount": 2,
+		"FalseCount": 5
+	},
+	{
+		"Start": "integrate/merge_zoom.go:190:5",
+		"Code": "mergeZoomErr != nil",
+		"TrueCount": 1,
+		"FalseCount": 4
+	},
+	{
+		"Start": "integrate/merge_zoom.go:247:5",
+		"Code": "!shape.CheckZoom(hZoom) || !shape.CheckZoom(vZoom)",
+		"TrueCount": 3,
+		"FalseCount": 13
+	},
+	{
+		"Start": "integrate/merge_zoom.go:247:6",
+		"Code": "shape.CheckZoom(hZoom)",
+		"TrueCount": 14,
+		"FalseCount": 2
+	},
+	{
+		"Start": "integrate/merge_zoom.go:247:33",
+		"Code": "shape.CheckZoom(vZoom)",
+		"TrueCount": 13,
+		"FalseCount": 1
+	},
+	{
+		"Start": "integrate/merge_zoom.go:259:6",
+		"Code": "err != nil",
+		"TrueCount": 1,
+		"FalseCount": 19
+	},
+	{
+		"Start": "integrate/merge_zoom.go:265:6",
+		"Code": "spatialID.HZoom() >= hZoom && spatialID.VZoom() >= vZoom",
+		"TrueCount": 12,
+		"FalseCount": 7
+	},
+	{
+		"Start": "integrate/merge_zoom.go:265:6",
+		"Code": "spatialID.HZoom() >= hZoom",
+		"TrueCount": 14,
+		"FalseCount": 5
+	},
+	{
+		"Start": "integrate/merge_zoom.go:265:36",
+		"Code": "spatialID.VZoom() >= vZoom",
+		"TrueCount": 12,
+		"FalseCount": 2
+	},
+	{
+		"Start": "integrate/merge_zoom.go:274:6",
+		"Code": "spatialID.HZoom() > maxHZoom",
+		"TrueCount": 12,
+		"FalseCount": 7
+	},
+	{
+		"Start": "integrate/merge_zoom.go:277:6",
+		"Code": "spatialID.VZoom() > maxVZoom",
+		"TrueCount": 12,
+		"FalseCount": 7
+	},
+	{
+		"Start": "integrate/merge_zoom.go:305:53",
+		"Code": "ok",
+		"TrueCount": 5,
+		"FalseCount": 7
+	},
+	{
+		"Start": "integrate/merge_zoom.go:317:6",
+		"Code": "highSpatialID.IsDense()",
+		"TrueCount": 1,
+		"FalseCount": 6
+	}
+]

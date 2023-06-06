@@ -1,0 +1,6 @@
+2022-12-08T04:23:24.050Z	DEBUG	shape/point.go:140	pointList: [%!s(*object.Point=&{-58.37349 -34.60851 -1300})], hZoom: 14, vZoom: 25
+2022-12-08T04:23:24.050Z	DEBUG	shape/point.go:499	lon: -58.37349, lat: -34.60851, hZoom: 14
+2022-12-08T04:23:24.050Z	DEBUG	shape/point.go:527	return value: 14/5535/9872
+2022-12-08T04:23:24.050Z	DEBUG	shape/point.go:547	alt: -1300, vZoom: 25
+2022-12-08T04:23:24.050Z	DEBUG	shape/point.go:564	return value: 25/-1300
+2022-12-08T04:23:24.050Z	DEBUG	shape/point.go:172	return value: [14/5535/9872/25/-1300]

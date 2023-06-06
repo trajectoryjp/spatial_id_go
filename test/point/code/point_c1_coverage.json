@@ -1,0 +1,164 @@
+[
+	{
+		"Start": "shape/point.go:61:5",
+		"Code": "err != nil",
+		"TrueCount": 3,
+		"FalseCount": 2
+	},
+	{
+		"Start": "shape/point.go:105:5",
+		"Code": "err != nil",
+		"TrueCount": 1,
+		"FalseCount": 5
+	},
+	{
+		"Start": "shape/point.go:151:5",
+		"Code": "!CheckZoom(hZoom) || !CheckZoom(vZoom)",
+		"TrueCount": 5,
+		"FalseCount": 27
+	},
+	{
+		"Start": "shape/point.go:151:6",
+		"Code": "CheckZoom(hZoom)",
+		"TrueCount": 28,
+		"FalseCount": 4
+	},
+	{
+		"Start": "shape/point.go:151:27",
+		"Code": "CheckZoom(vZoom)",
+		"TrueCount": 27,
+		"FalseCount": 1
+	},
+	{
+		"Start": "shape/point.go:153:12",
+		"Code": "common.Include(pointList, nil) == true",
+		"TrueCount": 2,
+		"FalseCount": 25
+	},
+	{
+		"Start": "shape/point.go:214:5",
+		"Code": "err != nil",
+		"TrueCount": 1,
+		"FalseCount": 27
+	},
+	{
+		"Start": "shape/point.go:229:5",
+		"Code": "!CheckZoom(hZoom) || !CheckZoom(vZoom)",
+		"TrueCount": 3,
+		"FalseCount": 24
+	},
+	{
+		"Start": "shape/point.go:229:6",
+		"Code": "CheckZoom(hZoom)",
+		"TrueCount": 25,
+		"FalseCount": 2
+	},
+	{
+		"Start": "shape/point.go:229:27",
+		"Code": "CheckZoom(vZoom)",
+		"TrueCount": 24,
+		"FalseCount": 1
+	},
+	{
+		"Start": "shape/point.go:238:5",
+		"Code": "option == enum.Center",
+		"TrueCount": 18,
+		"FalseCount": 6
+	},
+	{
+		"Start": "shape/point.go:243:12",
+		"Code": "option == enum.Vertex",
+		"TrueCount": 4,
+		"FalseCount": 2
+	},
+	{
+		"Start": "shape/point.go:301:6",
+		"Code": "err != nil",
+		"TrueCount": 1,
+		"FalseCount": 1
+	},
+	{
+		"Start": "shape/point.go:362:6",
+		"Code": "err != nil",
+		"TrueCount": 1,
+		"FalseCount": 1
+	},
+	{
+		"Start": "shape/point.go:391:9",
+		"Code": "0 <= zoom",
+		"TrueCount": 114,
+		"FalseCount": 4
+	},
+	{
+		"Start": "shape/point.go:391:22",
+		"Code": "zoom <= 35",
+		"TrueCount": 108,
+		"FalseCount": 6
+	},
+	{
+		"Start": "shape/point.go:418:5",
+		"Code": "len(id) != 5",
+		"TrueCount": 2,
+		"FalseCount": 33
+	},
+	{
+		"Start": "shape/point.go:427:6",
+		"Code": "err == nil",
+		"TrueCount": 150,
+		"FalseCount": 5
+	},
+	{
+		"Start": "shape/point.go:457:5",
+		"Code": "lon == 180",
+		"TrueCount": 1,
+		"FalseCount": 70
+	},
+	{
+		"Start": "shape/point.go:666:5",
+		"Code": "(hLimit - 1) <= latIndexFloat",
+		"TrueCount": 3,
+		"FalseCount": 39
+	},
+	{
+		"Start": "shape/point.go:668:12",
+		"Code": "latIndexFloat < 0.0",
+		"TrueCount": 1,
+		"FalseCount": 38
+	},
+	{
+		"Start": "shape/point.go:681:5",
+		"Code": "(hLimit-1) <= lonIndexFloat || lonIndexFloat < 0.0",
+		"TrueCount": 8,
+		"FalseCount": 34
+	},
+	{
+		"Start": "shape/point.go:681:5",
+		"Code": "(hLimit-1) <= lonIndexFloat",
+		"TrueCount": 7,
+		"FalseCount": 35
+	},
+	{
+		"Start": "shape/point.go:681:36",
+		"Code": "lonIndexFloat < 0.0",
+		"TrueCount": 1,
+		"FalseCount": 34
+	},
+	{
+		"Start": "shape/point.go:683:7",
+		"Code": "lonIndexFloat < 0",
+		"TrueCount": 1,
+		"FalseCount": 8
+	},
+	{
+		"Start": "shape/point.go:747:6",
+		"Code": "len(c) != 4",
+		"TrueCount": 3,
+		"FalseCount": 9
+	},
+	{
+		"Start": "shape/point.go:787:6",
+		"Code": "len(c) != 5",
+		"TrueCount": 2,
+		"FalseCount": 8
+	}
+]

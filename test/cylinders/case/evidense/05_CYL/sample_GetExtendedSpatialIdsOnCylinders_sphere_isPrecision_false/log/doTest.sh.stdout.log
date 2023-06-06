@@ -1,0 +1,6 @@
+##### 試験コマンド実行: go run expect.go env.go
+open ./exp_1-1-9-5.txt: no such file or directory
+##### 試験コマンド実行結果: 0
+##### 試験コマンド実行: go run main.go env.go
+##### 試験コマンド実行結果: 0
+cat: /home/ishigas/git/it-spatialid/go-spatialid/05_CYL/sample_GetExtendedSpatialIdsOnCylinders_sphere_isPrecision_false/log/expected.txt: No such file or directory

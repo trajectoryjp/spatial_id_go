@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#375EAB">
+
+  <title>object - Go Documentation Server</title>
+
+<link type="text/css" rel="stylesheet" href="./object_files/style.css">
+
+<script>window.initFuncs = [];</script>
+<script src="./object_files/jquery.js" defer=""></script>
+
+
+
+<script>var goVersion = "go1.19";</script>
+<script src="./object_files/godocs.js" defer=""></script>
+</head>
+<body>
+
+<div id="lowframe" style="position: fixed; bottom: 0; left: 0; height: 0; width: 100%; border-top: thin solid grey; background-color: white; overflow: auto;">
+...
+</div><!-- #lowframe -->
+
+<div id="topbar" class="wide"><div class="container">
+<div class="top-heading" id="heading-wide"><a href="http://localhost:8002/pkg/">Go Documentation Server</a></div>
+<div class="top-heading" id="heading-narrow"><a href="http://localhost:8002/pkg/">GoDoc</a></div>
+<a href="http://localhost:8002/pkg/spatial-id/common/object/?m=all#" id="menu-button"><span id="menu-button-arrow">▽</span></a>
+<form method="GET" action="http://localhost:8002/search">
+<div id="menu" style="min-width: 120px;">
+
+<span class="search-box"><input type="search" id="search" name="q" placeholder="Search" aria-label="Search" required=""><button type="submit"><span><!-- magnifying glass: --><svg width="24" height="24" viewBox="0 0 24 24"><title>submit search</title><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path><path d="M0 0h24v24H0z" fill="none"></path></svg></span></button></span>
+</div>
+</form>
+
+</div></div>
+
+
+
+<div id="page" class="wide" tabindex="-1" style="outline: 0px;">
+<div class="container">
+
+
+  <h1>
+    Package object
+    <span class="text-muted"></span>
+  </h1>
+
+
+
+
+
+
+
+<div id="nav"></div>
+
+
+<!--
+	Copyright 2009 The Go Authors. All rights reserved.
+	Use of this source code is governed by a BSD-style
+	license that can be found in the LICENSE file.
+-->
+<!--
+	Note: Static (i.e., not template-generated) href and id
+	attributes start with "pkg-" to make it impossible for
+	them to conflict with generated attributes (some of which
+	correspond to Go identifiers).
+-->
+
+	<script>
+	document.ANALYSIS_DATA = null;
+	document.CALLGRAPH = null;
+	</script>
+
+	
+		
+		<div id="short-nav">
+			<dl>
+			<dd><code>import "spatial-id/common/object"</code></dd>
+			</dl>
+			<dl>
+			<dd><a href="http://localhost:8002/pkg/spatial-id/common/object/?m=all#pkg-overview" class="overviewLink">Overview</a></dd>
+			<dd><a href="http://localhost:8002/pkg/spatial-id/common/object/?m=all#pkg-index" class="indexLink">Index</a></dd>
+			
+			
+			</dl>
+		</div>
+		<!-- The package's Name is printed as title by the top-level template -->
+		<div id="pkg-overview" class="toggleVisible">
+			<div class="collapsed">
+				<h2 class="toggleButton" title="Click to show Overview section">Overview ▹</h2>
+			</div>
+			<div class="expanded">
+				<h2 class="toggleButton" title="Click to hide Overview section">Overview ▾</h2>
+				<p>object ライブラリ内で共通的に使用するオブジェクトを管理するパッケージ。
+
+				
+			</p></div>
+		</div>
+
+		<div id="pkg-index" class="toggleVisible">
+		<div class="collapsed">
+			<h2 class="toggleButton" title="Click to show Index section">Index ▹</h2>
+		</div>
+		<div class="expanded">
+			<h2 class="toggleButton" title="Click to hide Index section">Index ▾</h2>
+
+		<!-- Table of contents for API; must be named manual-nav to turn off auto nav. -->
+			<div id="manual-nav">
+			<dl>
+			
+			
+			
+			
+				
+				<dd><a href="http://localhost:8002/pkg/spatial-id/common/object/?m=all#Point">type Point</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:8002/pkg/spatial-id/common/object/?m=all#NewPoint">func NewPoint(lon float64, lat float64, alt float64) (*Point, error)</a></dd>
+				
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:8002/pkg/spatial-id/common/object/?m=all#Point.Alt">func (p Point) Alt() float64</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:8002/pkg/spatial-id/common/object/?m=all#Point.Lat">func (p Point) Lat() float64</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:8002/pkg/spatial-id/common/object/?m=all#Point.Lon">func (p Point) Lon() float64</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:8002/pkg/spatial-id/common/object/?m=all#Point.SetAlt">func (p *Point) SetAlt(alt float64)</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:8002/pkg/spatial-id/common/object/?m=all#Point.SetLat">func (p *Point) SetLat(lat float64) error</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="http://localhost:8002/pkg/spatial-id/common/object/?m=all#Point.SetLon">func (p *Point) SetLon(lon float64) error</a></dd>
+				
+			
+			
+			</dl>
+			</div><!-- #manual-nav -->
+
+		
+
+		
+			<h3>Package files</h3>
+			<p>
+			<span style="font-size:90%">
+			
+				<a href="http://localhost:8002/src/spatial-id/common/object/coordinate.go">coordinate.go</a>
+			
+			</span>
+			</p>
+		
+		</div><!-- .expanded -->
+		</div><!-- #pkg-index -->
+
+		
+
+		
+		
+		
+		
+			
+			
+			<h2 id="Point">type <a href="http://localhost:8002/src/spatial-id/common/object/coordinate.go?s=230:320#L2">Point</a>
+				<a class="permalink" href="http://localhost:8002/pkg/spatial-id/common/object/?m=all#Point">¶</a>
+				
+				
+			</h2>
+			<p>Point 地理座標用の構造体
+
+			</p><pre>type Point struct {
+<span id="Point.lon"></span>    lon <a href="http://localhost:8002/pkg/builtin/#float64">float64</a> <span class="comment">// 経度</span>
+<span id="Point.lat"></span>    lat <a href="http://localhost:8002/pkg/builtin/#float64">float64</a> <span class="comment">// 緯度</span>
+<span id="Point.alt"></span>    alt <a href="http://localhost:8002/pkg/builtin/#float64">float64</a> <span class="comment">// 高さ</span>
+}
+</pre>
+
+			
+
+			
+
+			
+			
+			
+
+			
+				
+				<h3 id="NewPoint">func <a href="http://localhost:8002/src/spatial-id/common/object/coordinate.go?s=1055:1123#L30">NewPoint</a>
+					<a class="permalink" href="http://localhost:8002/pkg/spatial-id/common/object/?m=all#NewPoint">¶</a>
+					
+					
+				</h3>
+				<pre>func NewPoint(lon <a href="http://localhost:8002/pkg/builtin/#float64">float64</a>, lat <a href="http://localhost:8002/pkg/builtin/#float64">float64</a>, alt <a href="http://localhost:8002/pkg/builtin/#float64">float64</a>) (*<a href="http://localhost:8002/pkg/spatial-id/common/object/?m=all#Point">Point</a>, <a href="http://localhost:8002/pkg/builtin/#error">error</a>)</pre>
+				<p>NewPoint Point初期化関数
+</p><p>経度入力値の絶対値が180を超える場合エラーとなる。
+</p><p>また、緯度入力値の絶対値が85.0511287798を超える場合エラーとなる。
+入力値が小数点11桁以上の場合、10桁となるよう切り捨てる
+</p><p>引数：
+</p><pre>lon：経度
+lat：緯度
+alt：高さ
+</pre>
+<p>戻り値：
+</p><pre>初期化したPointオブジェクト
+</pre>
+<p>戻り値(エラー)：
+</p><pre>以下の条件に当てはまる場合、エラーインスタンスが返却される。
+ 経度入力値超過：絶対値が180を超える経度が入力された場合
+ 緯度入力値超過：絶対値が85.0511287798を超える緯度が入力された場合
+</pre>
+
+				
+				
+			
+
+			
+				
+				<h3 id="Point.Alt">func (Point) <a href="http://localhost:8002/src/spatial-id/common/object/coordinate.go?s=4235:4263#L158">Alt</a>
+					<a class="permalink" href="http://localhost:8002/pkg/spatial-id/common/object/?m=all#Point.Alt">¶</a>
+					
+					
+				</h3>
+				<pre>func (p <a href="http://localhost:8002/pkg/spatial-id/common/object/?m=all#Point">Point</a>) Alt() <a href="http://localhost:8002/pkg/builtin/#float64">float64</a></pre>
+				<p>Alt 高さ設定値取得関数
+</p><p>Pointオブジェクトに設定されているaltの値を取得する。
+</p><p>戻り値：
+</p><pre>Pointオブジェクトに設定されているaltの値
+</pre>
+
+				
+				
+				
+			
+				
+				<h3 id="Point.Lat">func (Point) <a href="http://localhost:8002/src/spatial-id/common/object/coordinate.go?s=3989:4017#L147">Lat</a>
+					<a class="permalink" href="http://localhost:8002/pkg/spatial-id/common/object/?m=all#Point.Lat">¶</a>
+					
+					
+				</h3>
+				<pre>func (p <a href="http://localhost:8002/pkg/spatial-id/common/object/?m=all#Point">Point</a>) Lat() <a href="http://localhost:8002/pkg/builtin/#float64">float64</a></pre>
+				<p>Lat 緯度設定値取得関数
+</p><p>Pointオブジェクトに設定されているlatの値を取得する。
+</p><p>戻り値：
+</p><pre>Pointオブジェクトに設定されているlatの値
+</pre>
+
+				
+				
+				
+			
+				
+				<h3 id="Point.Lon">func (Point) <a href="http://localhost:8002/src/spatial-id/common/object/coordinate.go?s=3743:3771#L136">Lon</a>
+					<a class="permalink" href="http://localhost:8002/pkg/spatial-id/common/object/?m=all#Point.Lon">¶</a>
+					
+					
+				</h3>
+				<pre>func (p <a href="http://localhost:8002/pkg/spatial-id/common/object/?m=all#Point">Point</a>) Lon() <a href="http://localhost:8002/pkg/builtin/#float64">float64</a></pre>
+				<p>Lon 経度設定値取得関数
+</p><p>Pointオブジェクトに設定されているlonの値を取得する。
+</p><p>戻り値：
+</p><pre>Pointオブジェクトに設定されているlonの値
+</pre>
+
+				
+				
+				
+			
+				
+				<h3 id="Point.SetAlt">func (*Point) <a href="http://localhost:8002/src/spatial-id/common/object/coordinate.go?s=3491:3526#L125">SetAlt</a>
+					<a class="permalink" href="http://localhost:8002/pkg/spatial-id/common/object/?m=all#Point.SetAlt">¶</a>
+					
+					
+				</h3>
+				<pre>func (p *<a href="http://localhost:8002/pkg/spatial-id/common/object/?m=all#Point">Point</a>) SetAlt(alt <a href="http://localhost:8002/pkg/builtin/#float64">float64</a>)</pre>
+				<p>SetAlt 高さ設定関数
+</p><p>Pointオブジェクトのaltを引数の入力値に設定する。
+</p><p>引数：
+</p><pre>alt：高さ
+</pre>
+
+				
+				
+				
+			
+				
+				<h3 id="Point.SetLat">func (*Point) <a href="http://localhost:8002/src/spatial-id/common/object/coordinate.go?s=2590:2631#L92">SetLat</a>
+					<a class="permalink" href="http://localhost:8002/pkg/spatial-id/common/object/?m=all#Point.SetLat">¶</a>
+					
+					
+				</h3>
+				<pre>func (p *<a href="http://localhost:8002/pkg/spatial-id/common/object/?m=all#Point">Point</a>) SetLat(lat <a href="http://localhost:8002/pkg/builtin/#float64">float64</a>) <a href="http://localhost:8002/pkg/builtin/#error">error</a></pre>
+				<p>SetLat 緯度設定関数
+</p><p>PointオブジェクトのLatを引数の入力値に設定する。
+入力値の絶対値が85.0511287798を超える場合エラーとなる。
+入力値が小数点11桁以上の場合、10桁となるよう切り捨てる
+</p><p>引数：
+</p><pre>lat：緯度
+</pre>
+<p>戻り値(エラー)：
+</p><pre>以下の条件に当てはまる場合、エラーインスタンスが返却される。
+ 緯度入力値超過：絶対値が85.0511287798を超える緯度が入力された場合
+</pre>
+
+				
+				
+				
+			
+				
+				<h3 id="Point.SetLon">func (*Point) <a href="http://localhost:8002/src/spatial-id/common/object/coordinate.go?s=1768:1809#L66">SetLon</a>
+					<a class="permalink" href="http://localhost:8002/pkg/spatial-id/common/object/?m=all#Point.SetLon">¶</a>
+					
+					
+				</h3>
+				<pre>func (p *<a href="http://localhost:8002/pkg/spatial-id/common/object/?m=all#Point">Point</a>) SetLon(lon <a href="http://localhost:8002/pkg/builtin/#float64">float64</a>) <a href="http://localhost:8002/pkg/builtin/#error">error</a></pre>
+				<p>SetLon 経度設定関数
+</p><p>PointオブジェクトのLonを引数の入力値に設定する。
+入力値の絶対値が180を超える場合エラーとなる。
+</p><p>引数：
+</p><pre>lon：経度
+</pre>
+<p>戻り値(エラー)：
+</p><pre>以下の条件に当てはまる場合、エラーインスタンスが返却される。
+ 経度入力値超過：絶対値が180を超える経度が入力された場合
+</pre>
+
+				
+				
+				
+			
+		
+	
+
+	
+
+
+
+
+
+
+
+<div id="footer">
+Build version go1.19.<br>
+Except as <a href="https://developers.google.com/site-policies#restrictions">noted</a>,
+the content of this page is licensed under the
+Creative Commons Attribution 3.0 License,
+and code is licensed under a <a href="http://localhost:8002/LICENSE">BSD license</a>.<br>
+<a href="https://golang.org/doc/tos.html">Terms of Service</a> |
+<a href="https://www.google.com/intl/en/policies/privacy/">Privacy Policy</a>
+</div>
+
+</div><!-- .container -->
+</div><!-- #page -->
+
+
+</body></html>

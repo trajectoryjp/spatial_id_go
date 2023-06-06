@@ -1,0 +1,299 @@
+#############################################################################
+# 前提となる変数
+# - script_home   : 本ファイル読み込み元のスクリプトファイル格納ディレクトリパス
+# - test_home     : 本ファイル格納ディレクトリパス
+#############################################################################
+# script_homeに移動
+pushd ${script_home} > /dev/null
+# 自身のホスト名を取得
+typeset -r my_hostname=`hostname -s`
+
+#############################################################################
+# 試験共通定義(固定)
+#############################################################################
+
+#############################################################################
+# 環境変数設定
+#############################################################################
+
+#############################################################################
+# 試験項目依存環境定義
+#############################################################################
+
+### ログ出力関連
+# ログ出力ディレクトリパス(★ 上書き可能)
+typeset log_dir=${script_home}/log
+
+# 標準出力ログファイル名(★ 上書き可能)
+typeset stdout_log=stdout.log
+
+# 標準エラー出力ログファイル名(★ 上書き可能)
+typeset stderr_log=stderr.log
+
+# コマンド戻り値出力ファイル名(★ 上書き可能)
+typeset retcode_log=retcode.log
+
+# 出力ログファイル名接尾辞(★ 上書き可能)
+typeset logfile_postfix=""
+
+
+### メモリリーク関連
+# メモリリークチェックフラグ(上書き可能)
+typeset -i memcheck_flg=0
+
+# 全試験サーバ共通のvalgrindオプション
+typeset -r valgrind_cmd_common="valgrind -v --num-callers=50 --leak-resolution=high --error-limit=no --leak-check=full --show-reachable=yes --track-fds=yes --log-file=${log_dir}/leak.log.%p"
+# valgrindコマンド(上書き可)
+valgrind_cmd=${valgrind_cmd_common}
+
+#############################################################################
+# 関数定義
+#############################################################################
+
+#
+# コマンド実行関数(テスト対象コマンド)
+# @param  1)  実行コマンド
+# @param  2~) コマンド引数
+# @return コマンド実行結果
+# @note
+#  - 内部でexec_cmdを呼び出している。
+#    コマンド実行をechoするかどうかの違いのみ
+#
+exec_test() {
+        echo "##### 試験コマンド実行: ${@}"
+        # コマンド実行
+        exec_cmd "${@}"
+        local ret=${?}
+        echo "##### 試験コマンド実行結果: ${ret}"
+
+        # 実行結果返却
+        return ${ret}
+}
+
+
+#
+# コマンド実行関数(テスト対象外コマンド)
+# @param  1)  実行コマンド
+# @param  2~) コマンド引数
+# @return コマンド実行結果
+# @note
+#  - 標準出力、標準エラー出力、コマンド戻り値は以下のパスに出力される
+#    - コマンド名_${stdout_log}${logfile_postfix}
+#    - コマンド名_${stderr_log}${logfile_postfix}
+#    - コマンド名_${retcode_log}${logfile_postfix}
+#  - 変数memcheckを有効にしている場合、メモリリークチェックが行われる
+#
+exec_cmd() {
+        local target_cmd="${1}"
+        local cmdname=`basename ${target_cmd}`
+        local __log_dir=${log_dir}
+
+        # 第一パラメータ以外はコマンド引数としてそのまま受け渡す
+        shift
+
+        # ログ出力ディレクトリがなかったら作成
+        if [ ! -d ${__log_dir} ];then
+                mkdir -p ${__log_dir}
+        fi
+
+        local memcheck=""
+        if [ ${memcheck_flg} -eq 1 ];then
+                memcheck="${valgrind_cmd// /
+                }"
+        fi
+        # コマンド実行
+        ${memcheck} ${target_cmd} "${@}" \
+                2> ${__log_dir}/${cmdname}_${stderr_log}${logfile_postfix} \
+                | tee ${__log_dir}/${cmdname}_${stdout_log}${logfile_postfix}
+        # リターンコード取得
+        local retcode=${PIPESTATUS[0]}
+        echo "${retcode}" > ${__log_dir}/${cmdname}_${retcode_log}${logfile_postfix}
+
+        return ${retcode}
+}
+
+
+#
+# 絶対パスを相対パスに変換する。
+# @param  1) 変換対象の絶対パス
+#
+get_rel_path() {
+        local IFSBAK=$IFS
+        IFS=/
+        local target=($1)
+        local base=(${2:-${script_home}})
+        IFS=$IFSBAK
+
+        local c=0
+        while [ "${target[$c]}" == "${base[$c]}" ]
+        do
+                c=$(expr $c + 1)
+        done
+        local relpath=""
+        for ((i=$c;i<${#base[@]};i++))
+        do
+                relpath="/..${relpath}"
+        done
+        for ((i=$c;i<${#target[@]};i++))
+        do
+                relpath="${relpath}/${target[$i]}"
+        done
+        echo ${relpath:1}
+}
+
+
+#
+# 任意のパスから絶対パスを取得する
+# @param  1) 変換対象のパス
+#
+get_abs_path() {
+        if [ ! -d $(dirname $1) ]; then
+        # 無いと移動できないのでmkdir
+                mkdir -p $(dirname $1)
+        fi
+        local abspath=$(cd $(dirname $1);pwd)/$(basename $1)
+        echo ${abspath}
+}
+
+
+#
+# ログ表示関数
+# @note
+#  - ${log_dir}にログが集約されている前提
+#
+show_logs() {
+        echo -e "\n##### 出力ログ表示:${log_dir}"
+
+        local files=`find ${log_dir} -name "*.*" -name ".svn" -prune -o -print | sort -d`
+        for file in ${files}
+        do
+                if [ -f "${file}" ]; then
+                        echo "#----- ${file}"
+                        cat ${file}
+                        echo ""
+                fi
+        done
+}
+
+#
+# tailログ取得
+# @param  1) 取得対象ログファイルパス
+# @note
+#   - 出力先は${log_dir}ディレクトリ
+#
+tail_log() {
+        # ファイルが存在しない場合は777で作成
+        local file=${1}
+        if [ ! -e ${file} ]; then
+                touch ${file}
+                chmod 777 ${file}
+        fi
+
+        # ログファイルパス生成
+        local name=${file##*/}
+        local logfile=${log_dir}/${name}
+
+        # tail開始
+        tail -n 0 -F ${file} > ${logfile} &
+}
+
+#
+# 全てのバックグラウンドジョブを停止する
+# @note
+#  - 停止するジョブはシェルスクリプトから起動したバックグラウンドジョブに限定される
+#
+stop_jobs () {
+        local count="1"
+        for job in `jobs -p`
+        do
+                kill $job
+                wait $job &>/dev/null
+        done
+}
+
+#
+# ファイル内容全取得(一行化、途中スペースはそのまま)
+# @param 1) ファイルパス
+# @return ファイル内容を標準出力
+#
+read_file_all_line() {
+
+        # 引数チェック
+        if [ $# -eq 0 ]; then
+                echo "Illegal Argument. (args=${#})" >&2
+                return 1
+        fi
+        local file=${1}
+
+        # ファイル読み込み可否確認
+        if [ ! -e ${file} -o ! -r ${file} ]; then
+                echo "Failed to read. (file=${file})" >&2
+                return 1
+        fi
+
+        # 全行連結
+        perl -e 'my $file=shift; open(my $fh, "<", $file); my $content=""; while(my $line = readline $fh) {$line =~ s/^\s*(.*?)\s*$/$1/; $content.=$line;} print "$content\n";' ${file}
+}
+
+#
+# コマンド内容出力
+# @param 1) コマンド
+# @return コマンド内容を標準出力
+#
+echo_cmd() {
+        echo "${@}"
+}
+
+
+#############################################################################
+# JSON関連操作
+#############################################################################
+
+#
+# JSONダンプ
+# 人間が目視で確認しやすい形式(pretty形式)にJSONを変換する
+# @param 1) 入力JSONファイル
+# @param 2) 出力JSONファイル
+dump_pretty_json() {
+        if [ $# -ne 2 ] ; then
+                echo_cmd "Miss arguments. at:diff_json"
+                return 1
+        fi
+        jq -S . ${1} >${2}
+        return $?
+}
+
+#
+# JSON差分比較
+# @param 1) 期待JSON。JSONとして期待する値を格納するファイル
+# @param 2) 評価JSON。JSONとして評価する値を格納するファイル
+# @param 3..) sedルール。期待JSONと評価JSONで許容される差分を指定する。
+#             (省略時は、sedを実行しない)
+diff_json() {
+        local sed_rule=""
+        if [ $# -lt 2 ] ; then
+                echo_cmd "Miss arguments. at:diff_json"
+                return 1
+        fi
+
+        exp_json=${1}
+        act_json=${2}
+        shift
+        shift
+        if [ $# -gt 0 ] ; then
+                sed_rule="$*"
+        fi
+
+        if [ -z "${sed_rule}" ] ; then
+                exec_cmd diff \
+                        <(jq -S . ${exp_json}) \
+                        <(jq -S . ${act_json}) \
+                        >/dev/null
+        else
+                exec_cmd diff \
+                        <(jq -S . ${exp_json} | sed -e ${sed_rule}) \
+                        <(jq -S . ${act_json} | sed -e ${sed_rule}) \
+                        >/dev/null
+        fi
+        return $?
+}

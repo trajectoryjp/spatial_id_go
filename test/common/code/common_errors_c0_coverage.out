@@ -1,0 +1,9 @@
+mode: set
+spatial-id/common/errors/errors.go:41.40,42.23 1 1
+spatial-id/common/errors/errors.go:42.23,44.3 1 1
+spatial-id/common/errors/errors.go:44.8,46.3 1 1
+spatial-id/common/errors/errors.go:58.69,59.13 1 1
+spatial-id/common/errors/errors.go:60.27,61.87 1 1
+spatial-id/common/errors/errors.go:62.29,63.96 1 1
+spatial-id/common/errors/errors.go:64.29,65.81 1 1
+spatial-id/common/errors/errors.go:66.10,67.84 1 1

@@ -1,0 +1,34 @@
+2022-12-08T04:25:03.567Z	DEBUG	shape/point.go:140	pointList: [%!s(*object.Point=&{139.753098 35.615309 0}) %!s(*object.Point=&{139.753098 35.61531 0}) %!s(*object.Point=&{139.753098 35.615311 0}) %!s(*object.Point=&{139.753098 35.615312 0}) %!s(*object.Point=&{139.753098 35.615313 0}) %!s(*object.Point=&{139.753098 35.615314 0}) %!s(*object.Point=&{139.753098 35.615315 0}) %!s(*object.Point=&{139.753098 35.615316 0})], hZoom: 26, vZoom: 26
+2022-12-08T04:25:03.567Z	DEBUG	shape/point.go:499	lon: 139.753098, lat: 35.615309, hZoom: 26
+2022-12-08T04:25:03.567Z	DEBUG	shape/point.go:527	return value: 26/59606297/26441118
+2022-12-08T04:25:03.567Z	DEBUG	shape/point.go:547	alt: 0, vZoom: 26
+2022-12-08T04:25:03.567Z	DEBUG	shape/point.go:564	return value: 26/0
+2022-12-08T04:25:03.567Z	DEBUG	shape/point.go:499	lon: 139.753098, lat: 35.61531, hZoom: 26
+2022-12-08T04:25:03.567Z	DEBUG	shape/point.go:527	return value: 26/59606297/26441118
+2022-12-08T04:25:03.567Z	DEBUG	shape/point.go:547	alt: 0, vZoom: 26
+2022-12-08T04:25:03.567Z	DEBUG	shape/point.go:564	return value: 26/0
+2022-12-08T04:25:03.567Z	DEBUG	shape/point.go:499	lon: 139.753098, lat: 35.615311, hZoom: 26
+2022-12-08T04:25:03.567Z	DEBUG	shape/point.go:527	return value: 26/59606297/26441118
+2022-12-08T04:25:03.567Z	DEBUG	shape/point.go:547	alt: 0, vZoom: 26
+2022-12-08T04:25:03.567Z	DEBUG	shape/point.go:564	return value: 26/0
+2022-12-08T04:25:03.567Z	DEBUG	shape/point.go:499	lon: 139.753098, lat: 35.615312, hZoom: 26
+2022-12-08T04:25:03.567Z	DEBUG	shape/point.go:527	return value: 26/59606297/26441117
+2022-12-08T04:25:03.567Z	DEBUG	shape/point.go:547	alt: 0, vZoom: 26
+2022-12-08T04:25:03.567Z	DEBUG	shape/point.go:564	return value: 26/0
+2022-12-08T04:25:03.567Z	DEBUG	shape/point.go:499	lon: 139.753098, lat: 35.615313, hZoom: 26
+2022-12-08T04:25:03.567Z	DEBUG	shape/point.go:527	return value: 26/59606297/26441117
+2022-12-08T04:25:03.567Z	DEBUG	shape/point.go:547	alt: 0, vZoom: 26
+2022-12-08T04:25:03.567Z	DEBUG	shape/point.go:564	return value: 26/0
+2022-12-08T04:25:03.567Z	DEBUG	shape/point.go:499	lon: 139.753098, lat: 35.615314, hZoom: 26
+2022-12-08T04:25:03.567Z	DEBUG	shape/point.go:527	return value: 26/59606297/26441117
+2022-12-08T04:25:03.567Z	DEBUG	shape/point.go:547	alt: 0, vZoom: 26
+2022-12-08T04:25:03.567Z	DEBUG	shape/point.go:564	return value: 26/0
+2022-12-08T04:25:03.567Z	DEBUG	shape/point.go:499	lon: 139.753098, lat: 35.615315, hZoom: 26
+2022-12-08T04:25:03.567Z	DEBUG	shape/point.go:527	return value: 26/59606297/26441117
+2022-12-08T04:25:03.567Z	DEBUG	shape/point.go:547	alt: 0, vZoom: 26
+2022-12-08T04:25:03.567Z	DEBUG	shape/point.go:564	return value: 26/0
+2022-12-08T04:25:03.567Z	DEBUG	shape/point.go:499	lon: 139.753098, lat: 35.615316, hZoom: 26
+2022-12-08T04:25:03.567Z	DEBUG	shape/point.go:527	return value: 26/59606297/26441116
+2022-12-08T04:25:03.567Z	DEBUG	shape/point.go:547	alt: 0, vZoom: 26
+2022-12-08T04:25:03.567Z	DEBUG	shape/point.go:564	return value: 26/0
+2022-12-08T04:25:03.567Z	DEBUG	shape/point.go:172	return value: [26/59606297/26441118/26/0 26/59606297/26441118/26/0 26/59606297/26441118/26/0 26/59606297/26441117/26/0 26/59606297/26441117/26/0 26/59606297/26441117/26/0 26/59606297/26441117/26/0 26/59606297/26441116/26/0]

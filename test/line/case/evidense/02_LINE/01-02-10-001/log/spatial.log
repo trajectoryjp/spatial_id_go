@@ -1,0 +1,18 @@
+2023-03-24T01:46:48.484Z	DEBUG	shape/line.go:92	[START] 拡張空間ID変換(線分)
+2023-03-24T01:46:48.484Z	DEBUG	shape/line.go:93	始点(地理座標系)=(179.800000, 0.000000, 0.000000)
+2023-03-24T01:46:48.484Z	DEBUG	shape/line.go:94	終点(地理座標系)=(179.900000, 0.000000, 0.000000)
+2023-03-24T01:46:48.484Z	DEBUG	shape/point.go:140	pointList: [%!s(*object.Point=&{179.8 0 0}) %!s(*object.Point=&{179.9 0 0})], hZoom: 10, vZoom: 10
+2023-03-24T01:46:48.484Z	DEBUG	shape/point.go:454	lon: 179.8, lat: 0, hZoom: 10
+2023-03-24T01:46:48.484Z	DEBUG	shape/point.go:482	return value: 10/1023/512
+2023-03-24T01:46:48.484Z	DEBUG	shape/point.go:502	alt: 0, vZoom: 10
+2023-03-24T01:46:48.484Z	DEBUG	shape/point.go:519	return value: 10/0
+2023-03-24T01:46:48.484Z	DEBUG	shape/point.go:454	lon: 179.9, lat: 0, hZoom: 10
+2023-03-24T01:46:48.484Z	DEBUG	shape/point.go:482	return value: 10/1023/512
+2023-03-24T01:46:48.484Z	DEBUG	shape/point.go:502	alt: 0, vZoom: 10
+2023-03-24T01:46:48.484Z	DEBUG	shape/point.go:519	return value: 10/0
+2023-03-24T01:46:48.484Z	DEBUG	shape/point.go:172	return value: [10/1023/512/10/0 10/1023/512/10/0]
+2023-03-24T01:46:48.484Z	DEBUG	shape/line.go:101	始点の拡張空間ID=10/1023/512/10/0
+2023-03-24T01:46:48.484Z	DEBUG	shape/line.go:102	終点の拡張空間ID=10/1023/512/10/0
+2023-03-24T01:46:48.484Z	DEBUG	shape/line.go:109	始点終点が同一
+2023-03-24T01:46:48.484Z	DEBUG	shape/line.go:110	線分範囲の拡張空間ID=[10/1023/512/10/0]
+2023-03-24T01:46:48.484Z	DEBUG	shape/line.go:111	[END] 拡張空間ID変換(線分)

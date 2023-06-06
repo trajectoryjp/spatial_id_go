@@ -1,0 +1,9 @@
+sample_GetExtendedSpatialIdsOnCylinders_cylinder                   : 円柱の拡張空間ID取得
+sample_GetExtendedSpatialIdsOnCylinders_cylinder_isPrecision_false : 円柱の拡張空間ID取得(衝突判定無し)
+sample_GetExtendedSpatialIdsOnCylinders_capsule                    : カプセルの拡張空間ID取得
+sample_GetExtendedSpatialIdsOnCylinders_capsule_isPrecision_false  : カプセルの拡張空間ID取得(衝突判定無し)
+sample_GetExtendedSpatialIdsOnCylinders_sphere                     : 球の拡張空間ID取得
+sample_GetExtendedSpatialIdsOnCylinders_sphere_isPrecision_false   : 球の拡張空間ID取得(衝突判定無し)
+sample_GetSpatialIdsOnCylinders_cylinder                           : 円柱の空間ID取得
+sample_GetSpatialIdsOnCylinders_cylinder_isPrecision_false         : 円柱の空間ID取得(衝突判定無し)
+sample_GetSpatialIdsOnCylinders_sphere                             : 球の空間ID取得
