@@ -4,12 +4,12 @@ import (
 	"math"
 	"reflect"
 
-	"git-codecommit.ap-northeast-1.amazonaws.com/v1/repos/drone_usecase.git/library_go/src/spatial-id/common"
-	"git-codecommit.ap-northeast-1.amazonaws.com/v1/repos/drone_usecase.git/library_go/src/spatial-id/common/errors"
-	"git-codecommit.ap-northeast-1.amazonaws.com/v1/repos/drone_usecase.git/library_go/src/spatial-id/common/logger"
-	"git-codecommit.ap-northeast-1.amazonaws.com/v1/repos/drone_usecase.git/library_go/src/spatial-id/common/object"
-	"git-codecommit.ap-northeast-1.amazonaws.com/v1/repos/drone_usecase.git/library_go/src/spatial-id/common/spatial"
-	"git-codecommit.ap-northeast-1.amazonaws.com/v1/repos/drone_usecase.git/library_go/src/spatial-id/operated"
+	"github.com/trajectoryjp/spatial_id_go/
+	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common/errors"
+	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common/logger"
+	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common/object"
+	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common/spatial"
+	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/operated"
 )
 
 const (
@@ -32,14 +32,17 @@ const (
 // 始点終点間を結んだ線分上の空間IDを取得する。
 //
 // 引数：
-//  start： 始点
-//  end： 終点
-//  zoom： 精度レベル
+//
+//	start： 始点
+//	end： 終点
+//	zoom： 精度レベル
 //
 // 戻り値：
-//  空間ID集合
+//
+//	空間ID集合
 //
 // 戻り値（例外）：
+//
 //	以下の条件に当てはまる場合、エラーインスタンスが返却される。
 //	 精度閾値超過：精度に 0 ～ 35 の整数値以外が入力されていた場合。
 func GetSpatialIdsOnLine(

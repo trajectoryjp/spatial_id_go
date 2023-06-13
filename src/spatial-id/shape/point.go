@@ -25,12 +25,12 @@ import (
 	"strconv"
 	"strings"
 
-	"git-codecommit.ap-northeast-1.amazonaws.com/v1/repos/drone_usecase.git/library_go/src/spatial-id/common"
-	"git-codecommit.ap-northeast-1.amazonaws.com/v1/repos/drone_usecase.git/library_go/src/spatial-id/common/consts"
-	"git-codecommit.ap-northeast-1.amazonaws.com/v1/repos/drone_usecase.git/library_go/src/spatial-id/common/enum"
-	"git-codecommit.ap-northeast-1.amazonaws.com/v1/repos/drone_usecase.git/library_go/src/spatial-id/common/errors"
-	"git-codecommit.ap-northeast-1.amazonaws.com/v1/repos/drone_usecase.git/library_go/src/spatial-id/common/logger"
-	"git-codecommit.ap-northeast-1.amazonaws.com/v1/repos/drone_usecase.git/library_go/src/spatial-id/common/object"
+	"github.com/trajectoryjp/spatial_id_go/
+	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common"
+	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common/consts"
+	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common/enum"
+	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common/errors"
+	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common/logger"
 
 	"github.com/wroge/wgs84"
 )

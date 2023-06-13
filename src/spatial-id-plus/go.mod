@@ -1,4 +1,4 @@
-module git-codecommit.ap-northeast-1.amazonaws.com/v1/repos/drone_usecase.git/library_go/src/spatial-id-plus
+module github.com/trajectoryjp/spatial_id_go/src/spatial-id-plus
 
 go 1.19
 

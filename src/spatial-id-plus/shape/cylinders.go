@@ -7,16 +7,16 @@ import (
 	"strconv"
 	"strings"
 
-	"git-codecommit.ap-northeast-1.amazonaws.com/v1/repos/drone_usecase.git/library_go/src/spatial-id-plus/shape/physics"
-	"git-codecommit.ap-northeast-1.amazonaws.com/v1/repos/drone_usecase.git/library_go/src/spatial-id/common"
-	"git-codecommit.ap-northeast-1.amazonaws.com/v1/repos/drone_usecase.git/library_go/src/spatial-id/common/consts"
-	"git-codecommit.ap-northeast-1.amazonaws.com/v1/repos/drone_usecase.git/library_go/src/spatial-id/common/enum"
-	"git-codecommit.ap-northeast-1.amazonaws.com/v1/repos/drone_usecase.git/library_go/src/spatial-id/common/errors"
-	"git-codecommit.ap-northeast-1.amazonaws.com/v1/repos/drone_usecase.git/library_go/src/spatial-id/common/logger"
-	"git-codecommit.ap-northeast-1.amazonaws.com/v1/repos/drone_usecase.git/library_go/src/spatial-id/common/object"
-	"git-codecommit.ap-northeast-1.amazonaws.com/v1/repos/drone_usecase.git/library_go/src/spatial-id/common/spatial"
-	"git-codecommit.ap-northeast-1.amazonaws.com/v1/repos/drone_usecase.git/library_go/src/spatial-id/operated"
-	"git-codecommit.ap-northeast-1.amazonaws.com/v1/repos/drone_usecase.git/library_go/src/spatial-id/shape"
+	"github.com/trajectoryjp/spatial_id_go/src/spatial-id-plus/shape/physics"
+	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common"
+	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common/consts"
+	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common/enum"
+	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common/errors"
+	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common/logger"
+	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common/object"
+	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common/spatial"
+	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/operated"
+	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/shape"
 )
 
 // convertSpatialProjectionPoint PointオブジェクトからSpatialPointオブジェクトへの変換関数
@@ -179,9 +179,9 @@ func (r Rectangular) calcUnitVoxelVector(spatialID string) (spatial.Vector3, err
 	minZ, _ := common.Min(zApexes)
 
 	logger.Debug("単位ボクセルベクトル(X: %v, Y: %v, Z: %v)",
-		math.Floor((maxX - minX) * math.Pow10(6)) / math.Pow10(6),
-		math.Floor((maxY - minY) * math.Pow10(6)) / math.Pow10(6),
-		math.Floor((maxZ - minZ) * math.Pow10(6)) * r.factor / math.Pow10(6))
+		math.Floor((maxX-minX)*math.Pow10(6))/math.Pow10(6),
+		math.Floor((maxY-minY)*math.Pow10(6))/math.Pow10(6),
+		math.Floor((maxZ-minZ)*math.Pow10(6))*r.factor/math.Pow10(6))
 
 	return spatial.Vector3{
 		X: math.Floor((maxX-minX)*math.Pow10(6)) / math.Pow10(6),

@@ -17,7 +17,7 @@
 
 # ライブラリの構成
 ライブラリは下記のパッケージ構成となっています。
-- library_go/src/spatial-id
+- src/spatial-id
   - common
     - const
     - enum
@@ -29,7 +29,7 @@
   - operated
   - shape
   - transform
-- library_go/src/spatial-id-plus
+- src/spatial-id-plus
   - shape
 
 
@@ -40,8 +40,8 @@ importは下記のように記載します。
 ```
 import (
 	"fmt"
-	plus "<リポジトリURL>/library_go/src/spatial-id-plus/shape"
-	"<リポジトリURL>/library_go/src/spatial-id/shape"
+	plus "<リポジトリURL>/src/spatial-id-plus/shape"
+	"<リポジトリURL>/src/spatial-id/shape"
 )
 ```
 ※現在のソースコードはaws codecommitのものになっています。公開環境に合わせて置換をして下さい。
@@ -69,8 +69,8 @@ main.goを作成し、下記のようにします。
    
    import (
    	"fmt"
-   	plus "git-codecommit.ap-northeast-1.amazonaws.com/v1/repos/drone_usecase.git/library_go/src/spatial-id-plus/shape"
-   	"git-codecommit.ap-northeast-1.amazonaws.com/v1/repos/drone_usecase.git/library_go/src/spatial-id/shape"
+   	plus "github.com/trajectoryjp/spatial_id_go/src/spatial-id-plus/shape"
+   	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/shape"
    )
    
    func main() {
@@ -100,8 +100,8 @@ main.goを作成し、下記のようにします。
    go 1.20
    
    require (
-   	git-codecommit.ap-northeast-1.amazonaws.com/v1/repos/drone_usecase.git/library_go/src/spatial-id v0.0.0-20230313074838-5189dc711ebb
-   	git-codecommit.ap-northeast-1.amazonaws.com/v1/repos/drone_usecase.git/library_go/src/spatial-id-plus v0.0.0-20230313074838-5189dc711ebb
+   	github.com/trajectoryjp/spatial_id_go/src/spatial-id v0.0.0-20230313074838-5189dc711ebb
+   	github.com/trajectoryjp/spatial_id_go/src/spatial-id-plus v0.0.0-20230313074838-5189dc711ebb
    )
    
    require (

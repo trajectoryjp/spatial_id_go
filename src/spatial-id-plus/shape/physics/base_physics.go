@@ -2,8 +2,8 @@
 package physics
 
 import (
-	"git-codecommit.ap-northeast-1.amazonaws.com/v1/repos/drone_usecase.git/library_go/src/spatial-id/common/spatial"
 	"github.com/azul3d/engine/native/ode"
+	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common/spatial"
 )
 
 // Physics 物理オブジェクトインターフェース

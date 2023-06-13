@@ -2,8 +2,8 @@
 package spatial
 
 import (
-	"git-codecommit.ap-northeast-1.amazonaws.com/v1/repos/drone_usecase.git/library_go/src/spatial-id/common"
-	"git-codecommit.ap-northeast-1.amazonaws.com/v1/repos/drone_usecase.git/library_go/src/spatial-id/common/errors"
+	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common"
+	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common/errors"
 )
 
 // UniqueAppend 点のユニークを保持した配列追加

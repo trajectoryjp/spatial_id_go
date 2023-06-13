@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"git-codecommit.ap-northeast-1.amazonaws.com/v1/repos/drone_usecase.git/library_go/src/spatial-id/common/consts"
+	"github.com/trajectoryjp/spatial_id_go/
 )
 
 // Get6spatialIdsAdjacentToFaces 拡張空間IDの面6個の拡張空間ID取得関数
