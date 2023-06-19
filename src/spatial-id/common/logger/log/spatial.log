@@ -1,1 +1,1 @@
-2023-06-19T16:21:17.956+0900	DEBUG	logger/logger_test.go:42	test_loggerMessage%!(EXTRA string=test_loggerVal)
+2023-06-19T17:26:01.397+0900	DEBUG	logger/logger_test.go:42	test_loggerMessage%!(EXTRA string=test_loggerVal)
