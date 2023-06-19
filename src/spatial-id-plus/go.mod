@@ -5,7 +5,7 @@ go 1.19
 
 require (
 	github.com/azul3d/engine v0.0.0-20211024043305-793ea6c2839d
-
+    github.com/trajectoryjp/spatial_id_go v1.0.0
 )
 
 require (

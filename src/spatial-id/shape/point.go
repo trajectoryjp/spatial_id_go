@@ -25,7 +25,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/trajectoryjp/spatial_id_go/
 	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common"
 	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common/consts"
 	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common/enum"
