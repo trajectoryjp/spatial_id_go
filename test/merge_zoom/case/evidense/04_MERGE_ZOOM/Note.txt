@@ -1,6 +1,0 @@
-sample_MergeSpatialIds_SingleID : MergeSpatialIdsメソッド(空間ID単体)試験用(正常系)
-sample_MergeSpatialIds_MultipleIDs : MergeSpatialIdsメソッド(空間ID複数)試験用(正常系)
-sample_MergeSpatialIds_err : MergeSpatialIdsメソッド試験用(異常系)
-sample_MergeExtendedSpatialIds_SingleID : MergeExtendedSpatialIdsメソッド(拡張空間ID単体)試験用(正常系)
-sample_MergeExtendedSpatialIds_MultipleIDs : MergeExtendedSpatialIdsメソッド(拡張空間ID複数)試験用(正常系)
-sample_MergeExtendedSpatialIds_err : MergeExtendedSpatialIdsメソッド試験用(異常系)

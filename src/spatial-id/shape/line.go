@@ -4,7 +4,7 @@ import (
 	"math"
 	"reflect"
 
-	"github.com/trajectoryjp/spatial_id_go/
+	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common"
 	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common/errors"
 	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common/logger"
 	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common/object"

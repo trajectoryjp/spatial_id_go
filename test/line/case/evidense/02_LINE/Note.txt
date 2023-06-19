@@ -1,2 +1,0 @@
-sample_GetExtendedSpatialIdsOnLine : GetExtendedSpatialIdsOnLineメソッド試験用(正常系)
-sample_GetExtendedSpatialIdsOnLine_err : GetExtendedSpatialIdsOnLineメソッド試験用(異常系)

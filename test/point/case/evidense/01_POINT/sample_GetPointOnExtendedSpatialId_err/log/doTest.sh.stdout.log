@@ -1,4 +1,0 @@
-##### 試験コマンド実行: go run main.go
-変換前の空間ID: 40/59606297/26425045/40/2000
-errors.spatialIdError:InputValueError,入力チェックエラー
-##### 試験コマンド実行結果: 0

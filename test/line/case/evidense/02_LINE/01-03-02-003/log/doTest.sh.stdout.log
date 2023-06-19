@@ -1,3 +1,0 @@
-##### 試験コマンド実行: go run main.go -o /home/alpha/git/it-spatialid/it-spatialid/go-spatialid/02_LINE/01-03-02-003/output/spatial.txt -p /home/alpha/git/it-spatialid/it-spatialid/go-spatialid/02_LINE/01-03-02-003/output/point.txt
-変換後の空間ID: [30/0/3/33/0 30/0/2/33/0 30/0/1/33/0 30/0/5/33/0 30/0/4/33/0 30/0/0/33/0 30/0/6/33/0]
-##### 試験コマンド実行結果: 0

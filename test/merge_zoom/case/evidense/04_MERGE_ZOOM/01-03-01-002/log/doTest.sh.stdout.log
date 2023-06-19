@@ -1,3 +1,0 @@
-##### 試験コマンド実行: go run main.go
-errors.spatialIdError:InputValueError,入力チェックエラー
-##### 試験コマンド実行結果: 0

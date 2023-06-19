@@ -30,6 +30,7 @@ import (
 	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common/enum"
 	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common/errors"
 	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common/logger"
+	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common/object"
 
 	"github.com/wroge/wgs84"
 )

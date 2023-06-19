@@ -1,3 +1,0 @@
-2022-12-05T08:09:18.035Z	DEBUG	shape/point.go:203	extendedSpatialId: 26/59606297/26425045/26/0, option: 10
-2022-12-05T08:09:18.035Z	DEBUG	shape/point.go:582	altIndex: 0, vZoom: 26
-2022-12-05T08:09:18.035Z	DEBUG	shape/point.go:593	return value: {%!s(float64=0) %!s(float64=0.5)}
