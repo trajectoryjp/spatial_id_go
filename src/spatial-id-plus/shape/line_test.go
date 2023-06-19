@@ -1,9 +1,9 @@
 package shape
 
 import (
-	"spatial-id/common/enum"
-	"spatial-id/common/object"
-	"spatial-id/common/spatial"
+	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common/enum"
+	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common/object"
+	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common/spatial"
 	"testing"
 )
 

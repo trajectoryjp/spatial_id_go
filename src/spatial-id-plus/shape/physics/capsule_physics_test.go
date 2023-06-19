@@ -3,7 +3,7 @@ package physics
 
 import (
 	"reflect"
-	"spatial-id/common/spatial"
+	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common/spatial"
 	"testing"
 
 	"github.com/azul3d/engine/native/ode"

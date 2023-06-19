@@ -5,12 +5,12 @@ import (
 	"math"
 	"reflect"
 	"sort"
-	"spatial-id/common"
-	"spatial-id/common/consts"
-	"spatial-id/common/enum"
-	"spatial-id/common/object"
-	"spatial-id/common/spatial"
-	"spatial-id/shape/physics"
+	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common"
+	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common/consts"
+	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common/enum"
+	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common/object"
+	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common/spatial"
+	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/shape/physics"
 	"testing"
 )
 
