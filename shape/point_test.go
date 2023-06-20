@@ -922,7 +922,7 @@ func TestConvertProjectedPointListToPointList01(t *testing.T) {
 	X := 139.753098
 	Y := 35.685371
 	Z := 100.0
-	pp1 := &object.ProjectedPoint{X, Y, Z}
+	pp1 := &object.ProjectedPoint{X: X, Y: Y, Alt: Z}
 	projectedPointList := []*object.ProjectedPoint{pp1}
 	projectedCrs := 4326
 
@@ -962,7 +962,7 @@ func TestConvertProjectedPointListToPointList02(t *testing.T) {
 	X := 139.753098
 	Y := 35.685371
 	Z := 100.0
-	pp1 := &object.ProjectedPoint{X, Y, Z}
+	pp1 := &object.ProjectedPoint{X: X, Y: Y, Alt: Z}
 	projectedPointList := []*object.ProjectedPoint{pp1}
 	projectedCrs := 1
 
@@ -1508,7 +1508,7 @@ func TestGetAltitudeOnVerticalIndexAndZoom01(t *testing.T) {
 // 試験詳細：
 // + 試験データ
 //   - 経度方向のインデックス：2, 緯度方向のインデックス：2, 水平方向の精度：2,
-//     垂直方向インスタンス：object.VerticalPoint{56, 1})
+//     垂直方向インスタンス：object.VerticalPoint{Alt: 56, Resolution: 1})
 // + 確認内容
 //   - 入力値に対して、適切な空間の中心点の座標が格納されたインスタンスを返却されること。
 
@@ -1518,7 +1518,7 @@ func TestGetCenterPointOnVoxelOffset01(t *testing.T) {
 	var lonIndex int64 = 2
 	var latIndex int64 = 2
 	var hZoom int64 = 2
-	vPoint := object.VerticalPoint{56, 1}
+	vPoint := object.VerticalPoint{Alt: 56, Resolution: 1}
 
 	//期待値
 	expectPoint, _ := object.NewPoint(45, -33.2566302215, 56.5)
@@ -1539,7 +1539,7 @@ func TestGetCenterPointOnVoxelOffset01(t *testing.T) {
 // 試験詳細：
 // + 試験データ
 //   - 経度方向のインデックス：0, 緯度方向のインデックス：0, 水平方向の精度：0,
-//     垂直方向インスタンス：object.VerticalPoint{56, 1})
+//     垂直方向インスタンス：object.VerticalPoint{Alt: 56, Resolution: 1})
 // + 確認内容
 //   - 入力値に対して、各頂点の座標が設定されたインスタンスのリストを返却されること。
 
@@ -1548,7 +1548,7 @@ func TestGetVertexOnVoxelOffset01(t *testing.T) {
 	var lonIndex int64 = 0
 	var latIndex int64 = 0
 	var hZoom int64 = 25
-	vPoint := object.VerticalPoint{56, 1}
+	vPoint := object.VerticalPoint{Alt: 56, Resolution: 1}
 
 	//期待値
 	ep1, _ := object.NewPoint(-180.0, 85.0511287798, 56.0)
@@ -1585,10 +1585,10 @@ func TestGetVertexOnVoxelOffset01(t *testing.T) {
 // + 試験データ
 //   - パターン1：境界値±0
 //     経度方向のインデックス：0, 緯度方向のインデックス：7, 水平方向の精度：3,
-//     垂直方向インスタンス：object.VerticalPoint{56, 1})
+//     垂直方向インスタンス：object.VerticalPoint{Alt: 56, Resolution: 1})
 //   - パターン2：境界値+1
 //     経度方向のインデックス：0, 緯度方向のインデックス：8, 水平方向の精度：3,
-//     垂直方向インスタンス：object.VerticalPoint{56, 1})
+//     垂直方向インスタンス：object.VerticalPoint{Alt: 56, Resolution: 1})
 //
 // + 確認内容
 //   - パターン1とパターン2の結果が一致していること
@@ -1597,13 +1597,13 @@ func TestGetVertexOnVoxelOffset02(t *testing.T) {
 	var lonIndex01 int64 = 0
 	var latIndex01 int64 = 7
 	var hZoom01 int64 = 3
-	vPoint01 := object.VerticalPoint{56, 1}
+	vPoint01 := object.VerticalPoint{Alt: 56, Resolution: 1}
 
 	// パターン2の入力パラメータ
 	var lonIndex02 int64 = 0
 	var latIndex02 int64 = 8
 	var hZoom02 int64 = 3
-	vPoint02 := object.VerticalPoint{56, 1}
+	vPoint02 := object.VerticalPoint{Alt: 56, Resolution: 1}
 
 	// パターン1の取得値
 	resultVal01 := getVertexOnVoxelOffset(lonIndex01, latIndex01, hZoom01, vPoint01)
@@ -1632,10 +1632,10 @@ func TestGetVertexOnVoxelOffset02(t *testing.T) {
 // + 試験データ
 //   - パターン1：境界値±0
 //     経度方向のインデックス：0, 緯度方向のインデックス：7, 水平方向の精度：3,
-//     垂直方向インスタンス：object.VerticalPoint{56, 1})
+//     垂直方向インスタンス：object.VerticalPoint{Alt: 56, Resolution: 1})
 //   - パターン2：境界値-1
 //     経度方向のインデックス：0, 緯度方向のインデックス：6, 水平方向の精度：3,
-//     垂直方向インスタンス：object.VerticalPoint{56, 1})
+//     垂直方向インスタンス：object.VerticalPoint{Alt: 56, Resolution: 1})
 //
 // + 確認内容
 //   - パターン1とパターン2の結果が一致していないこと
@@ -1644,13 +1644,13 @@ func TestGetVertexOnVoxelOffset03(t *testing.T) {
 	var lonIndex01 int64 = 0
 	var latIndex01 int64 = 7
 	var hZoom01 int64 = 3
-	vPoint01 := object.VerticalPoint{56, 1}
+	vPoint01 := object.VerticalPoint{Alt: 56, Resolution: 1}
 
 	// パターン2の入力パラメータ
 	var lonIndex02 int64 = 0
 	var latIndex02 int64 = 6
 	var hZoom02 int64 = 3
-	vPoint02 := object.VerticalPoint{56, 1}
+	vPoint02 := object.VerticalPoint{Alt: 56, Resolution: 1}
 
 	// パターン1の取得値
 	resultVal01 := getVertexOnVoxelOffset(lonIndex01, latIndex01, hZoom01, vPoint01)
@@ -1679,10 +1679,10 @@ func TestGetVertexOnVoxelOffset03(t *testing.T) {
 // + 試験データ
 //   - パターン1：境界値±0
 //     経度方向のインデックス：0, 緯度方向のインデックス：0, 水平方向の精度：3,
-//     垂直方向インスタンス：object.VerticalPoint{56, 1})
+//     垂直方向インスタンス：object.VerticalPoint{Alt: 56, Resolution: 1})
 //   - パターン2：境界値+1
 //     経度方向のインデックス：0, 緯度方向のインデックス：1, 水平方向の精度：3,
-//     垂直方向インスタンス：object.VerticalPoint{56, 1})
+//     垂直方向インスタンス：object.VerticalPoint{Alt: 56, Resolution: 1})
 //
 // + 確認内容
 //   - パターン1とパターン2の結果が一致していないこと
@@ -1691,13 +1691,13 @@ func TestGetVertexOnVoxelOffset04(t *testing.T) {
 	var lonIndex01 int64 = 0
 	var latIndex01 int64 = 0
 	var hZoom01 int64 = 3
-	vPoint01 := object.VerticalPoint{56, 1}
+	vPoint01 := object.VerticalPoint{Alt: 56, Resolution: 1}
 
 	// パターン2の入力パラメータ
 	var lonIndex02 int64 = 0
 	var latIndex02 int64 = 1
 	var hZoom02 int64 = 3
-	vPoint02 := object.VerticalPoint{56, 1}
+	vPoint02 := object.VerticalPoint{Alt: 56, Resolution: 1}
 
 	// パターン1の取得値
 	resultVal01 := getVertexOnVoxelOffset(lonIndex01, latIndex01, hZoom01, vPoint01)
@@ -1726,10 +1726,10 @@ func TestGetVertexOnVoxelOffset04(t *testing.T) {
 // + 試験データ
 //   - パターン1：境界値±0
 //     経度方向のインデックス：0, 緯度方向のインデックス：0, 水平方向の精度：3,
-//     垂直方向インスタンス：object.VerticalPoint{56, 1})
+//     垂直方向インスタンス：object.VerticalPoint{Alt: 56, Resolution: 1})
 //   - パターン2：境界値-1
 //     経度方向のインデックス：0, 緯度方向のインデックス：-1, 水平方向の精度：3,
-//     垂直方向インスタンス：object.VerticalPoint{56, 1})
+//     垂直方向インスタンス：object.VerticalPoint{Alt: 56, Resolution: 1})
 //
 // + 確認内容
 //   - パターン1とパターン2の結果が一致していること
@@ -1738,13 +1738,13 @@ func TestGetVertexOnVoxelOffset05(t *testing.T) {
 	var lonIndex01 int64 = 0
 	var latIndex01 int64 = 0
 	var hZoom01 int64 = 3
-	vPoint01 := object.VerticalPoint{56, 1}
+	vPoint01 := object.VerticalPoint{Alt: 56, Resolution: 1}
 
 	// パターン2の入力パラメータ
 	var lonIndex02 int64 = 0
 	var latIndex02 int64 = -1
 	var hZoom02 int64 = 3
-	vPoint02 := object.VerticalPoint{56, 1}
+	vPoint02 := object.VerticalPoint{Alt: 56, Resolution: 1}
 
 	// パターン1の取得値
 	resultVal01 := getVertexOnVoxelOffset(lonIndex01, latIndex01, hZoom01, vPoint01)
@@ -1773,10 +1773,10 @@ func TestGetVertexOnVoxelOffset05(t *testing.T) {
 // + 試験データ
 //   - パターン1：境界値±0
 //     経度方向のインデックス：6, 緯度方向のインデックス：0, 水平方向の精度：3,
-//     垂直方向インスタンス：object.VerticalPoint{56, 1})
+//     垂直方向インスタンス：object.VerticalPoint{Alt: 56, Resolution: 1})
 //   - パターン2：境界値-1
 //     経度方向のインデックス：14, 緯度方向のインデックス：0, 水平方向の精度：3,
-//     垂直方向インスタンス：object.VerticalPoint{56, 1})
+//     垂直方向インスタンス：object.VerticalPoint{Alt: 56, Resolution: 1})
 //
 // + 確認内容
 //   - パターン1とパターン2の結果が一致していること
@@ -1785,13 +1785,13 @@ func TestGetVertexOnVoxelOffset06(t *testing.T) {
 	var lonIndex01 int64 = 6
 	var latIndex01 int64 = 0
 	var hZoom01 int64 = 3
-	vPoint01 := object.VerticalPoint{56, 1}
+	vPoint01 := object.VerticalPoint{Alt: 56, Resolution: 1}
 
 	// パターン2の入力パラメータ
 	var lonIndex02 int64 = 14
 	var latIndex02 int64 = 0
 	var hZoom02 int64 = 3
-	vPoint02 := object.VerticalPoint{56, 1}
+	vPoint02 := object.VerticalPoint{Alt: 56, Resolution: 1}
 
 	// パターン1の取得値
 	resultVal01 := getVertexOnVoxelOffset(lonIndex01, latIndex01, hZoom01, vPoint01)
@@ -1820,10 +1820,10 @@ func TestGetVertexOnVoxelOffset06(t *testing.T) {
 // + 試験データ
 //   - パターン1：境界値±0
 //     経度方向のインデックス：8, 緯度方向のインデックス：0, 水平方向の精度：3,
-//     垂直方向インスタンス：object.VerticalPoint{56, 1})
+//     垂直方向インスタンス：object.VerticalPoint{Alt: 56, Resolution: 1})
 //   - パターン2：境界値±0
 //     経度方向のインデックス：0, 緯度方向のインデックス：0, 水平方向の精度：3,
-//     垂直方向インスタンス：object.VerticalPoint{56, 1})
+//     垂直方向インスタンス：object.VerticalPoint{Alt: 56, Resolution: 1})
 //
 // + 確認内容
 //   - パターン1とパターン2の結果が一致していること
@@ -1832,13 +1832,13 @@ func TestGetVertexOnVoxelOffset07(t *testing.T) {
 	var lonIndex01 int64 = 8
 	var latIndex01 int64 = 0
 	var hZoom01 int64 = 3
-	vPoint01 := object.VerticalPoint{56, 1}
+	vPoint01 := object.VerticalPoint{Alt: 56, Resolution: 1}
 
 	// パターン2の入力パラメータ
 	var lonIndex02 int64 = 0
 	var latIndex02 int64 = 0
 	var hZoom02 int64 = 3
-	vPoint02 := object.VerticalPoint{56, 1}
+	vPoint02 := object.VerticalPoint{Alt: 56, Resolution: 1}
 
 	// パターン1の取得値
 	resultVal01 := getVertexOnVoxelOffset(lonIndex01, latIndex01, hZoom01, vPoint01)
@@ -1867,10 +1867,10 @@ func TestGetVertexOnVoxelOffset07(t *testing.T) {
 // + 試験データ
 //   - パターン1：境界値±0
 //     経度方向のインデックス：9, 緯度方向のインデックス：0, 水平方向の精度：3,
-//     垂直方向インスタンス：object.VerticalPoint{56, 1})
+//     垂直方向インスタンス：object.VerticalPoint{Alt: 56, Resolution: 1})
 //   - パターン2：境界値+1
 //     経度方向のインデックス：1, 緯度方向のインデックス：0, 水平方向の精度：3,
-//     垂直方向インスタンス：object.VerticalPoint{56, 1})
+//     垂直方向インスタンス：object.VerticalPoint{Alt: 56, Resolution: 1})
 //
 // + 確認内容
 //   - パターン1とパターン2の結果が一致していること
@@ -1879,13 +1879,13 @@ func TestGetVertexOnVoxelOffset08(t *testing.T) {
 	var lonIndex01 int64 = 9
 	var latIndex01 int64 = 0
 	var hZoom01 int64 = 3
-	vPoint01 := object.VerticalPoint{56, 1}
+	vPoint01 := object.VerticalPoint{Alt: 56, Resolution: 1}
 
 	// パターン2の入力パラメータ
 	var lonIndex02 int64 = 1
 	var latIndex02 int64 = 0
 	var hZoom02 int64 = 3
-	vPoint02 := object.VerticalPoint{56, 1}
+	vPoint02 := object.VerticalPoint{Alt: 56, Resolution: 1}
 
 	// パターン1の取得値
 	resultVal01 := getVertexOnVoxelOffset(lonIndex01, latIndex01, hZoom01, vPoint01)
@@ -1914,10 +1914,10 @@ func TestGetVertexOnVoxelOffset08(t *testing.T) {
 // + 試験データ
 //   - パターン1：境界値-1
 //     経度方向のインデックス：-1, 緯度方向のインデックス：0, 水平方向の精度：3,
-//     垂直方向インスタンス：object.VerticalPoint{56, 1})
+//     垂直方向インスタンス：object.VerticalPoint{Alt: 56, Resolution: 1})
 //   - パターン2：境界値±0
 //     経度方向のインデックス：1, 緯度方向のインデックス：0, 水平方向の精度：3,
-//     垂直方向インスタンス：object.VerticalPoint{56, 1})
+//     垂直方向インスタンス：object.VerticalPoint{Alt: 56, Resolution: 1})
 //
 // + 確認内容
 //   - パターン1とパターン2の結果が一致していること
@@ -1926,13 +1926,13 @@ func TestGetVertexOnVoxelOffset09(t *testing.T) {
 	var lonIndex01 int64 = -1
 	var latIndex01 int64 = 0
 	var hZoom01 int64 = 3
-	vPoint01 := object.VerticalPoint{56, 1}
+	vPoint01 := object.VerticalPoint{Alt: 56, Resolution: 1}
 
 	// パターン2の入力パラメータ
 	var lonIndex02 int64 = 31
 	var latIndex02 int64 = 0
 	var hZoom02 int64 = 3
-	vPoint02 := object.VerticalPoint{56, 1}
+	vPoint02 := object.VerticalPoint{Alt: 56, Resolution: 1}
 
 	// パターン1の取得値
 	resultVal01 := getVertexOnVoxelOffset(lonIndex01, latIndex01, hZoom01, vPoint01)
@@ -1961,10 +1961,10 @@ func TestGetVertexOnVoxelOffset09(t *testing.T) {
 // + 試験データ
 //   - パターン1：境界値+1
 //     経度方向のインデックス：0, 緯度方向のインデックス：0, 水平方向の精度：3,
-//     垂直方向インスタンス：object.VerticalPoint{56, 1})
+//     垂直方向インスタンス：object.VerticalPoint{Alt: 56, Resolution: 1})
 //   - パターン2：境界値±0
 //     経度方向のインデックス：7, 緯度方向のインデックス：0, 水平方向の精度：3,
-//     垂直方向インスタンス：object.VerticalPoint{56, 1})
+//     垂直方向インスタンス：object.VerticalPoint{Alt: 56, Resolution: 1})
 //
 // + 確認内容
 //   - パターン1とパターン2の結果が一致していること
@@ -1973,13 +1973,13 @@ func TestGetVertexOnVoxelOffset10(t *testing.T) {
 	var lonIndex01 int64 = 0
 	var latIndex01 int64 = 0
 	var hZoom01 int64 = 3
-	vPoint01 := object.VerticalPoint{56, 1}
+	vPoint01 := object.VerticalPoint{Alt: 56, Resolution: 1}
 
 	// パターン2の入力パラメータ
 	var lonIndex02 int64 = 7
 	var latIndex02 int64 = 0
 	var hZoom02 int64 = 3
-	vPoint02 := object.VerticalPoint{56, 1}
+	vPoint02 := object.VerticalPoint{Alt: 56, Resolution: 1}
 
 	// パターン1の取得値
 	resultVal01 := getVertexOnVoxelOffset(lonIndex01, latIndex01, hZoom01, vPoint01)

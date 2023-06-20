@@ -151,7 +151,7 @@ func GetExtendedSpatialIdsOnPoints(
 	// 水平、垂直方向精度のどちらかが範囲外の場合、空配列とエラーインスタンスを返却
 	if !CheckZoom(hZoom) || !CheckZoom(vZoom) {
 		return spatialIds, errors.NewSpatialIdError(errors.InputValueErrorCode, "")
-	} else if common.Include(pointList, nil) == true {
+	} else if common.Include(pointList, nil) {
 		return spatialIds, errors.NewSpatialIdError(errors.InputValueErrorCode, "")
 	}
 

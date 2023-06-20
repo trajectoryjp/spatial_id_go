@@ -121,8 +121,8 @@ func GetExtendedSpatialIdsOnLine(
 		return spatialIDs, nil
 	}
 
-	startSpatial := spatial.Point3{start.Lon(), start.Lat(), start.Alt()}
-	endSpatial := spatial.Point3{end.Lon(), end.Lat(), end.Alt()}
+	startSpatial := spatial.Point3{X: start.Lon(), Y: start.Lat(), Z: start.Alt()}
+	endSpatial := spatial.Point3{X: end.Lon(), Y: end.Lat(), Z: end.Alt()}
 
 	// 中点取得時の閾値初期化
 	lonMinima := LonMinima
@@ -248,6 +248,4 @@ func middleSpatialIds(
 			spatial.Point3(middle), end, hZoom, vZoom,
 			lonMinima, latMinima, altMinima, operate)
 	}
-
-	return
 }
