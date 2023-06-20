@@ -4,12 +4,12 @@ import (
 	"math"
 	"reflect"
 
-	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common"
-	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common/errors"
-	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common/logger"
-	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common/object"
-	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common/spatial"
-	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/operated"
+	"github.com/trajectoryjp/spatial_id_go/common"
+	"github.com/trajectoryjp/spatial_id_go/common/errors"
+	"github.com/trajectoryjp/spatial_id_go/common/logger"
+	"github.com/trajectoryjp/spatial_id_go/common/object"
+	"github.com/trajectoryjp/spatial_id_go/common/spatial"
+	"github.com/trajectoryjp/spatial_id_go/operated"
 )
 
 const (

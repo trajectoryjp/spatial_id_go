@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common/consts"
-	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common/errors"
+	"github.com/trajectoryjp/spatial_id_go/common/consts"
+	"github.com/trajectoryjp/spatial_id_go/common/errors"
 )
 
 // ExtendedSpatialID 拡張空間IDクラス

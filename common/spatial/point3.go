@@ -2,8 +2,8 @@
 package spatial
 
 import (
-	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common"
-	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common/errors"
+	"github.com/trajectoryjp/spatial_id_go/common"
+	"github.com/trajectoryjp/spatial_id_go/common/errors"
 )
 
 // UniqueAppend 点のユニークを保持した配列追加

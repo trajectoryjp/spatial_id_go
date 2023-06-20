@@ -2,8 +2,9 @@ package integrate
 
 import (
 	"reflect"
-	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common/object"
 	"testing"
+
+	"github.com/trajectoryjp/spatial_id_go/common/object"
 )
 
 // TestNewUnitDividedSpatialID01 単位分割拡張空間ID構造体のコンストラクタ 正常系動作確認
@@ -215,6 +216,7 @@ func TestIsDense01(t *testing.T) {
 //   - パターン1：
 //     単位分割拡張空間ID：{10, 1024, 2048, 10, 1024}, 水平方向精度差分：1, 垂直方向精度差分：2,
 //     単位拡張空間IDの個数の閾値：256
+//
 // + 確認内容
 //   - 入力値から最適化後拡張空間ID構造体が単位拡張空間ID集合の稠密判定の結果を取得できること
 func TestIsDense02(t *testing.T) {
@@ -265,6 +267,7 @@ func TestIsDense02(t *testing.T) {
 // + 試験データ
 //   - パターン1：
 //     空間ID文字列配列：{"15/0/1024/2048"}, マージ後の精度：11
+//
 // + 確認内容
 //   - 入力値からマージ後の空間IDを格納した配列を取得できること
 func TestMergeSpatialIds01(t *testing.T) {
@@ -302,6 +305,7 @@ func TestMergeSpatialIds01(t *testing.T) {
 //   - パターン1：
 //     空間ID文字列配列：{"21/512/1024/2048", "21/512/1024/2049", "21/512/1024/2050", "21/512/1024/2048"},
 //     マージ後の精度：11
+//
 // + 確認内容
 //   - 入力値からマージ後の空間IDを格納した配列を取得できること
 func TestMergeSpatialIds02(t *testing.T) {
@@ -338,6 +342,7 @@ func TestMergeSpatialIds02(t *testing.T) {
 // + 試験データ
 //   - パターン1：
 //     空間ID文字列配列：{(空入力))}, マージ後の精度：11
+//
 // + 確認内容
 //   - 空の配列を取得できること
 func TestMergeSpatialIds03(t *testing.T) {
@@ -374,6 +379,7 @@ func TestMergeSpatialIds03(t *testing.T) {
 // + 試験データ
 //   - パターン1：
 //     空間ID文字列配列：{"10/0/1024/2048", "12/0/1024/2048", "9/0/1024/2048"}, マージ後の精度：11
+//
 // + 確認内容
 //   - 入力値からマージ後の空間IDを格納した配列を取得できること
 func TestMergeSpatialIds04(t *testing.T) {
@@ -410,6 +416,7 @@ func TestMergeSpatialIds04(t *testing.T) {
 // + 試験データ
 //   - パターン1：
 //     空間ID文字列配列：{"15/0/1024/2048/777"}, マージ後の精度：11
+//
 // + 確認内容
 //   - 入力値から入力チェックエラーを取得できること
 func TestMergeSpatialIds05(t *testing.T) {
@@ -447,6 +454,7 @@ func TestMergeSpatialIds05(t *testing.T) {
 // + 試験データ
 //   - パターン1：
 //     空間ID文字列配列：{"15/0/1024/2048"}, マージ後の精度：36
+//
 // + 確認内容
 //   - 入力値から入力チェックエラーを取得できること
 func TestMergeSpatialIds06(t *testing.T) {
@@ -484,6 +492,7 @@ func TestMergeSpatialIds06(t *testing.T) {
 // + 試験データ
 //   - パターン1：
 //     空間ID文字列配列：{"15|0|1024|2048"}, マージ後の精度：9
+//
 // + 確認内容
 //   - 入力値から入力チェックエラーを取得できること
 func TestMergeSpatialIds07(t *testing.T) {
@@ -521,6 +530,7 @@ func TestMergeSpatialIds07(t *testing.T) {
 // + 試験データ
 //   - パターン1：
 //     拡張空間ID文字列配列：{"10/1024/2048/10/1024"}, マージ後の水平方向精度：9, マージ後の垂直方向精度：9
+//
 // + 確認内容
 //   - 入力値からマージ後の空間IDを格納した配列を取得できること
 func TestMergeExtendedSpatialIds01(t *testing.T) {
@@ -559,6 +569,7 @@ func TestMergeExtendedSpatialIds01(t *testing.T) {
 //   - パターン1：
 //     拡張空間ID文字列配列：{"10/1024/2048/10/1024", "10/1024/2048/10/1024", "11/1024/2048/11/1024", "9/1024/2048/9/1024", "11/1024/2048/11/1024"},
 //     マージ後の水平方向精度：9, マージ後の垂直方向精度：9
+//
 // + 確認内容
 //   - 入力値からマージ後の空間IDを格納した配列を取得できること
 func TestMergeExtendedSpatialIds02(t *testing.T) {
@@ -596,6 +607,7 @@ func TestMergeExtendedSpatialIds02(t *testing.T) {
 // + 試験データ
 //   - パターン1：
 //     拡張空間ID文字列配列：{(空入力)}, マージ後の水平方向精度：9, マージ後の垂直方向精度：9
+//
 // + 確認内容
 //   - 空配列を取得できること
 func TestMergeExtendedSpatialIds03(t *testing.T) {
@@ -633,6 +645,7 @@ func TestMergeExtendedSpatialIds03(t *testing.T) {
 // + 試験データ
 //   - パターン1：
 //     拡張空間ID文字列配列：{"10/1024/2048/8/1024"}, マージ後の水平方向精度：9, マージ後の垂直方向精度：9
+//
 // + 確認内容
 //   - 入力値からマージ後の空間IDを格納した配列を取得できること
 func TestMergeExtendedSpatialIds04(t *testing.T) {
@@ -670,6 +683,7 @@ func TestMergeExtendedSpatialIds04(t *testing.T) {
 // + 試験データ
 //   - パターン1：
 //     拡張空間ID文字列配列：{"8/1024/2048/10/1024"}, マージ後の水平方向精度：9, マージ後の垂直方向精度：9
+//
 // + 確認内容
 //   - 入力値からマージ後の空間IDを格納した配列を取得できること
 func TestMergeExtendedSpatialIds05(t *testing.T) {
@@ -707,6 +721,7 @@ func TestMergeExtendedSpatialIds05(t *testing.T) {
 // + 試験データ
 //   - パターン1：
 //     拡張空間ID文字列配列：{"8/1024/2048/8/1024"}, マージ後の水平方向精度：9, マージ後の垂直方向精度：9
+//
 // + 確認内容
 //   - 入力値からマージ後の空間IDを格納した配列を取得できること
 func TestMergeExtendedSpatialIds06(t *testing.T) {
@@ -744,6 +759,7 @@ func TestMergeExtendedSpatialIds06(t *testing.T) {
 // + 試験データ
 //   - パターン1：
 //     拡張空間ID文字列配列：{"10/1024/2048/10/1024"}, マージ後の水平方向精度：35, マージ後の垂直方向精度：9
+//
 // + 確認内容
 //   - 入力値からマージ後の空間IDを格納した配列を取得できること
 func TestMergeExtendedSpatialIds07(t *testing.T) {
@@ -781,6 +797,7 @@ func TestMergeExtendedSpatialIds07(t *testing.T) {
 // + 試験データ
 //   - パターン1：
 //     拡張空間ID文字列配列：{"10/1024/2048/10/1024"}, マージ後の水平方向精度：36, マージ後の垂直方向精度：9
+//
 // + 確認内容
 //   - 入力値から入力チェックエラーを取得できること
 func TestMergeExtendedSpatialIds08(t *testing.T) {
@@ -819,6 +836,7 @@ func TestMergeExtendedSpatialIds08(t *testing.T) {
 // + 試験データ
 //   - パターン1：
 //     拡張空間ID文字列配列：{"10/1024/2048/10/1024"}, マージ後の水平方向精度：9, マージ後の垂直方向精度：35
+//
 // + 確認内容
 //   - 入力値からマージ後の空間IDを格納した配列を取得できること
 func TestMergeExtendedSpatialIds09(t *testing.T) {
@@ -856,6 +874,7 @@ func TestMergeExtendedSpatialIds09(t *testing.T) {
 // + 試験データ
 //   - パターン1：
 //     拡張空間ID文字列配列：{"10/1024/2048/10/1024"}, マージ後の水平方向精度：9, マージ後の垂直方向精度：36
+//
 // + 確認内容
 //   - 入力値から入力チェックエラーを取得できること
 func TestMergeExtendedSpatialIds10(t *testing.T) {
@@ -894,6 +913,7 @@ func TestMergeExtendedSpatialIds10(t *testing.T) {
 // + 試験データ
 //   - パターン1：
 //     拡張空間ID文字列配列：{"10|1024|2048|10|1024"}, マージ後の水平方向精度：9, マージ後の垂直方向精度：9
+//
 // + 確認内容
 //   - 入力値から入力チェックエラーを取得できること
 func TestMergeExtendedSpatialIds11(t *testing.T) {

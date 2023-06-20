@@ -3,10 +3,11 @@ package shape
 import (
 	"math"
 	"reflect"
-	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common/consts"
-	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common/enum"
-	"github.com/trajectoryjp/spatial_id_go/src/spatial-id/common/object"
 	"testing"
+
+	"github.com/trajectoryjp/spatial_id_go/common/consts"
+	"github.com/trajectoryjp/spatial_id_go/common/enum"
+	"github.com/trajectoryjp/spatial_id_go/common/object"
 
 	"github.com/wroge/wgs84"
 )
