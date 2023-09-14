@@ -9,7 +9,7 @@ import (
 	"github.com/trajectoryjp/spatial_id_go/common/consts"
 )
 
-// GetVoxcellIDfromSpatialID ボクセル成分ID取得
+// GetVoxelIDfromSpatialID ボクセル成分ID取得
 // spatial_id_plus_goのGetVoxcelIDtoSpatialID()から移動
 //
 // 拡張空間IDからボクセル成分ID取得
@@ -21,7 +21,7 @@ import (
 // 戻り値：
 //
 //	(xインデックス, yインデックス, vインデックス)
-func GetVoxcellIDfromSpatialID(spatialID string) []int64 {
+func GetVoxelIDfromSpatialID(spatialID string) []int64 {
 	ids := strings.Split(spatialID, consts.SpatialIDDelimiter)
 	lonIndex, _ := strconv.ParseInt(ids[1], 10, 64)
 	latIndex, _ := strconv.ParseInt(ids[2], 10, 64)
