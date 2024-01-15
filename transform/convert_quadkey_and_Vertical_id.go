@@ -268,6 +268,9 @@ func ConvertExtendedSpatialIDsToQuadkeysAndVerticalIDs(extendedSpatialIDs []stri
 	if !quadkeyCheckZoom(outputHZoom, outputVZoom) {
 		return []*object.FromExtendedSpatialIDToQuadkeyAndVerticalID{}, errors.NewSpatialIdError(errors.InputValueErrorCode, "")
 	}
+	// outputのZoomレベルが指定されている前提のため、QuadkeyとAltitudeKeyのみを比較
+	deduplication := map[[2]int64]interface{}{}
+
 	for _, spatialID := range extendedSpatialIDs {
 		vIndexes := []int64{}
 		quadkeies := []int64{}
@@ -319,8 +322,17 @@ func ConvertExtendedSpatialIDsToQuadkeysAndVerticalIDs(extendedSpatialIDs []stri
 		idList := [][2]int64{}
 		for _, quadkey := range quadkeies {
 			for _, vIndex := range vIndexes {
+				newID := [2]int64{quadkey, vIndex}
+				if _, ok := deduplication[newID]; ok {
+					continue
+				} else {
+					deduplication[newID] = new(interface{})
+				}
 				idList = append(idList, [2]int64{quadkey, vIndex})
 			}
+		}
+		if len(idList) == 0 {
+			continue
 		}
 		newQuadkeyAndVerticalID := object.NewFromExtendedSpatialIDToQuadkeyAndVerticalID(outputHZoom, idList, outputVZoom, maxHeight, minHeight)
 		extendedSpatialIDToQuadkeyAndVerticalID = append(extendedSpatialIDToQuadkeyAndVerticalID, newQuadkeyAndVerticalID)
