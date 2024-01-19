@@ -46,7 +46,7 @@ import (
 //
 //	拡張空間IDスライス： []string
 
-func GetSpatialIdsWithinRadiusOfLine(startPoint *object.Point, endPoint *object.Point, radius float64, hZoom int64, vZoom int64, measuresIdDistances bool) ([]string, error) {
+func GetSpatialIdsWithinRadiusOfLine(startPoint *object.Point, endPoint *object.Point, radius float64, hZoom int64, vZoom int64, skipsMeasurement bool) ([]string, error) {
 
 	// 1. Return the Extended Spatial Ids on the line determined by startPoint and endPoint
 
@@ -128,7 +128,7 @@ func GetSpatialIdsWithinRadiusOfLine(startPoint *object.Point, endPoint *object.
 	// loop through the spatialids not included in the line path (noLinePathMegaBoxIds)
 	// to determine their distance from the path line.
 	startMeasure := time.Now()
-	if measuresIdDistances {
+	if !skipsMeasurement {
 
 		for _, id := range noLinePathMegaBoxIds {
 

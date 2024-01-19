@@ -296,7 +296,7 @@ func TestGetNspatialIdsAroundVoxcel_time(t *testing.T) {
 	nIds := []int{}
 
 	var i int64
-	for i = 1; i < 10; i += 1 {
+	for i = 1; i < 100; i += 1 {
 
 		expandParam := float64(i * 2)
 

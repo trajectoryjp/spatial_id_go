@@ -37,7 +37,7 @@ func TestGetSpatialIdsWithinRadiusOfLine(t *testing.T) {
 	log.Printf("Distance: %vm", measure.Distance)
 
 	start := time.Now()
-	spatialIds, error := GetSpatialIdsWithinRadiusOfLine(startPoint, endPoint, 5, 25, 25, false)
+	spatialIds, error := GetSpatialIdsWithinRadiusOfLine(startPoint, endPoint, 5, 22, 22, false)
 	elapsed := time.Since(start)
 	if error != nil {
 		t.Fatal(error)
