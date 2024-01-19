@@ -5,6 +5,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/go-gl/mathgl/mgl64"
+	closest "github.com/trajectoryjp/closest_go"
+	geodesy "github.com/trajectoryjp/geodesy_go/coordinates"
 	"github.com/trajectoryjp/spatial_id_go/common/object"
 	"github.com/trajectoryjp/spatial_id_go/shape"
 )
@@ -16,13 +19,25 @@ func TestGetSpatialIdsWithinRadiusOfLine(t *testing.T) {
 	if error != nil {
 		t.Fatal(error)
 	}
-	endPoint, error := object.NewPoint(139.788074, 35.672711, 100)
+	endPoint, error := object.NewPoint(139.788074, 35.675711, 100)
 	if error != nil {
 		t.Fatal(error)
 	}
 
+	// measure distance
+	startCartesian := geodesy.GeocentricFromGeodetic(geodesy.Geodetic{startPoint.Lon(), startPoint.Lat(), startPoint.Alt()})
+	endCartesian := geodesy.GeocentricFromGeodetic(geodesy.Geodetic{endPoint.Lon(), endPoint.Lat(), endPoint.Alt()})
+
+	measure := closest.Measure{}
+	measure.ConvexHulls[0] = []*mgl64.Vec3{(*mgl64.Vec3)(&startCartesian)}
+	measure.ConvexHulls[1] = []*mgl64.Vec3{(*mgl64.Vec3)(&endCartesian)}
+
+	measure.MeasureDistance()
+
+	log.Printf("Distance: %vm", measure.Distance)
+
 	start := time.Now()
-	spatialIds, error := GetSpatialIdsWithinRadiusOfLine(startPoint, endPoint, 10, 31, 31)
+	spatialIds, error := GetSpatialIdsWithinRadiusOfLine(startPoint, endPoint, 5, 25, 25, false)
 	elapsed := time.Since(start)
 	if error != nil {
 		t.Fatal(error)

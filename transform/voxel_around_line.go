@@ -46,7 +46,7 @@ import (
 //
 //	拡張空間IDスライス： []string
 
-func GetSpatialIdsWithinRadiusOfLine(startPoint *object.Point, endPoint *object.Point, radius float64, hZoom int64, vZoom int64) ([]string, error) {
+func GetSpatialIdsWithinRadiusOfLine(startPoint *object.Point, endPoint *object.Point, radius float64, hZoom int64, vZoom int64, measuresIdDistances bool) ([]string, error) {
 
 	// 1. Return the Extended Spatial Ids on the line determined by startPoint and endPoint
 
@@ -75,6 +75,8 @@ func GetSpatialIdsWithinRadiusOfLine(startPoint *object.Point, endPoint *object.
 	var points = []*object.Point{startPoint, endPoint}
 	// cartesianPoints is the list of points converted into cartesian (x, y)
 	var cartesianPoints []geodesy.Geocentric
+	// the unique list of spatialIds that are either on the route path line or within the radius distance
+	var idsWithinCriterion []string
 
 	// Convert points to cartesian and append to cartesianPoints
 	for _, point := range points {
@@ -97,86 +99,108 @@ func GetSpatialIdsWithinRadiusOfLine(startPoint *object.Point, endPoint *object.
 		(*mgl64.Vec3)(&cartesianPoints[1]),
 	}
 
-	startGet26 := time.Now()
+	startGetids := time.Now()
 	// Loop through all idsOnLine to create megaBoxIds
 	for _, id := range idsOnLine {
 
-		// find the 26 surrounding spatialids ajacent
-		adjacent26ids := operated.Get26spatialIdsAroundVoxel(id)
-
-		// add to megaBoxIds
-		megaBoxIds = append(megaBoxIds, adjacent26ids...)
-
-	}
-	endGet26 := time.Since(startGet26)
-
-	// Make unique list of spatial ids
-	uniqueMegaBoxIds = common.Unique(megaBoxIds)
-
-	// Subtract the spatial ids in the line
-	noLinePathMegaBoxIds = common.Difference(uniqueMegaBoxIds, idsOnLine)
-
-	// loop through the spatialids not included in the line path (noLinePathMegaBoxIds)
-	// to determine their distance from the path line.
-	startMeasure := time.Now()
-	for _, id := range noLinePathMegaBoxIds {
-
-		// Get 8 vertexes of the SpatialID
-		IdVertexes, error := shape.GetPointOnExtendedSpatialId(id, enum.Vertex)
+		// Determine the number of layers around the spatialID to search.
+		hLayers, vLayers, error := FitClearanceAroundExtendedSpatialID(id, radius)
 		if error != nil {
 			return nil, error
 		}
 
-		//idVectors := make([]mgl64.Vec3, len(IdVertexes))
+		// Return the SpatialIDs within the box created by hLayers and vLayers
+		adjacentIds, error := operated.GetNspatialIdsAroundVoxcel(id, hLayers, vLayers)
 
-		// idConvex is the list of vectors that the SpatialID's 8 vertexes
-		var idConvex = []*mgl64.Vec3{}
+		// add to megaBoxIds
+		megaBoxIds = append(megaBoxIds, adjacentIds...)
 
-		// convert to cartesian and append to idCovex
-		for _, vertex := range IdVertexes {
+	}
+	endGetids := time.Since(startGetids)
 
-			cartesianPoint := geodesy.GeocentricFromGeodetic(geodesy.Geodetic{
-				vertex.Lon(),
-				vertex.Lat(),
-				vertex.Lat(),
-			})
+	// Make unique list of spatial ids
+	startUnique := time.Now()
+	uniqueMegaBoxIds = common.Unique(megaBoxIds)
 
-			idConvex = append(idConvex, (*mgl64.Vec3)(&cartesianPoint))
+	// Subtract the spatial ids in the line
+	noLinePathMegaBoxIds = common.Difference(uniqueMegaBoxIds, idsOnLine)
+	endUnique := time.Since(startUnique)
+	// loop through the spatialids not included in the line path (noLinePathMegaBoxIds)
+	// to determine their distance from the path line.
+	startMeasure := time.Now()
+	if measuresIdDistances {
 
-			// idVectors[i] = mgl64.Vec3(geodesy.Geodetic{
-			// 	v.Lon(),
-			// 	v.Lat(),
-			// 	float64(v.Alt()),
-			// }.ConvertToCartesian())
+		for _, id := range noLinePathMegaBoxIds {
 
-			// idConvex = append(idConvex, (*mgl64.Vec3)(&idVectors[i]))
-		}
+			// Get 8 vertexes of the SpatialID
+			IdVertexes, error := shape.GetPointOnExtendedSpatialId(id, enum.Vertex)
+			if error != nil {
+				return nil, error
+			}
 
-		// Put idConvex into measure's ConvexHulls[1]
-		measure1.ConvexHulls[1] = idConvex
+			//idVectors := make([]mgl64.Vec3, len(IdVertexes))
 
-		// Measure the distance between the line (ConvexHull[0]) and the
-		// SpatialIDs vertex vectors (ConvexHull[1])
-		measure1.MeasureNonnegativeDistance()
+			// idConvex is the list of vectors that the SpatialID's 8 vertexes
+			var idConvex = []*mgl64.Vec3{}
 
-		// dist is the closest distance between the line (ConvexHull[0]) and the vertexes of Spatial ID[i]
-		var dist = measure1.Distance
+			// convert to cartesian and append to idCovex
+			for _, vertex := range IdVertexes {
 
-		measureDistances1 = append(measureDistances1, dist)
+				cartesianPoint := geodesy.GeocentricFromGeodetic(geodesy.Geodetic{
+					vertex.Lon(),
+					vertex.Lat(),
+					vertex.Lat(),
+				})
 
-		// Since MeasureNonnegativeDistance() was used the distance value in dist
-		// will always be non-zero. If dist < radius, add the spatialID to idsToAdd
-		if dist < (radius) {
-			idsToAdd = append(idsToAdd, id)
-		}
+				idConvex = append(idConvex, (*mgl64.Vec3)(&cartesianPoint))
 
-	} // end noLinePathMegaBoxIds/ distance to line loop
+				// idVectors[i] = mgl64.Vec3(geodesy.Geodetic{
+				// 	v.Lon(),
+				// 	v.Lat(),
+				// 	float64(v.Alt()),
+				// }.ConvertToCartesian())
+
+				// idConvex = append(idConvex, (*mgl64.Vec3)(&idVectors[i]))
+			}
+
+			// Put idConvex into measure's ConvexHulls[1]
+			measure1.ConvexHulls[1] = idConvex
+
+			// Measure the distance between the line (ConvexHull[0]) and the
+			// SpatialIDs vertex vectors (ConvexHull[1])
+			measure1.MeasureNonnegativeDistance()
+
+			// dist is the closest distance between the line (ConvexHull[0]) and the vertexes of Spatial ID[i]
+			var dist = measure1.Distance
+
+			measureDistances1 = append(measureDistances1, dist)
+
+			// Since MeasureNonnegativeDistance() was used the distance value in dist
+			// will always be non-zero. If dist < radius, add the spatialID to idsToAdd
+			if dist < (radius) {
+				idsToAdd = append(idsToAdd, id)
+			}
+
+		} // end noLinePathMegaBoxIds/ distance to line loop
+
+		// combine idsToAdd + idsOnLine
+		idsWithinCriterion = common.Unique(common.Union(idsToAdd, idsOnLine))
+
+	} else {
+		idsWithinCriterion = megaBoxIds
+	}
 	endMeasure := time.Since(startMeasure)
-	log.Printf("\nGet26: %v\nMeasure: %v\n", endGet26, endMeasure)
-	// combine idsToAdd + idsOnLine
-	// the unique list of spatialIds that are either on the route path line or within the radius distance
-	var idsWithinCriterion []string
-	idsWithinCriterion = common.Unique(common.Union(idsToAdd, idsOnLine))
+
+	log.Printf("\nGetNids: %v\nUnique/Subtract: %v\nMeasure: %v\n", endGetids, endUnique, endMeasure)
+
+	Nadd := float64(len(idsToAdd))
+	NTotal := float64(len(uniqueMegaBoxIds))
+	fraction := Nadd / NTotal
+	pct := mgl64.Round(fraction, 5) * 100
+	log.Printf("\nIds from GetIdsWithinRadiusOfLine: %v\nIds measured and added from above: %v\nPercent within radius: %v pct",
+		len(uniqueMegaBoxIds),
+		len(idsToAdd),
+		pct)
 
 	return idsWithinCriterion, nil
 
