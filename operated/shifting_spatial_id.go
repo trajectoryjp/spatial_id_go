@@ -211,7 +211,6 @@ func GetNspatialIdsAroundVoxcels(spatialIDs []string, hLayers, vLayers int64) ([
 	hExpandParam := hLayers * 2
 	vExpandParam := vLayers * 2
 
-	//nIds := math.Pow(float64((expandParam)+1), 3) - 1
 	nIds := ((vExpandParam + 1) * (hExpandParam + 1) * (hExpandParam + 1)) - 1
 
 	finalspatialIDs := make([]string, 0, int(nIds))
@@ -228,16 +227,16 @@ func GetNspatialIdsAroundVoxcels(spatialIDs []string, hLayers, vLayers int64) ([
 					continue
 				}
 
-				shiftID := GetShiftingSpatialID(spatialIDs[0], xShiftIndex, yShiftIndex, vShiftIndex)
+				shiftIDs := GetShiftingSpatialIDs(spatialIDs, xShiftIndex, yShiftIndex, vShiftIndex)
 
-				finalspatialIDs = append(finalspatialIDs, shiftID)
+				finalspatialIDs = append(finalspatialIDs, shiftIDs...)
 
 			}
 
 		}
 	}
 
-	return spatialIDs, nil
+	return finalspatialIDs, nil
 }
 
 // GetShiftingSpatialID 拡張空間IDの移動関数

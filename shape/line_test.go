@@ -1,7 +1,7 @@
 package shape
 
 import (
-	"log"
+	"fmt"
 	"testing"
 
 	"github.com/trajectoryjp/spatial_id_go/common/enum"
@@ -427,7 +427,9 @@ func TestGetSpatialIdsOnLineForTests(t *testing.T) {
 		t.Fatal(error)
 	}
 
-	log.Println(ids)
+	for _, v := range ids {
+		fmt.Printf("\"%v\",", v)
+	}
 }
 
 // TestMiddleSpatialIds01 正常系動作確認 中点が始点・終点の周囲にある場合
