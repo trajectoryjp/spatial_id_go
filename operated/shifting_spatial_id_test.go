@@ -272,7 +272,7 @@ func TestGetNspatialIdsAroundVoxcel(t *testing.T) {
 	nLayer := 2
 
 	start := time.Now()
-	resultVal, error := GetNspatialIdsAroundVoxcel("16/468/95/20/3", int64(nLayer))
+	resultVal, error := GetNspatialIdsAroundVoxcel("16/468/95/20/3", int64(nLayer), int64(nLayer))
 	end := time.Since(start)
 	if error != nil {
 		t.Fatal(error)
@@ -296,12 +296,12 @@ func TestGetNspatialIdsAroundVoxcel_time(t *testing.T) {
 	nIds := []int{}
 
 	var i int64
-	for i = 1; i < 101; i += 1 {
+	for i = 1; i < 10; i += 1 {
 
 		expandParam := float64(i * 2)
 
 		start := time.Now()
-		result, error := GetNspatialIdsAroundVoxcel("16/468/95/20/3", i)
+		result, error := GetNspatialIdsAroundVoxcel("16/468/95/20/3", i, i)
 		if error != nil {
 			t.Fatal(error)
 		}

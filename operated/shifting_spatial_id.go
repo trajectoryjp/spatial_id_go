@@ -163,15 +163,17 @@ func Get124spatialIdsAroundVoxcel(spatialID string) []string {
 	return spatialIDs
 }
 
-func GetNspatialIdsAroundVoxcel(spatialID string, nLayer int64) ([]string, error) {
+func GetNspatialIdsAroundVoxcel(spatialID string, hLayers, vLayers int64) ([]string, error) {
 
-	expandParam := nLayer * 2
-
-	if nLayer < 1 {
-		return nil, fmt.Errorf("nLayer must be >= 1")
+	if hLayers < 1 || vLayers < 1 {
+		return nil, fmt.Errorf("both hLayers and vLayers parameters must be >= 1")
 	}
 
-	nIds := math.Pow(float64((expandParam)+1), 3) - 1
+	hExpandParam := hLayers * 2
+	vExpandParam := vLayers * 2
+
+	//nIds := math.Pow(float64((expandParam)+1), 3) - 1
+	nIds := ((vExpandParam + 1) * (hExpandParam + 1) * (hExpandParam + 1)) - 1
 
 	spatialIDs := make([]string, 0, int(nIds))
 
@@ -179,9 +181,9 @@ func GetNspatialIdsAroundVoxcel(spatialID string, nLayer int64) ([]string, error
 	var yShiftIndex int64
 	var vShiftIndex int64
 
-	for xShiftIndex = -nLayer; xShiftIndex < nLayer+1; xShiftIndex += 1 {
-		for yShiftIndex = -nLayer; yShiftIndex < nLayer+1; yShiftIndex += 1 {
-			for vShiftIndex = -nLayer; vShiftIndex < nLayer+1; vShiftIndex += 1 {
+	for xShiftIndex = -hLayers; xShiftIndex < hLayers+1; xShiftIndex += 1 {
+		for yShiftIndex = -hLayers; yShiftIndex < hLayers+1; yShiftIndex += 1 {
+			for vShiftIndex = -vLayers; vShiftIndex < vLayers+1; vShiftIndex += 1 {
 
 				if xShiftIndex == 0 && yShiftIndex == 0 && vShiftIndex == 0 {
 					continue
