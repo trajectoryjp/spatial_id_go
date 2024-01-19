@@ -1,8 +1,12 @@
 package operated
 
 import (
+	"fmt"
+	"log"
+	"math"
 	"reflect"
 	"testing"
+	"time"
 )
 
 // TestGet6spatialIdsAdjacentToFaces01 正常系動作確認
@@ -59,6 +63,18 @@ func TestGet8spatialIdsAroundHorizontal01(t *testing.T) {
 	t.Log("テスト終了")
 }
 
+func TestGet24spatialIdsAroundHorizontal(t *testing.T) {
+	resultVal := Get24spatialIdsAroundHorizontal("16/468/95/20/3")
+
+	if float64(len(resultVal)) != 24 {
+		t.Fatalf("N responses is not expected")
+	} else {
+		log.Printf("\nNumber of responses matches expected\n")
+	}
+
+	fmt.Println(resultVal)
+}
+
 // TestGet26spatialIdsAroundVoxel01 正常系動作確認
 // 試験詳細：
 // + 試験データ
@@ -113,7 +129,7 @@ func TestGetShiftingSpatialID01(t *testing.T) {
 // 試験詳細：
 // + 試験データ
 //   - パターン1：
-//		移動先の位置が(2^精度-1)を超えている場合
+//     移動先の位置が(2^精度-1)を超えている場合
 //     (空間ID:5/30/29/20/3, 空間IDを経度方向に動かす数値:2, 空間IDを緯度方向に動かす数値:3, 空間IDを高さ方向に動かす数値:4)
 //
 // + 確認内容
@@ -133,7 +149,7 @@ func TestGetShiftingSpatialID02(t *testing.T) {
 // 試験詳細：
 // + 試験データ
 //   - パターン1：
-//		移動先の位置が(2^精度-1)と等しい場合
+//     移動先の位置が(2^精度-1)と等しい場合
 //     (空間ID:5/29/28/20/3, 空間IDを経度方向に動かす数値:2, 空間IDを緯度方向に動かす数値:3, 空間IDを高さ方向に動かす数値:4)
 //
 // + 確認内容
@@ -155,7 +171,7 @@ func TestGetShiftingSpatialID03(t *testing.T) {
 // 試験詳細：
 // + 試験データ
 //   - パターン1：
-//		移動先の位置が(2^精度-1)未満の場合
+//     移動先の位置が(2^精度-1)未満の場合
 //     (空間ID:5/28/27/20/3, 空間IDを経度方向に動かす数値:2, 空間IDを緯度方向に動かす数値:3, 空間IDを高さ方向に動かす数値:4)
 //
 // + 確認内容
@@ -177,7 +193,7 @@ func TestGetShiftingSpatialID04(t *testing.T) {
 // 試験詳細：
 // + 試験データ
 //   - パターン1：
-//		移動先の位置が0より大きい場合
+//     移動先の位置が0より大きい場合
 //     (空間ID:5/-1/-2/20/3, 空間IDを経度方向に動かす数値:2, 空間IDを緯度方向に動かす数値:3, 空間IDを高さ方向に動かす数値:4)
 //
 // + 確認内容
@@ -199,7 +215,7 @@ func TestGetShiftingSpatialID05(t *testing.T) {
 // 試験詳細：
 // + 試験データ
 //   - パターン1：
-//		移動先の位置が0と等しい場合
+//     移動先の位置が0と等しい場合
 //     (空間ID:5/-2/-3/20/3, 空間IDを経度方向に動かす数値:2, 空間IDを緯度方向に動かす数値:3, 空間IDを高さ方向に動かす数値:4)
 //
 // + 確認内容
@@ -221,7 +237,7 @@ func TestGetShiftingSpatialID06(t *testing.T) {
 // 試験詳細：
 // + 試験データ
 //   - パターン1：
-//		移動先の位置が0より小さい場合
+//     移動先の位置が0より小さい場合
 //     (空間ID:5/-3/-4/20/3, 空間IDを経度方向に動かす数値:2, 空間IDを緯度方向に動かす数値:3, 空間IDを高さ方向に動かす数値:4)
 //
 // + 確認内容
@@ -237,6 +253,73 @@ func TestGetShiftingSpatialID07(t *testing.T) {
 		t.Errorf("空間ID - 期待値：%s, 取得値：%s", expectVal, resultVal)
 	}
 	t.Log("テスト終了")
+}
+
+func TestGet124spatialIdsAroundVoxcel(t *testing.T) {
+	resultVal := Get124spatialIdsAroundVoxcel("16/468/95/20/3")
+
+	if float64(len(resultVal)) != 124 {
+		t.Fatalf("N responses is not expected")
+	} else {
+		log.Printf("\nNumber of responses matches expected\n")
+	}
+	fmt.Println(resultVal)
+
+}
+
+func TestGetNspatialIdsAroundVoxcel(t *testing.T) {
+
+	nLayer := 2
+
+	start := time.Now()
+	resultVal, error := GetNspatialIdsAroundVoxcel("16/468/95/20/3", int64(nLayer))
+	end := time.Since(start)
+	if error != nil {
+		t.Fatal(error)
+	}
+
+	expandParam := float64(nLayer * 2)
+	if float64(len(resultVal)) != (math.Pow(float64(expandParam+1), 3) - 1) {
+		t.Fatalf("N responses is not expected")
+	} else {
+		log.Printf("\nNumber of responses matches expected\n")
+	}
+
+	fmt.Println(len(resultVal))
+	fmt.Println(end)
+
+}
+
+func TestGetNspatialIdsAroundVoxcel_time(t *testing.T) {
+
+	times := []time.Duration{}
+	nIds := []int{}
+
+	var i int64
+	for i = 1; i < 101; i += 1 {
+
+		expandParam := float64(i * 2)
+
+		start := time.Now()
+		result, error := GetNspatialIdsAroundVoxcel("16/468/95/20/3", i)
+		if error != nil {
+			t.Fatal(error)
+		}
+		end := time.Since(start)
+
+		if float64(len(result)) != (math.Pow(float64(expandParam+1), 3) - 1) {
+			t.Fatalf("N responses is not expected")
+		}
+
+		times = append(times, end)
+		nIds = append(nIds, len(result))
+
+	}
+
+	for i, time := range times {
+		fmt.Printf("nLayer: %v\t nIds:%v\t %v\n", i+1, nIds[i], time)
+
+	}
 }
 
 // stringスライスの中に指定文字列を含むか判定する
