@@ -325,12 +325,16 @@ func TestGetNspatialIdsAroundVoxcel_time(t *testing.T) {
 
 func TestGetShiftingSpatialIds(t *testing.T) {
 
-	ids := []string{"23/7451603/3303422/23/25", "23/7451604/3303422/23/25", "23/7451605/3303422/23/25"}
+	ids := []string{"23/7451603/3303422/23/25", "23/7451603/3303422/23/25", "23/7451605/3303422/23/25"}
 
 	shiftedIds := GetShiftingSpatialIDs(ids, 1, 1, 1)
-
-	for i, v := range ids {
-		log.Printf("id: %v -> %v", v, shiftedIds[i])
+	if len(ids) == len(shiftedIds) {
+		for i, v := range ids {
+			log.Printf("id: %v -> %v", v, shiftedIds[i])
+		}
+	} else {
+		log.Println(ids)
+		log.Println(shiftedIds)
 	}
 
 }
