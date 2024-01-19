@@ -204,11 +204,11 @@ func FitClearanceAroundExtendedSpatialID(spatialID string, clearance float64) (h
 	// vLayyer is the number of vertical spatialID distances required to fit the clearance
 	var vLayer int64
 
-	var hUnits int64
-	var vUnits int64
+	var hUnits int64 = 2
+	var vUnits int64 = 2
 
 	// Begin horizonal fitting loop (determine hLayer)
-	for hUnits = 2; hUnits < 9999; hUnits = +1 {
+	for {
 
 		// OrigianlConvex is the list of vectors that the original SpatialID's 8 vertexes
 		var OriginalConvex = []*mgl64.Vec3{}
@@ -264,8 +264,9 @@ func FitClearanceAroundExtendedSpatialID(spatialID string, clearance float64) (h
 		// Measure Distance between Original and Shifted Convex
 		measure.MeasureNonnegativeDistance()
 
-		// if clearance is greater than the distance, continue loop. Otherwise, return hUnits-1 to hLayer
+		// if clearance is greater than the distance, continue loop. Otherwise, return hUnits-1 to hLaye
 		if clearance > measure.Distance {
+			hUnits = hUnits + 1
 			continue
 		}
 
@@ -277,7 +278,7 @@ func FitClearanceAroundExtendedSpatialID(spatialID string, clearance float64) (h
 	}
 
 	// Begin vertical fitting loop (determine vLayer)
-	for vUnits = 2; vUnits < 9999; vUnits = +1 {
+	for {
 
 		// OrigianlConvex is the list of vectors that the original SpatialID's 8 vertexes
 		var OriginalConvex = []*mgl64.Vec3{}
@@ -335,6 +336,7 @@ func FitClearanceAroundExtendedSpatialID(spatialID string, clearance float64) (h
 
 		// if clearance is greater than the distance, continue loop. Otherwise, return vUnits-1 to hLayer
 		if clearance > measure.Distance {
+			vUnits = vUnits + 1
 			continue
 		}
 

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/trajectoryjp/spatial_id_go/common/object"
+	"github.com/trajectoryjp/spatial_id_go/shape"
 )
 
 func TestGetSpatialIdsWithinRadiusOfLine(t *testing.T) {
@@ -33,12 +34,28 @@ func TestGetSpatialIdsWithinRadiusOfLine(t *testing.T) {
 
 func TestFitClearanceAroundExtendedSpatialID(t *testing.T) {
 
-	spatialId := "16/468/95/20/3"
-
-	hLayer, vLayer, error := FitClearanceAroundExtendedSpatialID(spatialId, 20)
+	point, error := object.NewPoint(139.788081, 35.672680, 100)
 	if error != nil {
 		t.Fatal(error)
 	}
-	log.Printf("Horizontal Layers: %v\tVertical Layers: %v", hLayer, vLayer)
+	points := []*object.Point{point}
+	// 25, 25 is approx 1m box
+	spatialId, error := shape.GetExtendedSpatialIdsOnPoints(points, 25, 25)
+	if error != nil {
+		t.Fatal(error)
+	}
+
+	if len(spatialId) != 1 {
+		t.Fatalf("N. Id's != 1")
+	}
+
+	start := time.Now()
+	hLayer, vLayer, error := FitClearanceAroundExtendedSpatialID(spatialId[0], 1000)
+	end := time.Since(start)
+	if error != nil {
+		t.Fatal(error)
+	}
+	log.Printf("\nCalculation time: %v\n", end)
+	log.Printf("\nHorizontal Layers: %v\tVertical Layers: %v", hLayer, vLayer)
 
 }
