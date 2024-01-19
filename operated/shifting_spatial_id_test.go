@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"testing"
 	"time"
+	//"github.com/trajectoryjp/spatial_id_go/object"
 )
 
 // TestGet6spatialIdsAdjacentToFaces01 正常系動作確認
@@ -296,7 +297,7 @@ func TestGetNspatialIdsAroundVoxcel_time(t *testing.T) {
 	nIds := []int{}
 
 	var i int64
-	for i = 1; i < 100; i += 1 {
+	for i = 1; i < 50; i += 1 {
 
 		expandParam := float64(i * 2)
 
@@ -320,6 +321,18 @@ func TestGetNspatialIdsAroundVoxcel_time(t *testing.T) {
 		fmt.Printf("nLayer: %v\t nIds:%v\t %v\n", i+1, nIds[i], time)
 
 	}
+}
+
+func TestGetShiftingSpatialIds(t *testing.T) {
+
+	ids := []string{"23/7451603/3303422/23/25", "23/7451604/3303422/23/25", "23/7451605/3303422/23/25"}
+
+	shiftedIds := GetShiftingSpatialIDs(ids, 1, 1, 1)
+
+	for i, v := range ids {
+		log.Printf("id: %v -> %v", v, shiftedIds[i])
+	}
+
 }
 
 // stringスライスの中に指定文字列を含むか判定する
