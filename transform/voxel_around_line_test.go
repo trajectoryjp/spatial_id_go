@@ -30,3 +30,15 @@ func TestGetSpatialIdsWithinRadiusOfLine(t *testing.T) {
 	log.Printf("\n%v Spatial IDs found in %v \n", len(spatialIds), elapsed)
 
 }
+
+func TestFitClearanceAroundExtendedSpatialID(t *testing.T) {
+
+	spatialId := "16/468/95/20/3"
+
+	hLayer, vLayer, error := FitClearanceAroundExtendedSpatialID(spatialId, 20)
+	if error != nil {
+		t.Fatal(error)
+	}
+	log.Printf("Horizontal Layers: %v\tVertical Layers: %v", hLayer, vLayer)
+
+}

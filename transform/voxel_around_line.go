@@ -1,10 +1,13 @@
 package transform
 
 import (
+	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/trajectoryjp/spatial_id_go/common"
+	"github.com/trajectoryjp/spatial_id_go/common/consts"
 	"github.com/trajectoryjp/spatial_id_go/common/enum"
 	"github.com/trajectoryjp/spatial_id_go/common/object"
 	"github.com/trajectoryjp/spatial_id_go/operated"
@@ -13,21 +16,19 @@ import (
 	"github.com/go-gl/mathgl/mgl64"
 
 	closest "github.com/trajectoryjp/closest_go"
-	//geodesy "github.com/trajectoryjp/geodesy_go"
-
-	"github.com/wroge/wgs84"
+	geodesy "github.com/trajectoryjp/geodesy_go/coordinates"
 )
 
-type Geocentric mgl64.Vec3
-type Geodetic mgl64.Vec3
+// type Geocentric mgl64.Vec3
+// type Geodetic mgl64.Vec3
 
-var GeocentricReferenceSystem = wgs84.GeocentricReferenceSystem{}
-var GeodeticReferenceSystem = wgs84.LonLat()
+// var GeocentricReferenceSystem = wgs84.GeocentricReferenceSystem{}
+// var GeodeticReferenceSystem = wgs84.LonLat()
 
-func GeocentricFromGeodetic(geodetic Geodetic) (geocentric Geocentric) {
-	geocentric[0], geocentric[1], geocentric[2] = GeodeticReferenceSystem.To(GeocentricReferenceSystem)(geodetic[0], geodetic[1], geodetic[2])
-	return
-}
+// func GeocentricFromGeodetic(geodetic Geodetic) (geocentric Geocentric) {
+// 	geocentric[0], geocentric[1], geocentric[2] = GeodeticReferenceSystem.To(GeocentricReferenceSystem)(geodetic[0], geodetic[1], geodetic[2])
+// 	return
+// }
 
 // GetSpatialIdsWithinRadiusOfLine
 
@@ -73,12 +74,12 @@ func GetSpatialIdsWithinRadiusOfLine(startPoint *object.Point, endPoint *object.
 	// points is the [2]slice / list of startPoint and endPoint in geodesic format (lat/lon)
 	var points = []*object.Point{startPoint, endPoint}
 	// cartesianPoints is the list of points converted into cartesian (x, y)
-	var cartesianPoints []Geocentric
+	var cartesianPoints []geodesy.Geocentric
 
 	// Convert points to cartesian and append to cartesianPoints
 	for _, point := range points {
 
-		cartesianPoint := GeocentricFromGeodetic(Geodetic{
+		cartesianPoint := geodesy.GeocentricFromGeodetic(geodesy.Geodetic{
 			point.Lon(),
 			point.Lat(),
 			point.Lat(),
@@ -134,7 +135,7 @@ func GetSpatialIdsWithinRadiusOfLine(startPoint *object.Point, endPoint *object.
 		// convert to cartesian and append to idCovex
 		for _, vertex := range IdVertexes {
 
-			cartesianPoint := GeocentricFromGeodetic(Geodetic{
+			cartesianPoint := geodesy.GeocentricFromGeodetic(geodesy.Geodetic{
 				vertex.Lon(),
 				vertex.Lat(),
 				vertex.Lat(),
@@ -179,4 +180,170 @@ func GetSpatialIdsWithinRadiusOfLine(startPoint *object.Point, endPoint *object.
 
 	return idsWithinCriterion, nil
 
+}
+
+func FitClearanceAroundExtendedSpatialID(spatialID string, clearance float64) (horizontalLayer int64, verticalLayer int64, error error) {
+
+	// validate clearance
+	if clearance < 0 {
+		return 0, 0, fmt.Errorf("\ninvalid clearance value. Clearance must be >= 0")
+	}
+
+	// validate and extract zoom info from spatialID
+	idElements := strings.Split(spatialID, consts.SpatialIDDelimiter)
+
+	if len(idElements) != 5 {
+		return 0, 0, fmt.Errorf("\ninvalid ExtendedSpatialID format. SpatialID must be 'hZoom/x/y/vZoom/z' format")
+	}
+
+	// hZoom, _ := strconv.ParseInt(idElements[0], 10, 64)
+	// vZoom, _ := strconv.ParseInt(idElements[3], 10, 64)
+
+	// hLayer is the number of horizonal spatialID distances required to fit the clearance
+	var hLayer int64
+	// vLayyer is the number of vertical spatialID distances required to fit the clearance
+	var vLayer int64
+
+	var hUnits int64
+	var vUnits int64
+
+	// Begin horizonal fitting loop (determine hLayer)
+	for hUnits = 2; hUnits < 9999; hUnits = +1 {
+
+		// OrigianlConvex is the list of vectors that the original SpatialID's 8 vertexes
+		var OriginalConvex = []*mgl64.Vec3{}
+		// ShiftedConvex is the list of vectors that the shifted SpatialID's 8 vertexes
+		var ShiftedConvex = []*mgl64.Vec3{}
+
+		// shift spatialID over n units
+		shiftedID := operated.GetShiftingSpatialID(spatialID, hUnits, 0, 0)
+
+		// measure closest distance between original and shifted IDs
+		measure := closest.Measure{}
+
+		// Original Point: get verticies, loop through verticies, convert them to cartesian, append to OriginalConvex
+		OriginalVertexes, error := shape.GetPointOnExtendedSpatialId(spatialID, enum.Vertex)
+		if error != nil {
+			return 0, 0, error
+		}
+
+		for _, vertex := range OriginalVertexes {
+
+			cartesianPoint := geodesy.GeocentricFromGeodetic(geodesy.Geodetic{
+				vertex.Lon(),
+				vertex.Lat(),
+				vertex.Lat(),
+			})
+
+			OriginalConvex = append(OriginalConvex, (*mgl64.Vec3)(&cartesianPoint))
+
+		}
+
+		measure.ConvexHulls[0] = OriginalConvex
+
+		// Shifted Point: get verticies, loop through verticies, convert them to cartesian, append to OriginalConvex
+		ShiftedVertexes, error := shape.GetPointOnExtendedSpatialId(shiftedID, enum.Vertex)
+		if error != nil {
+			return 0, 0, error
+		}
+
+		for _, vertex := range ShiftedVertexes {
+
+			cartesianPoint := geodesy.GeocentricFromGeodetic(geodesy.Geodetic{
+				vertex.Lon(),
+				vertex.Lat(),
+				vertex.Lat(),
+			})
+
+			ShiftedConvex = append(ShiftedConvex, (*mgl64.Vec3)(&cartesianPoint))
+
+		}
+
+		measure.ConvexHulls[1] = ShiftedConvex
+
+		// Measure Distance between Original and Shifted Convex
+		measure.MeasureNonnegativeDistance()
+
+		// if clearance is greater than the distance, continue loop. Otherwise, return hUnits-1 to hLayer
+		if clearance > measure.Distance {
+			continue
+		}
+
+		// the last value to fit the clearance gets returned to hLayer
+		hLayer = hUnits - 1
+		break
+
+		// end horizontal fitting loop
+	}
+
+	// Begin vertical fitting loop (determine vLayer)
+	for vUnits = 2; vUnits < 9999; vUnits = +1 {
+
+		// OrigianlConvex is the list of vectors that the original SpatialID's 8 vertexes
+		var OriginalConvex = []*mgl64.Vec3{}
+		// ShiftedConvex is the list of vectors that the shifted SpatialID's 8 vertexes
+		var ShiftedConvex = []*mgl64.Vec3{}
+
+		// shift spatialID over n units
+		shiftedID := operated.GetShiftingSpatialID(spatialID, 0, vUnits, 0)
+
+		// measure closest distance between original and shifted IDs
+		measure := closest.Measure{}
+
+		// Original Point: get verticies, loop through verticies, convert them to cartesian, append to OriginalConvex
+		OriginalVertexes, error := shape.GetPointOnExtendedSpatialId(spatialID, enum.Vertex)
+		if error != nil {
+			return 0, 0, error
+		}
+
+		for _, vertex := range OriginalVertexes {
+
+			cartesianPoint := geodesy.GeocentricFromGeodetic(geodesy.Geodetic{
+				vertex.Lon(),
+				vertex.Lat(),
+				vertex.Lat(),
+			})
+
+			OriginalConvex = append(OriginalConvex, (*mgl64.Vec3)(&cartesianPoint))
+
+		}
+
+		measure.ConvexHulls[0] = OriginalConvex
+
+		// Shifted Point: get verticies, loop through verticies, convert them to cartesian, append to OriginalConvex
+		ShiftedVertexes, error := shape.GetPointOnExtendedSpatialId(shiftedID, enum.Vertex)
+		if error != nil {
+			return 0, 0, error
+		}
+
+		for _, vertex := range ShiftedVertexes {
+
+			cartesianPoint := geodesy.GeocentricFromGeodetic(geodesy.Geodetic{
+				vertex.Lon(),
+				vertex.Lat(),
+				vertex.Lat(),
+			})
+
+			ShiftedConvex = append(ShiftedConvex, (*mgl64.Vec3)(&cartesianPoint))
+
+		}
+
+		measure.ConvexHulls[1] = ShiftedConvex
+
+		// Measure Distance between Original and Shifted Convex
+		measure.MeasureNonnegativeDistance()
+
+		// if clearance is greater than the distance, continue loop. Otherwise, return vUnits-1 to hLayer
+		if clearance > measure.Distance {
+			continue
+		}
+
+		// the last value to fit the clearance gets returned to hLayer
+		vLayer = vUnits - 1
+		break
+
+		// end horizontal fitting loop
+	}
+
+	return hLayer, vLayer, nil
 }

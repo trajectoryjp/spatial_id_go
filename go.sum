@@ -1,11 +1,7 @@
-git-codecommit.ap-northeast-1.amazonaws.com/v1/repos/closest.git/v3 v3.1.4 h1:+OL4qW2LbVxJLv2s5xYY4tL+iSp89TVw30KCkOVwclw=
-git-codecommit.ap-northeast-1.amazonaws.com/v1/repos/closest.git/v3 v3.1.4/go.mod h1:vDzoe7Y8WiyBDV+oE+5Pk8evs9e+uV6kbLUHD8QFN4E=
 github.com/benbjohnson/clock v1.1.0 h1:Q92kusRqC1XV2MjkWETPvjJVqKetz1OzxZB7mHJLju8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/go-gl/mathgl v1.0.0 h1:t9DznWJlXxxjeeKLIdovCOVJQk/GzDEL7h/h+Ro2B68=
-github.com/go-gl/mathgl v1.0.0/go.mod h1:yhpkQzEiH9yPyxDUGzkmgScbaBVlhC06qodikEM0ZwQ=
 github.com/go-gl/mathgl v1.1.0 h1:0lzZ+rntPX3/oGrDzYGdowSLC2ky8Osirvf5uAwfIEA=
 github.com/go-gl/mathgl v1.1.0/go.mod h1:yhpkQzEiH9yPyxDUGzkmgScbaBVlhC06qodikEM0ZwQ=
 github.com/pkg/errors v0.8.1 h1:iURUrRGxPUNPdy5/HRSm+Yj6okJ6UtLINN0Q9M4+h3I=
@@ -16,10 +12,11 @@ github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UV
 github.com/stretchr/testify v1.8.0 h1:pSgiaMZlXftHpm5L7V1+rVB+AZJydKsMxsQBIJw4PKk=
 github.com/trajectoryjp/closest_go v1.0.1 h1:dvshtZzPDwhGDhzn5SVZxlgNnqr/gLp4uIpGDIEOHaU=
 github.com/trajectoryjp/closest_go v1.0.1/go.mod h1:+iTxW7/pOi0dIqo2/GcqGqWh/fAj2gMjDIiZ+BFDXIc=
+github.com/trajectoryjp/geodesy_go v1.0.1 h1:FvvnA3kPcPoXOjn6cS27R9aiCLyszOarFuZRVlQRG2s=
+github.com/trajectoryjp/geodesy_go v1.0.1/go.mod h1:eJuX+ds+t3MKxHG9dhobqNjUbUsYlpTT9XDO0mbc0LU=
 github.com/wroge/wgs84 v1.1.7 h1:8WVUUrpjysYxrn0ssWX7z90SOUKCuHt9NQ5tg9ovjIY=
 github.com/wroge/wgs84 v1.1.7/go.mod h1:mc1F8ubW03DO4zaf/006cmhaiMlfvbKmqVAcPuAtsNA=
-github.com/wroge/wgs84/v2 v2.0.0-alpha.10 h1:6ucEDq/uka9No+/kstISMDVOH4I5WLNte8kzMz+G3Yk=
-github.com/wroge/wgs84/v2 v2.0.0-alpha.10/go.mod h1:c213RWumkFVT6798bhUIDRJweu6G39v/cXT2nRYBw7w=
+github.com/xieyuschen/deepcopy v1.0.1 h1:nTCnKprCOdibz8WXWlMZzULIlpzZX0ZzKjz8HlGd/Nk=
 github.com/yuin/goldmark v1.4.13/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5taEt/CY=
 go.uber.org/atomic v1.7.0 h1:ADUqmZGgLDDfbSL9ZmPxKTybcoEYHgpYfELNoN+7hsw=
 go.uber.org/atomic v1.7.0/go.mod h1:fEN4uk6kAWBTFdckzkM89CLk9XfWZrxpCo0nPH17wJc=
