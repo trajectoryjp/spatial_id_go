@@ -2,6 +2,7 @@
 package operated
 
 import (
+	"fmt"
 	"math"
 	"strconv"
 	"strings"
@@ -72,6 +73,30 @@ func Get8spatialIdsAroundHorizontal(spatialID string) []string {
 	return spatialIDs
 }
 
+func Get24spatialIdsAroundHorizontal(spatialID string) []string {
+
+	spatialIDs := make([]string, 0, 24)
+
+	var xShiftIndex int64
+	var yShiftIndex int64
+
+	for xShiftIndex = -2; xShiftIndex < 3; xShiftIndex += 1 {
+		for yShiftIndex = -2; yShiftIndex < 3; yShiftIndex += 1 {
+
+			if xShiftIndex == 0 && yShiftIndex == 0 {
+				continue
+			}
+
+			shiftID := GetShiftingSpatialID(spatialID, xShiftIndex, yShiftIndex, 0)
+
+			spatialIDs = append(spatialIDs, shiftID)
+
+		}
+	}
+
+	return spatialIDs
+}
+
 // Get26spatialIdsAroundVoxel 拡張空間IDを囲う26個の拡張空間ID取得関数
 //
 // 拡張空間IDを囲う26個の拡張空間IDを取得する。
@@ -108,6 +133,70 @@ func Get26spatialIdsAroundVoxel(spatialID string) []string {
 	}
 
 	return spatialIDs
+}
+
+func Get124spatialIdsAroundVoxcel(spatialID string) []string {
+
+	spatialIDs := make([]string, 0, 124)
+
+	var xShiftIndex int64
+	var yShiftIndex int64
+	var vShiftIndex int64
+
+	for xShiftIndex = -2; xShiftIndex < 3; xShiftIndex += 1 {
+		for yShiftIndex = -2; yShiftIndex < 3; yShiftIndex += 1 {
+			for vShiftIndex = -2; vShiftIndex < 3; vShiftIndex += 1 {
+
+				if xShiftIndex == 0 && yShiftIndex == 0 && vShiftIndex == 0 {
+					continue
+				}
+
+				shiftID := GetShiftingSpatialID(spatialID, xShiftIndex, yShiftIndex, vShiftIndex)
+
+				spatialIDs = append(spatialIDs, shiftID)
+
+			}
+
+		}
+	}
+
+	return spatialIDs
+}
+
+func GetNspatialIdsAroundVoxcel(spatialID string, nLayer int64) ([]string, error) {
+
+	expandParam := nLayer * 2
+
+	if nLayer < 1 {
+		return nil, fmt.Errorf("nLayer must be >= 1")
+	}
+
+	nIds := math.Pow(float64((expandParam)+1), 3) - 1
+
+	spatialIDs := make([]string, 0, int(nIds))
+
+	var xShiftIndex int64
+	var yShiftIndex int64
+	var vShiftIndex int64
+
+	for xShiftIndex = -nLayer; xShiftIndex < nLayer+1; xShiftIndex += 1 {
+		for yShiftIndex = -nLayer; yShiftIndex < nLayer+1; yShiftIndex += 1 {
+			for vShiftIndex = -nLayer; vShiftIndex < nLayer+1; vShiftIndex += 1 {
+
+				if xShiftIndex == 0 && yShiftIndex == 0 && vShiftIndex == 0 {
+					continue
+				}
+
+				shiftID := GetShiftingSpatialID(spatialID, xShiftIndex, yShiftIndex, vShiftIndex)
+
+				spatialIDs = append(spatialIDs, shiftID)
+
+			}
+
+		}
+	}
+
+	return spatialIDs, nil
 }
 
 // GetShiftingSpatialID 拡張空間IDの移動関数
