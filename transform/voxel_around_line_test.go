@@ -74,7 +74,7 @@ func TestCompareGetSpatialIdsWithinRadius(t *testing.T) {
 	// loop approach
 	log.Printf("\n\n - - - - Loop Approach - - - - ")
 	startLoop := time.Now()
-	spatialIdsLoop, error := GetSpatialIdsWithinRadiusOfLine(startPoint, endPoint, 5, 23, 23, true)
+	spatialIdsLoop, error := GetSpatialIdsWithinRadiusOfLine_Loop(startPoint, endPoint, 5, 23, 23, true)
 	elapsedLoop := time.Since(startLoop)
 	if error != nil {
 		t.Fatal(error)
@@ -82,7 +82,7 @@ func TestCompareGetSpatialIdsWithinRadius(t *testing.T) {
 	// vector approach
 	log.Printf("\n\n - - - - Vector Approach - - - - ")
 	startVector := time.Now()
-	spatialIdsVector, error := GetSpatialIdsWithinRadiusOfLine_vector(startPoint, endPoint, 5, 23, 23, true)
+	spatialIdsVector, error := GetSpatialIdsWithinRadiusOfLine(startPoint, endPoint, 5, 23, 23, true)
 	elapsedVector := time.Since(startVector)
 	if error != nil {
 		t.Fatal(error)

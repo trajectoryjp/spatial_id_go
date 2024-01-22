@@ -136,6 +136,17 @@ func Get26spatialIdsAroundVoxel(spatialID string) []string {
 	return spatialIDs
 }
 
+// Ge124spatialIdsAroundVoxel 拡張空間IDを囲う124個の拡張空間ID取得関数
+//
+// 拡張空間IDを囲う124個の拡張空間IDを取得する。
+//
+// 引数：
+//
+//	spatialID： 元の位置となる拡張空間ID
+//
+// 戻り値：
+//
+//	拡張空間IDスライス： []string
 func Get124spatialIdsAroundVoxcel(spatialID string) []string {
 
 	spatialIDs := make([]string, 0, 124)
@@ -164,6 +175,20 @@ func Get124spatialIdsAroundVoxcel(spatialID string) []string {
 	return spatialIDs
 }
 
+// GeNspatialIdsAroundVoxel 拡張空間IDを囲う"N"個の拡張空間ID取得関数
+//
+// 拡張空間IDを囲う"N"個の拡張空間IDを取得する。
+//
+// 引数：
+//
+//	spatialID： 元の位置となる拡張空間ID
+//	 hLayers: 垂直方向の層目（>= 1）
+//	 vLayers: 垂直方向の層目（>= 1）
+//
+// 戻り値：
+//
+//	拡張空間IDスライス： []string
+//	 error: エラー
 func GetNspatialIdsAroundVoxcel(spatialID string, hLayers, vLayers int64) ([]string, error) {
 
 	if hLayers < 1 || vLayers < 1 {
@@ -202,6 +227,20 @@ func GetNspatialIdsAroundVoxcel(spatialID string, hLayers, vLayers int64) ([]str
 	return spatialIDs, nil
 }
 
+// GeNspatialIdsAroundVoxels 拡張空間ID（複数）を囲う"N"個の拡張空間ID取得関数
+//
+// 拡張空間ID（一個以上）を囲う"N"個の拡張空間IDを取得する。
+//
+// 引数：
+//
+//	spatialIDs： 元の位置となる拡張空間IDs（スライス）
+//	 hLayers: 垂直方向の層目（>= 1）
+//	 vLayers: 垂直方向の層目（>= 1）
+//
+// 戻り値：
+//
+//	拡張空間IDスライス： []string
+//	 error: エラー
 func GetNspatialIdsAroundVoxcels(spatialIDs []string, hLayers, vLayers int64) ([]string, error) {
 
 	if hLayers < 1 || vLayers < 1 {
