@@ -19,7 +19,7 @@ func TestGetSpatialIdsWithinRadiusOfLine(t *testing.T) {
 	if error != nil {
 		t.Fatal(error)
 	}
-	endPoint, error := object.NewPoint(139.788074, 35.785711, 100)
+	endPoint, error := object.NewPoint(139.788074, 35.761311, 100)
 	if error != nil {
 		t.Fatal(error)
 	}
@@ -44,57 +44,6 @@ func TestGetSpatialIdsWithinRadiusOfLine(t *testing.T) {
 	}
 
 	log.Printf("\n%v Spatial IDs found in %v \n", len(spatialIds), elapsed)
-
-}
-
-func TestCompareGetSpatialIdsWithinRadius(t *testing.T) {
-
-	// sumida river
-	startPoint, error := object.NewPoint(139.788452, 35.670935, 100)
-	if error != nil {
-		t.Fatal(error)
-	}
-	endPoint, error := object.NewPoint(139.788074, 35.763711, 100)
-	if error != nil {
-		t.Fatal(error)
-	}
-
-	// measure distance
-	startCartesian := geodesy.GeocentricFromGeodetic(geodesy.Geodetic{startPoint.Lon(), startPoint.Lat(), startPoint.Alt()})
-	endCartesian := geodesy.GeocentricFromGeodetic(geodesy.Geodetic{endPoint.Lon(), endPoint.Lat(), endPoint.Alt()})
-
-	measure := closest.Measure{}
-	measure.ConvexHulls[0] = []*mgl64.Vec3{(*mgl64.Vec3)(&startCartesian)}
-	measure.ConvexHulls[1] = []*mgl64.Vec3{(*mgl64.Vec3)(&endCartesian)}
-
-	measure.MeasureDistance()
-
-	log.Printf("Distance: %vm", measure.Distance)
-
-	// loop approach
-	log.Printf("\n\n - - - - Loop Approach - - - - ")
-	startLoop := time.Now()
-	spatialIdsLoop, error := GetSpatialIdsWithinRadiusOfLine_Loop(startPoint, endPoint, 5, 23, 23, true)
-	elapsedLoop := time.Since(startLoop)
-	if error != nil {
-		t.Fatal(error)
-	}
-	// vector approach
-	log.Printf("\n\n - - - - Vector Approach - - - - ")
-	startVector := time.Now()
-	spatialIdsVector, error := GetSpatialIdsWithinRadiusOfLine(startPoint, endPoint, 5, 23, 23, true)
-	elapsedVector := time.Since(startVector)
-	if error != nil {
-		t.Fatal(error)
-	}
-
-	// compare answers
-	log.Printf("\n\n - - - - Comparison - - - - ")
-	if len(spatialIdsLoop) != len(spatialIdsVector) {
-		t.Fatalf("the number of responses is not equal")
-	}
-
-	log.Printf("\nSpatial IDs found: %v\nDistance: %v m\nLoop approach time: %v\nVector approach time: %v\nDifference: %v", len(spatialIdsLoop), measure.Distance, elapsedLoop, elapsedVector, elapsedLoop-elapsedVector)
 
 }
 
