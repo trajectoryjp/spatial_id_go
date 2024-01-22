@@ -2,10 +2,12 @@
 package operated
 
 import (
+	"fmt"
 	"math"
 	"strconv"
 	"strings"
 
+	"github.com/trajectoryjp/spatial_id_go/common"
 	"github.com/trajectoryjp/spatial_id_go/common/consts"
 )
 
@@ -72,6 +74,30 @@ func Get8spatialIdsAroundHorizontal(spatialID string) []string {
 	return spatialIDs
 }
 
+func Get24spatialIdsAroundHorizontal(spatialID string) []string {
+
+	spatialIDs := make([]string, 0, 24)
+
+	var xShiftIndex int64
+	var yShiftIndex int64
+
+	for xShiftIndex = -2; xShiftIndex < 3; xShiftIndex += 1 {
+		for yShiftIndex = -2; yShiftIndex < 3; yShiftIndex += 1 {
+
+			if xShiftIndex == 0 && yShiftIndex == 0 {
+				continue
+			}
+
+			shiftID := GetShiftingSpatialID(spatialID, xShiftIndex, yShiftIndex, 0)
+
+			spatialIDs = append(spatialIDs, shiftID)
+
+		}
+	}
+
+	return spatialIDs
+}
+
 // Get26spatialIdsAroundVoxel 拡張空間IDを囲う26個の拡張空間ID取得関数
 //
 // 拡張空間IDを囲う26個の拡張空間IDを取得する。
@@ -108,6 +134,96 @@ func Get26spatialIdsAroundVoxel(spatialID string) []string {
 	}
 
 	return spatialIDs
+}
+
+// Ge124spatialIdsAroundVoxel 拡張空間IDを囲う124個の拡張空間ID取得関数
+//
+// 拡張空間IDを囲う124個の拡張空間IDを取得する。
+//
+// 引数：
+//
+//	spatialID： 元の位置となる拡張空間ID
+//
+// 戻り値：
+//
+//	拡張空間IDスライス： []string
+func Get124spatialIdsAroundVoxcel(spatialID string) []string {
+
+	spatialIDs := make([]string, 0, 124)
+
+	var xShiftIndex int64
+	var yShiftIndex int64
+	var vShiftIndex int64
+
+	for xShiftIndex = -2; xShiftIndex < 3; xShiftIndex += 1 {
+		for yShiftIndex = -2; yShiftIndex < 3; yShiftIndex += 1 {
+			for vShiftIndex = -2; vShiftIndex < 3; vShiftIndex += 1 {
+
+				if xShiftIndex == 0 && yShiftIndex == 0 && vShiftIndex == 0 {
+					continue
+				}
+
+				shiftID := GetShiftingSpatialID(spatialID, xShiftIndex, yShiftIndex, vShiftIndex)
+
+				spatialIDs = append(spatialIDs, shiftID)
+
+			}
+
+		}
+	}
+
+	return spatialIDs
+}
+
+// GetNspatialIdsAroundVoxels 拡張空間ID（複数）を囲う"N"個の拡張空間ID取得関数
+//
+// 拡張空間ID（一個以上）を囲う"N"個の拡張空間IDを取得する。
+//
+// 引数：
+//
+//	spatialIDs： 元の位置となる拡張空間IDs（スライス）
+//	 hLayers: 垂直方向の層目（>= 1）
+//	 vLayers: 垂直方向の層目（>= 1）
+//
+// 戻り値：
+//
+//	拡張空間IDスライス： []string
+//	 error: エラー
+func GetNspatialIdsAroundVoxcels(spatialIDs []string, hLayers, vLayers int64) ([]string, error) {
+
+	if hLayers < 1 || vLayers < 1 {
+		return nil, fmt.Errorf("both hLayers and vLayers parameters must be >= 1")
+	}
+
+	hExpandParam := hLayers * 2
+	vExpandParam := vLayers * 2
+
+	nIds := ((vExpandParam + 1) * (hExpandParam + 1) * (hExpandParam + 1)) - 1
+
+	finalspatialIDs := make([]string, 0, int(nIds))
+
+	var xShiftIndex int64
+	var yShiftIndex int64
+	var vShiftIndex int64
+
+	for xShiftIndex = -hLayers; xShiftIndex < hLayers+1; xShiftIndex += 1 {
+		for yShiftIndex = -hLayers; yShiftIndex < hLayers+1; yShiftIndex += 1 {
+			for vShiftIndex = -vLayers; vShiftIndex < vLayers+1; vShiftIndex += 1 {
+
+				if xShiftIndex == 0 && yShiftIndex == 0 && vShiftIndex == 0 {
+					continue
+				}
+
+				shiftIDs := GetShiftingSpatialIDs(spatialIDs, xShiftIndex, yShiftIndex, vShiftIndex)
+
+				finalspatialIDs = append(finalspatialIDs, shiftIDs...)
+
+			}
+
+		}
+	}
+
+	return finalspatialIDs, nil
 }
 
 // GetShiftingSpatialID 拡張空間IDの移動関数
@@ -178,4 +294,72 @@ func GetShiftingSpatialID(spatialID string, x, y, v int64) string {
 	}
 
 	return strings.Join(spatialIndexes, consts.SpatialIDDelimiter)
+}
+
+// returns a unique list of all SpatialIDs shifted by x, y, z
+func GetShiftingSpatialIDs(spatialIDs []string, x, y, v int64) []string {
+
+	// shiftedIds is the list of SpatialIDs shifted by x, y, z
+	var shiftedIds []string
+
+	for _, spatialID := range spatialIDs {
+
+		// 拡張空間IDを分解して経度、緯度、高さの位置を取得する
+		ids := strings.Split(spatialID, consts.SpatialIDDelimiter)
+		// IDから水平方向の位置を取得する。前方2桁は精度
+		lonIndex, _ := strconv.ParseInt(ids[1], 10, 64)
+		latIndex, _ := strconv.ParseInt(ids[2], 10, 64)
+		hZoom, _ := strconv.ParseInt(ids[0], 10, 64)
+
+		// インデックスの最大値を取得
+		maxIndex := int64(math.Pow(2, float64(hZoom)) - 1)
+
+		// シフト後のインデックスを計算する
+		shiftXIndex := lonIndex + x
+		shiftYIndex := latIndex + y
+
+		// シフト後のインデックスが存在しているかチェックする。
+		// x方向インデックスのチェック
+		if shiftXIndex > maxIndex || shiftXIndex < 0 {
+			// インデックスが負の場合は精度-2^精度%abs(index)が
+			// インデックスの範囲を超えている場合はn周分を無視する
+			for shiftXIndex < 0 {
+				shiftXIndex += int64(math.Pow(2, float64(hZoom)))
+			}
+			shiftXIndex = int64(math.Mod(float64(shiftXIndex), math.Pow(2, float64(hZoom))))
+		}
+
+		// シフト後のインデックスが存在しているかチェックする。
+		// y方向インデックスのチェック
+		if shiftYIndex > maxIndex || shiftYIndex < 0 {
+			// インデックスが負の場合は精度-2^精度%abs(index)が
+			// インデックスの範囲を超えている場合はn周分を無視する
+			for shiftYIndex < 0 {
+				shiftYIndex += int64(math.Pow(2, float64(hZoom)))
+			}
+			shiftYIndex = int64(math.Mod(float64(shiftYIndex), math.Pow(2, float64(hZoom))))
+		}
+
+		// 垂直方向は上下限なし
+		altIndex, _ := strconv.ParseInt(ids[4], 10, 64)
+		shiftAltIndex := altIndex + v
+		vZoom, _ := strconv.ParseInt(ids[3], 10, 64)
+
+		// 移動後の位置を組み合わせて拡張空間IDとする
+		spatialIndexes := []string{
+			strconv.FormatInt(hZoom, 10),
+			strconv.FormatInt(shiftXIndex, 10),
+			strconv.FormatInt(shiftYIndex, 10),
+			strconv.FormatInt(vZoom, 10),
+			strconv.FormatInt(shiftAltIndex, 10),
+		}
+
+		newId := strings.Join(spatialIndexes, consts.SpatialIDDelimiter)
+		shiftedIds = append(shiftedIds, newId)
+
+	}
+
+	uniqueShiftedIds := common.Unique(shiftedIds)
+
+	return uniqueShiftedIds
 }
