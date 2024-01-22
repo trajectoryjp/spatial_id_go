@@ -47,6 +47,41 @@ func TestGetSpatialIdsWithinRadiusOfLine(t *testing.T) {
 
 }
 
+func TestGetSpatialIdsWithinRadiusOfLine_skipsMeasurement(t *testing.T) {
+
+	// sumida river, 200m
+	startPoint, error := object.NewPoint(139.788452, 35.670935, 100)
+	if error != nil {
+		t.Fatal(error)
+	}
+	endPoint, error := object.NewPoint(139.788074, 35.761311, 100)
+	if error != nil {
+		t.Fatal(error)
+	}
+
+	// measure distance
+	startCartesian := geodesy.GeocentricFromGeodetic(geodesy.Geodetic{startPoint.Lon(), startPoint.Lat(), startPoint.Alt()})
+	endCartesian := geodesy.GeocentricFromGeodetic(geodesy.Geodetic{endPoint.Lon(), endPoint.Lat(), endPoint.Alt()})
+
+	measure := closest.Measure{}
+	measure.ConvexHulls[0] = []*mgl64.Vec3{(*mgl64.Vec3)(&startCartesian)}
+	measure.ConvexHulls[1] = []*mgl64.Vec3{(*mgl64.Vec3)(&endCartesian)}
+
+	measure.MeasureDistance()
+
+	log.Printf("Distance: %vm", measure.Distance)
+
+	start := time.Now()
+	spatialIds, error := GetSpatialIdsWithinRadiusOfLine(startPoint, endPoint, 5, 23, 23, true)
+	elapsed := time.Since(start)
+	if error != nil {
+		t.Fatal(error)
+	}
+
+	log.Printf("\n%v Spatial IDs found in %v \n", len(spatialIds), elapsed)
+
+}
+
 func TestFitClearanceAroundExtendedSpatialID(t *testing.T) {
 
 	point, error := object.NewPoint(139.788081, 35.672680, 100)
