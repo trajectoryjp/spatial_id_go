@@ -175,7 +175,7 @@ func Get124spatialIdsAroundVoxcel(spatialID string) []string {
 	return spatialIDs
 }
 
-// GeNspatialIdsAroundVoxels 拡張空間ID（複数）を囲う"N"個の拡張空間ID取得関数
+// GetNspatialIdsAroundVoxels 拡張空間ID（複数）を囲う"N"個の拡張空間ID取得関数
 //
 // 拡張空間ID（一個以上）を囲う"N"個の拡張空間IDを取得する。
 //

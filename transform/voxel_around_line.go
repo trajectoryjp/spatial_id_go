@@ -2,9 +2,7 @@ package transform
 
 import (
 	"fmt"
-	"log"
 	"strings"
-	"time"
 
 	"github.com/trajectoryjp/spatial_id_go/common"
 	"github.com/trajectoryjp/spatial_id_go/common/consts"
@@ -88,7 +86,7 @@ func GetSpatialIdsWithinRadiusOfLine(startPoint *object.Point, endPoint *object.
 		(*mgl64.Vec3)(&cartesianPoints[1]),
 	}
 
-	startGetids := time.Now()
+	//startGetids := time.Now()
 
 	// create megaboxIds
 
@@ -105,18 +103,18 @@ func GetSpatialIdsWithinRadiusOfLine(startPoint *object.Point, endPoint *object.
 		return nil, error
 	}
 
-	endGetids := time.Since(startGetids)
+	//endGetids := time.Since(startGetids)
 
 	// Make unique list of spatial ids
-	startUnique := time.Now()
+	//startUnique := time.Now()
 	uniqueMegaBoxIds = common.Unique(megaBoxIds)
 
 	// Subtract the spatial ids in the line
 	noLinePathMegaBoxIds = common.Difference(uniqueMegaBoxIds, idsOnLine)
-	endUnique := time.Since(startUnique)
+	//endUnique := time.Since(startUnique)
 	// loop through the spatialids not included in the line path (noLinePathMegaBoxIds)
 	// to determine their distance from the path line.
-	startMeasure := time.Now()
+	//startMeasure := time.Now()
 	if !skipsMeasurement {
 
 		for _, id := range noLinePathMegaBoxIds {
@@ -178,18 +176,18 @@ func GetSpatialIdsWithinRadiusOfLine(startPoint *object.Point, endPoint *object.
 	} else {
 		idsWithinCriterion = megaBoxIds
 	}
-	endMeasure := time.Since(startMeasure)
+	//endMeasure := time.Since(startMeasure)
 
-	log.Printf("\nGetNids: %v\nUnique/Subtract: %v\nMeasure: %v\n", endGetids, endUnique, endMeasure)
+	//log.Printf("\nGetNids: %v\nUnique/Subtract: %v\nMeasure: %v\n", endGetids, endUnique, endMeasure)
 
-	Nadd := float64(len(idsToAdd))
-	NTotal := float64(len(uniqueMegaBoxIds))
-	fraction := Nadd / NTotal
-	pct := mgl64.Round(fraction, 5) * 100
-	log.Printf("\nIds from GetIdsWithinRadiusOfLine: %v\nIds measured and added from above: %v\nPercent within radius: %v pct",
-		len(uniqueMegaBoxIds),
-		len(idsToAdd),
-		pct)
+	// Nadd := float64(len(idsToAdd))
+	// NTotal := float64(len(uniqueMegaBoxIds))
+	// fraction := Nadd / NTotal
+	// pct := mgl64.Round(fraction, 5) * 100
+	// log.Printf("\nIds from GetIdsWithinRadiusOfLine: %v\nIds measured and added from above: %v\nPercent within radius: %v pct",
+	// 	len(uniqueMegaBoxIds),
+	// 	len(idsToAdd),
+	// 	pct)
 
 	return idsWithinCriterion, nil
 
