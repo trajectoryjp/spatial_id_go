@@ -113,45 +113,6 @@ func Get26spatialIdsAroundVoxel(spatialID string) []string {
 	return spatialIDs
 }
 
-// Ge124spatialIdsAroundVoxel 拡張空間IDを囲う124個の拡張空間ID取得関数
-//
-// 拡張空間IDを囲う124個の拡張空間IDを取得する。
-//
-// 引数：
-//
-//	spatialID： 元の位置となる拡張空間ID
-//
-// 戻り値：
-//
-//	拡張空間IDスライス： []string
-func Get124spatialIdsAroundVoxcel(spatialID string) []string {
-
-	spatialIDs := make([]string, 0, 124)
-
-	var xShiftIndex int64
-	var yShiftIndex int64
-	var vShiftIndex int64
-
-	for xShiftIndex = -2; xShiftIndex < 3; xShiftIndex += 1 {
-		for yShiftIndex = -2; yShiftIndex < 3; yShiftIndex += 1 {
-			for vShiftIndex = -2; vShiftIndex < 3; vShiftIndex += 1 {
-
-				if xShiftIndex == 0 && yShiftIndex == 0 && vShiftIndex == 0 {
-					continue
-				}
-
-				shiftID := GetShiftingSpatialID(spatialID, xShiftIndex, yShiftIndex, vShiftIndex)
-
-				spatialIDs = append(spatialIDs, shiftID)
-
-			}
-
-		}
-	}
-
-	return spatialIDs
-}
-
 // GetNspatialIdsAroundVoxels 拡張空間ID（複数）を囲う"N"個の拡張空間ID取得関数
 //
 // 拡張空間ID（一個以上）を囲う"N"個の拡張空間IDを取得する。
