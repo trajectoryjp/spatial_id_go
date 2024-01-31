@@ -194,7 +194,7 @@ func GetSpatialIdsWithinRadiusOfLine(startPoint *object.Point, endPoint *object.
 }
 
 // FitClearanceAroundExtendedSpatialID
-// ユーザーが設定する拡張空間IDとクリアランスでクリアランが入れるように何番目の垂直方向拡張空間IDと何番目の水平方向の拡張空間IDまでに行くは必要かどうか
+// ユーザーが設定する拡張空間IDがクリアランスを保つには、何番目の垂直方向拡張空間IDと何番目の水平方向の拡張空間IDまで離れる必要があるか
 //
 // 引数：
 //

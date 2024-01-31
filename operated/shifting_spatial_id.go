@@ -182,7 +182,7 @@ func Get124spatialIdsAroundVoxcel(spatialID string) []string {
 // 引数：
 //
 //	spatialIDs： 元の位置となる拡張空間IDs（スライス）
-//	 hLayers: 垂直方向の層目（>= 1）
+//	hLayers: 水平方向の層目（>= 1）
 //	 vLayers: 垂直方向の層目（>= 1）
 //
 // 戻り値：
