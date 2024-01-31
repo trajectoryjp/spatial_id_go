@@ -75,30 +75,6 @@ func Get8spatialIdsAroundHorizontal(spatialID string) []string {
 	return spatialIDs
 }
 
-func Get24spatialIdsAroundHorizontal(spatialID string) []string {
-
-	spatialIDs := make([]string, 0, 24)
-
-	var xShiftIndex int64
-	var yShiftIndex int64
-
-	for xShiftIndex = -2; xShiftIndex < 3; xShiftIndex += 1 {
-		for yShiftIndex = -2; yShiftIndex < 3; yShiftIndex += 1 {
-
-			if xShiftIndex == 0 && yShiftIndex == 0 {
-				continue
-			}
-
-			shiftID := GetShiftingSpatialID(spatialID, xShiftIndex, yShiftIndex, 0)
-
-			spatialIDs = append(spatialIDs, shiftID)
-
-		}
-	}
-
-	return spatialIDs
-}
-
 // Get26spatialIdsAroundVoxel 拡張空間IDを囲う26個の拡張空間ID取得関数
 //
 // 拡張空間IDを囲う26個の拡張空間IDを取得する。

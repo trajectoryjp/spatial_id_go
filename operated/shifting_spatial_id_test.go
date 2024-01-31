@@ -62,18 +62,6 @@ func TestGet8spatialIdsAroundHorizontal01(t *testing.T) {
 	t.Log("テスト終了")
 }
 
-func TestGet24spatialIdsAroundHorizontal(t *testing.T) {
-	resultVal := Get24spatialIdsAroundHorizontal("16/468/95/20/3")
-
-	if float64(len(resultVal)) != 24 {
-		t.Fatalf("N responses is not expected")
-	} else {
-		log.Printf("\nNumber of responses matches expected\n")
-	}
-
-	fmt.Println(resultVal)
-}
-
 // TestGet26spatialIdsAroundVoxel01 正常系動作確認
 // 試験詳細：
 // + 試験データ
