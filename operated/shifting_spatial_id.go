@@ -9,6 +9,7 @@ import (
 
 	"github.com/trajectoryjp/spatial_id_go/common"
 	"github.com/trajectoryjp/spatial_id_go/common/consts"
+	"github.com/trajectoryjp/spatial_id_go/common/object"
 )
 
 // Get6spatialIdsAdjacentToFaces 拡張空間IDの面6個の拡張空間ID取得関数
@@ -244,11 +245,14 @@ func GetNspatialIdsAroundVoxcels(spatialIDs []string, hLayers, vLayers int64) ([
 //	指定の数値分、移動した場合の拡張空間ID：string
 func GetShiftingSpatialID(spatialID string, x, y, v int64) string {
 	// 拡張空間IDを分解して経度、緯度、高さの位置を取得する
-	ids := strings.Split(spatialID, consts.SpatialIDDelimiter)
+	extendedSpatialID, error := object.NewExtendedSpatialID(spatialID)
+	if error != nil {
+		return ""
+	}
 	// IDから水平方向の位置を取得する。前方2桁は精度
-	lonIndex, _ := strconv.ParseInt(ids[1], 10, 64)
-	latIndex, _ := strconv.ParseInt(ids[2], 10, 64)
-	hZoom, _ := strconv.ParseInt(ids[0], 10, 64)
+	lonIndex := extendedSpatialID.X()
+	latIndex := extendedSpatialID.Y()
+	hZoom := extendedSpatialID.HZoom()
 
 	// インデックスの最大値を取得
 	maxIndex := int64(math.Pow(2, float64(hZoom)) - 1)
@@ -280,9 +284,9 @@ func GetShiftingSpatialID(spatialID string, x, y, v int64) string {
 	}
 
 	// 垂直方向は上下限なし
-	altIndex, _ := strconv.ParseInt(ids[4], 10, 64)
+	altIndex := extendedSpatialID.Z()
 	shiftAltIndex := altIndex + v
-	vZoom, _ := strconv.ParseInt(ids[3], 10, 64)
+	vZoom := extendedSpatialID.VZoom()
 
 	// 移動後の位置を組み合わせて拡張空間IDとする
 	spatialIndexes := []string{
@@ -305,11 +309,14 @@ func GetShiftingSpatialIDs(spatialIDs []string, x, y, v int64) []string {
 	for _, spatialID := range spatialIDs {
 
 		// 拡張空間IDを分解して経度、緯度、高さの位置を取得する
-		ids := strings.Split(spatialID, consts.SpatialIDDelimiter)
+		extendedSpatialID, error := object.NewExtendedSpatialID(spatialID)
+		if error != nil {
+			return nil
+		}
 		// IDから水平方向の位置を取得する。前方2桁は精度
-		lonIndex, _ := strconv.ParseInt(ids[1], 10, 64)
-		latIndex, _ := strconv.ParseInt(ids[2], 10, 64)
-		hZoom, _ := strconv.ParseInt(ids[0], 10, 64)
+		lonIndex := extendedSpatialID.X()
+		latIndex := extendedSpatialID.Y()
+		hZoom := extendedSpatialID.HZoom()
 
 		// インデックスの最大値を取得
 		maxIndex := int64(math.Pow(2, float64(hZoom)) - 1)
@@ -341,9 +348,9 @@ func GetShiftingSpatialIDs(spatialIDs []string, x, y, v int64) []string {
 		}
 
 		// 垂直方向は上下限なし
-		altIndex, _ := strconv.ParseInt(ids[4], 10, 64)
+		altIndex := extendedSpatialID.Z()
 		shiftAltIndex := altIndex + v
-		vZoom, _ := strconv.ParseInt(ids[3], 10, 64)
+		vZoom := extendedSpatialID.VZoom()
 
 		// 移動後の位置を組み合わせて拡張空間IDとする
 		spatialIndexes := []string{
