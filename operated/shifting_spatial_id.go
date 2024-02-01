@@ -140,6 +140,7 @@ func GetNspatialIdsAroundVoxcels(spatialIDs []string, hLayers, vLayers int64) ([
 	var yShiftIndex int64
 	var vShiftIndex int64
 
+	// Loop through each X, Y, Z shift index and each SpatialID
 	for xShiftIndex = -hLayers; xShiftIndex < hLayers+1; xShiftIndex += 1 {
 		for yShiftIndex = -hLayers; yShiftIndex < hLayers+1; yShiftIndex += 1 {
 			for vShiftIndex = -vLayers; vShiftIndex < vLayers+1; vShiftIndex += 1 {
@@ -148,7 +149,13 @@ func GetNspatialIdsAroundVoxcels(spatialIDs []string, hLayers, vLayers int64) ([
 					continue
 				}
 
-				shiftIDs := GetShiftingSpatialIDs(spatialIDs, xShiftIndex, yShiftIndex, vShiftIndex)
+				var shiftIDs = []string{}
+
+				for _, spatialID := range spatialIDs {
+
+					shiftedID := GetShiftingSpatialID(spatialID, xShiftIndex, yShiftIndex, vShiftIndex)
+					shiftIDs = append(shiftIDs, shiftedID)
+				}
 
 				finalspatialIDs = append(finalspatialIDs, shiftIDs...)
 
@@ -156,6 +163,8 @@ func GetNspatialIdsAroundVoxcels(spatialIDs []string, hLayers, vLayers int64) ([
 
 		}
 	}
+
+	finalspatialIDs = common.Unique(finalspatialIDs)
 
 	return finalspatialIDs, nil
 }
