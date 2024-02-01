@@ -86,8 +86,6 @@ func GetSpatialIdsWithinRadiusOfLine(startPoint *object.Point, endPoint *object.
 		(*mgl64.Vec3)(&cartesianPoints[1]),
 	}
 
-	//startGetids := time.Now()
-
 	// create megaboxIds
 
 	// Determine the number of layers around the spatialID to search.
@@ -103,18 +101,12 @@ func GetSpatialIdsWithinRadiusOfLine(startPoint *object.Point, endPoint *object.
 		return nil, error
 	}
 
-	//endGetids := time.Since(startGetids)
-
 	// Make unique list of spatial ids
-	//startUnique := time.Now()
 	uniqueMegaBoxIds = common.Unique(megaBoxIds)
 
 	// Subtract the spatial ids in the line
 	noLinePathMegaBoxIds = common.Difference(uniqueMegaBoxIds, idsOnLine)
-	//endUnique := time.Since(startUnique)
-	// loop through the spatialids not included in the line path (noLinePathMegaBoxIds)
-	// to determine their distance from the path line.
-	//startMeasure := time.Now()
+
 	if !skipsMeasurement {
 
 		for _, id := range noLinePathMegaBoxIds {
@@ -124,8 +116,6 @@ func GetSpatialIdsWithinRadiusOfLine(startPoint *object.Point, endPoint *object.
 			if error != nil {
 				return nil, error
 			}
-
-			//idVectors := make([]mgl64.Vec3, len(IdVertexes))
 
 			// idConvex is the list of vectors that the SpatialID's 8 vertexes
 			var idConvex = []*mgl64.Vec3{}
@@ -141,13 +131,6 @@ func GetSpatialIdsWithinRadiusOfLine(startPoint *object.Point, endPoint *object.
 
 				idConvex = append(idConvex, (*mgl64.Vec3)(&cartesianPoint))
 
-				// idVectors[i] = mgl64.Vec3(geodesy.Geodetic{
-				// 	v.Lon(),
-				// 	v.Lat(),
-				// 	float64(v.Alt()),
-				// }.ConvertToCartesian())
-
-				// idConvex = append(idConvex, (*mgl64.Vec3)(&idVectors[i]))
 			}
 
 			// Put idConvex into measure's ConvexHulls[1]
@@ -168,7 +151,7 @@ func GetSpatialIdsWithinRadiusOfLine(startPoint *object.Point, endPoint *object.
 				idsToAdd = append(idsToAdd, id)
 			}
 
-		} // end noLinePathMegaBoxIds/ distance to line loop
+		}
 
 		// combine idsToAdd + idsOnLine
 		idsWithinCriterion = common.Unique(common.Union(idsToAdd, idsOnLine))
@@ -176,18 +159,6 @@ func GetSpatialIdsWithinRadiusOfLine(startPoint *object.Point, endPoint *object.
 	} else {
 		idsWithinCriterion = megaBoxIds
 	}
-	//endMeasure := time.Since(startMeasure)
-
-	//log.Printf("\nGetNids: %v\nUnique/Subtract: %v\nMeasure: %v\n", endGetids, endUnique, endMeasure)
-
-	// Nadd := float64(len(idsToAdd))
-	// NTotal := float64(len(uniqueMegaBoxIds))
-	// fraction := Nadd / NTotal
-	// pct := mgl64.Round(fraction, 5) * 100
-	// log.Printf("\nIds from GetIdsWithinRadiusOfLine: %v\nIds measured and added from above: %v\nPercent within radius: %v pct",
-	// 	len(uniqueMegaBoxIds),
-	// 	len(idsToAdd),
-	// 	pct)
 
 	return idsWithinCriterion, nil
 

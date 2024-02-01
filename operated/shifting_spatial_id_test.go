@@ -252,7 +252,7 @@ func TestGetNspatialIdsAroundVoxcels01(t *testing.T) {
 
 	resultVal, error := GetNspatialIdsAroundVoxcels(ids, int64(nLayer), int64(nLayer))
 	if error != nil {
-		t.Fatal(error)
+		t.Error(error)
 	}
 
 	// using maps will allow comparison with deepEqual if order is different
@@ -280,7 +280,7 @@ func TestGetNspatialIdsAroundVoxcels02(t *testing.T) {
 
 	resultVal, error := GetNspatialIdsAroundVoxcels(ids, int64(nLayer), int64(nLayer))
 	if error != nil {
-		t.Fatal(error)
+		t.Error(error)
 	}
 
 	// using maps will allow comparison with deepEqual if order is different

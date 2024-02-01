@@ -414,17 +414,17 @@ func TestGetSpatialIdsOnLineForTests(t *testing.T) {
 
 	startPoint, error := object.NewPoint(139.788452, 35.670935, 100)
 	if error != nil {
-		t.Fatal(error)
+		t.Error(error)
 	}
 
 	endPoint, error := object.NewPoint(139.788074, 35.675711, 100)
 	if error != nil {
-		t.Fatal(error)
+		t.Error(error)
 	}
 
 	ids, error := GetExtendedSpatialIdsOnLine(startPoint, endPoint, 23, 23)
 	if error != nil {
-		t.Fatal(error)
+		t.Error(error)
 	}
 
 	for _, v := range ids {
