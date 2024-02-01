@@ -250,56 +250,23 @@ func GetShiftingSpatialIDs(spatialIDs []string, x, y, v int64) []string {
 		if error != nil {
 			return nil
 		}
-		// IDから水平方向の位置を取得する。前方2桁は精度
+		// // IDから水平方向の位置を取得する。前方2桁は精度
 		lonIndex := extendedSpatialID.X()
 		latIndex := extendedSpatialID.Y()
-		hZoom := extendedSpatialID.HZoom()
+		altIndex := extendedSpatialID.Z()
 
-		// インデックスの最大値を取得
-		maxIndex := int64(math.Pow(2, float64(hZoom)) - 1)
-
-		// シフト後のインデックスを計算する
+		// シフト後のインデックスを計算して、設定する
 		shiftXIndex := lonIndex + x
 		shiftYIndex := latIndex + y
-
-		// シフト後のインデックスが存在しているかチェックする。
-		// x方向インデックスのチェック
-		if shiftXIndex > maxIndex || shiftXIndex < 0 {
-			// インデックスが負の場合は精度-2^精度%abs(index)が
-			// インデックスの範囲を超えている場合はn周分を無視する
-			for shiftXIndex < 0 {
-				shiftXIndex += int64(math.Pow(2, float64(hZoom)))
-			}
-			shiftXIndex = int64(math.Mod(float64(shiftXIndex), math.Pow(2, float64(hZoom))))
-		}
-
-		// シフト後のインデックスが存在しているかチェックする。
-		// y方向インデックスのチェック
-		if shiftYIndex > maxIndex || shiftYIndex < 0 {
-			// インデックスが負の場合は精度-2^精度%abs(index)が
-			// インデックスの範囲を超えている場合はn周分を無視する
-			for shiftYIndex < 0 {
-				shiftYIndex += int64(math.Pow(2, float64(hZoom)))
-			}
-			shiftYIndex = int64(math.Mod(float64(shiftYIndex), math.Pow(2, float64(hZoom))))
-		}
-
-		// 垂直方向は上下限なし
-		altIndex := extendedSpatialID.Z()
 		shiftAltIndex := altIndex + v
-		vZoom := extendedSpatialID.VZoom()
 
-		// 移動後の位置を組み合わせて拡張空間IDとする
-		spatialIndexes := []string{
-			strconv.FormatInt(hZoom, 10),
-			strconv.FormatInt(shiftXIndex, 10),
-			strconv.FormatInt(shiftYIndex, 10),
-			strconv.FormatInt(vZoom, 10),
-			strconv.FormatInt(shiftAltIndex, 10),
-		}
+		extendedSpatialID.SetX(shiftXIndex)
+		extendedSpatialID.SetY(shiftYIndex)
+		extendedSpatialID.SetZ(shiftAltIndex)
 
-		newId := strings.Join(spatialIndexes, consts.SpatialIDDelimiter)
-		shiftedIds = append(shiftedIds, newId)
+		newExtendedSpatialId := extendedSpatialID.ID()
+
+		shiftedIds = append(shiftedIds, newExtendedSpatialId)
 
 	}
 
