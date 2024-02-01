@@ -1,7 +1,6 @@
 package operated
 
 import (
-	"log"
 	"reflect"
 	"testing"
 
@@ -297,22 +296,6 @@ func TestGetNspatialIdsAroundVoxcels02(t *testing.T) {
 		t.Errorf("空間ID - 期待値:%v, \n取得値: %v", map1, map2)
 	}
 	t.Log("テスト終了")
-
-}
-
-func TestGetShiftingSpatialIds(t *testing.T) {
-
-	ids := []string{"23/7451603/3303422/23/25", "23/7451604/3303422/23/25", "23/7451605/3303422/23/25"}
-
-	shiftedIds := GetShiftingSpatialIDs(ids, 1, 1, 1)
-	if len(ids) == len(shiftedIds) {
-		for i, v := range ids {
-			log.Printf("id: %v -> %v", v, shiftedIds[i])
-		}
-	} else {
-		log.Println(ids)
-		log.Println(shiftedIds)
-	}
 
 }
 
