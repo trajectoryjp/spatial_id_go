@@ -1,6 +1,7 @@
 package transform
 
 import (
+	"reflect"
 	"testing"
 	"time"
 
@@ -12,19 +13,21 @@ import (
 	"github.com/trajectoryjp/spatial_id_go/shape"
 )
 
-func TestGetSpatialIdsWithinRadiusOfLine(t *testing.T) {
+func TestGetSpatialIdsWithinRadiusOfLine10m_r0_horizontal(t *testing.T) {
 
-	// sumida river, 200m
-	startPoint, error := object.NewPoint(139.788452, 35.670935, 100)
+	var radius float64 = 0
+	var hZoom int64 = 25
+	var vZoom int64 = 25
+
+	startPoint, error := object.NewPoint(139.788452, 35.67093015, 0)
 	if error != nil {
 		t.Error(error)
 	}
-	endPoint, error := object.NewPoint(139.788074, 35.761311, 100)
+	endPoint, error := object.NewPoint(139.788452, 35.670840, 0)
 	if error != nil {
 		t.Error(error)
 	}
 
-	// measure distance
 	startCartesian := geodesy.GeocentricFromGeodetic(geodesy.Geodetic{startPoint.Lon(), startPoint.Lat(), startPoint.Alt()})
 	endCartesian := geodesy.GeocentricFromGeodetic(geodesy.Geodetic{endPoint.Lon(), endPoint.Lat(), endPoint.Alt()})
 
@@ -36,15 +39,30 @@ func TestGetSpatialIdsWithinRadiusOfLine(t *testing.T) {
 
 	t.Logf("Distance: %vm", measure.Distance)
 
+	idsOnLine, error := shape.GetExtendedSpatialIdsOnLine(startPoint, endPoint, hZoom, vZoom)
+	if error != nil {
+		t.Error(error)
+	}
 	start := time.Now()
-	spatialIds, error := GetSpatialIdsWithinRadiusOfLine(startPoint, endPoint, 5, 23, 23, false)
+	idsWithinRadiusOfLine, error := GetSpatialIdsWithinRadiusOfLine(startPoint, endPoint, radius, hZoom, vZoom, false)
 	elapsed := time.Since(start)
 	if error != nil {
 		t.Error(error)
 	}
 
-	t.Logf("\n%v Spatial IDs found in %v \n", len(spatialIds), elapsed)
-
+	map1, map2 := make(map[string]string), make(map[string]string)
+	for _, value := range idsOnLine {
+		map1[value] = value
+	}
+	for _, value := range idsWithinRadiusOfLine {
+		map2[value] = value
+	}
+	if !reflect.DeepEqual(map1, map2) {
+		// 戻り値の空間IDが期待値と異なる場合Errorをログに出力
+		t.Errorf("nIDs: 期待値: %v 取得値: %v \n空間ID - 期待値:%v, \n\n取得値: %v", len(idsOnLine), len(idsWithinRadiusOfLine), map1, map2)
+	}
+	t.Logf("IdsWithinRadiusOfLine calculation time: %v", elapsed)
+	t.Log("テスト終了")
 }
 
 func TestFitClearanceAroundExtendedSpatialID01(t *testing.T) {
