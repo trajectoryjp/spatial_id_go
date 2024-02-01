@@ -101,7 +101,27 @@ func (s *ExtendedSpatialID) ResetExtendedSpatialID(extendedSpatialID string) err
 //
 //	x：経度ID
 func (s *ExtendedSpatialID) SetX(x int64) {
-	s.x = x
+
+	hZoom := s.HZoom()
+
+	// インデックスの最大値を取得
+	maxIndex := int64(math.Pow(2, float64(hZoom)) - 1)
+
+	// 新インデックスを保存する
+	newXIndex := x
+
+	// 新インデックスが存在しているかチェックする。
+	// x方向インデックスのチェック
+	if newXIndex > maxIndex || newXIndex < 0 {
+		// インデックスが負の場合は精度-2^精度%abs(index)が
+		// インデックスの範囲を超えている場合はn周分を無視する
+		for newXIndex < 0 {
+			newXIndex += int64(math.Pow(2, float64(hZoom)))
+		}
+		newXIndex = int64(math.Mod(float64(newXIndex), math.Pow(2, float64(hZoom))))
+	}
+
+	s.x = newXIndex
 }
 
 // SetY 緯度ID設定関数
@@ -112,7 +132,26 @@ func (s *ExtendedSpatialID) SetX(x int64) {
 //
 //	y：緯度ID
 func (s *ExtendedSpatialID) SetY(y int64) {
-	s.y = y
+
+	hZoom := s.HZoom()
+
+	// インデックスの最大値を取得
+	maxIndex := int64(math.Pow(2, float64(hZoom)) - 1)
+
+	// 新インデックスを計算する
+	newYIndex := y
+
+	// 新インデックスが存在しているかチェックする。
+	// y方向インデックスのチェック
+	if newYIndex > maxIndex || newYIndex < 0 {
+		// インデックスが負の場合は精度-2^精度%abs(index)が
+		// インデックスの範囲を超えている場合はn周分を無視する
+		for newYIndex < 0 {
+			newYIndex += int64(math.Pow(2, float64(hZoom)))
+		}
+		newYIndex = int64(math.Mod(float64(newYIndex), math.Pow(2, float64(hZoom))))
+	}
+	s.y = newYIndex
 }
 
 // SetZ 高さID設定関数
