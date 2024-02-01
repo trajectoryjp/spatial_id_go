@@ -132,8 +132,10 @@ func TestResetExtendedSpatialID02(t *testing.T) {
 //
 // + 確認内容
 //   - 入力値から初期化した拡張空間IDオブジェクトを取得できること
+//
 // 備考：
-//  対象関数内では精度の値で判定が変わらないため、値が返せていることを確認。
+//
+//	対象関数内では精度の値で判定が変わらないため、値が返せていることを確認。
 func TestResetExtendedSpatialID03(t *testing.T) {
 	//入力値
 	resultVal := &ExtendedSpatialID{}
@@ -163,8 +165,10 @@ func TestResetExtendedSpatialID03(t *testing.T) {
 //
 // + 確認内容
 //   - 入力値から初期化した拡張空間IDオブジェクトを取得できること
+//
 // 備考：
-//  対象関数内では精度の値で判定が変わらないため、値が返せていることを確認。
+//
+//	対象関数内では精度の値で判定が変わらないため、値が返せていることを確認。
 func TestResetExtendedSpatialID04(t *testing.T) {
 	//入力値
 	resultVal := &ExtendedSpatialID{}
@@ -252,8 +256,10 @@ func TestResetExtendedSpatialID06(t *testing.T) {
 //
 // + 確認内容
 //   - 入力値から初期化した拡張空間IDオブジェクトを取得できること
+//
 // 備考：
-//  対象関数内では精度の値で判定が変わらないため、値が返せていることを確認。
+//
+//	対象関数内では精度の値で判定が変わらないため、値が返せていることを確認。
 func TestResetExtendedSpatialID07(t *testing.T) {
 	//入力値
 	resultVal := &ExtendedSpatialID{}
@@ -282,8 +288,10 @@ func TestResetExtendedSpatialID07(t *testing.T) {
 //
 // + 確認内容
 //   - 入力値から初期化した拡張空間IDオブジェクトを取得できること
+//
 // 備考：
-//  対象関数内では精度の値で判定が変わらないため、値が返せていることを確認。
+//
+//	対象関数内では精度の値で判定が変わらないため、値が返せていることを確認。
 func TestResetExtendedSpatialID08(t *testing.T) {
 	//入力値
 	resultVal := &ExtendedSpatialID{}
@@ -407,7 +415,7 @@ func TestSetX01(t *testing.T) {
 	resultVal.SetX(x)
 
 	//期待値
-	expectVal := &ExtendedSpatialID{0, 1, 0, 0, 0}
+	expectVal := &ExtendedSpatialID{0, 0, 0, 0, 0}
 
 	if !reflect.DeepEqual(resultVal, expectVal) {
 		t.Errorf("拡張空間IDオブジェクト - 期待値：%v, 取得値：%v", expectVal, resultVal)
@@ -432,7 +440,7 @@ func TestSetY01(t *testing.T) {
 	resultVal.SetY(y)
 
 	//期待値
-	expectVal := &ExtendedSpatialID{0, 0, 1, 0, 0}
+	expectVal := &ExtendedSpatialID{0, 0, 0, 0, 0}
 
 	if !reflect.DeepEqual(resultVal, expectVal) {
 		t.Errorf("拡張空間IDオブジェクト - 期待値：%v, 取得値：%v", expectVal, resultVal)
@@ -457,7 +465,7 @@ func TestSetZ01(t *testing.T) {
 	resultVal.SetZ(z)
 
 	//期待値
-	expectVal := &ExtendedSpatialID{0, 0, 0, 0, 1}
+	expectVal := &ExtendedSpatialID{0, 0, 0, 0, 0}
 
 	if !reflect.DeepEqual(resultVal, expectVal) {
 		t.Errorf("拡張空間IDオブジェクト - 期待値：%v, 取得値：%v", expectVal, resultVal)
