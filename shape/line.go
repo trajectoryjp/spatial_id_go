@@ -3,11 +3,11 @@ package shape
 import (
 	"math"
 
-	"github.com/trajectoryjp/spatial_id_go/common"
-	"github.com/trajectoryjp/spatial_id_go/common/errors"
-	"github.com/trajectoryjp/spatial_id_go/common/object"
-	"github.com/trajectoryjp/spatial_id_go/common/spatial"
-	"github.com/trajectoryjp/spatial_id_go/operated"
+	"github.com/trajectoryjp/spatial_id_go/v2/common"
+	"github.com/trajectoryjp/spatial_id_go/v2/common/errors"
+	"github.com/trajectoryjp/spatial_id_go/v2/common/object"
+	"github.com/trajectoryjp/spatial_id_go/v2/common/spatial"
+	"github.com/trajectoryjp/spatial_id_go/v2/operated"
 )
 
 const (
