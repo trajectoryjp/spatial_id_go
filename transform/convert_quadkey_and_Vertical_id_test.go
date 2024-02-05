@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/trajectoryjp/spatial_id_go/common/errors"
-	"github.com/trajectoryjp/spatial_id_go/common/object"
+	"github.com/trajectoryjp/spatial_id_go/v2/common/errors"
+	"github.com/trajectoryjp/spatial_id_go/v2/common/object"
 )
 
 func TestConvertQuadkeysAndVerticalIDsToExtendedSpatialIDs(t *testing.T) {

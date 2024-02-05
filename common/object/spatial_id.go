@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/trajectoryjp/spatial_id_go/common/consts"
-	"github.com/trajectoryjp/spatial_id_go/common/errors"
+	"github.com/trajectoryjp/spatial_id_go/v2/common/consts"
+	"github.com/trajectoryjp/spatial_id_go/v2/common/errors"
 )
 
 // ExtendedSpatialID 拡張空間IDクラス
@@ -81,14 +81,13 @@ func (s *ExtendedSpatialID) ResetExtendedSpatialID(extendedSpatialID string) err
 
 		convAttr = append(convAttr, i)
 	}
+	// 水平方向精度、高さ方向精度を設定
+	s.SetZoom(convAttr[0], convAttr[3])
 
 	// 経度、緯度、高さIDを設定
 	s.SetX(convAttr[1])
 	s.SetY(convAttr[2])
 	s.SetZ(convAttr[4])
-
-	// 水平方向精度、高さ方向精度を設定
-	s.SetZoom(convAttr[0], convAttr[3])
 
 	return nil
 }

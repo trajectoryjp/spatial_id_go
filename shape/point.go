@@ -20,17 +20,15 @@ package shape
 
 import (
 	"math"
-	"reflect"
 	"sort"
 	"strconv"
 	"strings"
 
-	"github.com/trajectoryjp/spatial_id_go/common"
-	"github.com/trajectoryjp/spatial_id_go/common/consts"
-	"github.com/trajectoryjp/spatial_id_go/common/enum"
-	"github.com/trajectoryjp/spatial_id_go/common/errors"
-	"github.com/trajectoryjp/spatial_id_go/common/logger"
-	"github.com/trajectoryjp/spatial_id_go/common/object"
+	"github.com/trajectoryjp/spatial_id_go/v2/common"
+	"github.com/trajectoryjp/spatial_id_go/v2/common/consts"
+	"github.com/trajectoryjp/spatial_id_go/v2/common/enum"
+	"github.com/trajectoryjp/spatial_id_go/v2/common/errors"
+	"github.com/trajectoryjp/spatial_id_go/v2/common/object"
 
 	"github.com/wroge/wgs84"
 )
@@ -138,12 +136,6 @@ func GetExtendedSpatialIdsOnPoints(
 	vZoom int64,
 ) ([]string, error) {
 
-	logger.Debug(
-		"pointList: %s, hZoom: %d, vZoom: %d",
-		reflect.ValueOf(pointList),
-		hZoom,
-		vZoom)
-
 	// 拡張空間IDを格納するスライス
 	spatialIds := make([]string, 0, len(pointList))
 
@@ -170,7 +162,6 @@ func GetExtendedSpatialIdsOnPoints(
 		spatialIds = append(spatialIds, strings.Join(ids, consts.SpatialIDDelimiter))
 	}
 
-	logger.Debug("return value: %s", reflect.ValueOf(spatialIds))
 	return spatialIds, nil
 }
 
@@ -200,8 +191,6 @@ func GetPointOnExtendedSpatialId(
 	extendedSpatialId string,
 	option enum.PointOption,
 ) ([]*object.Point, error) {
-
-	logger.Debug("extendedSpatialId: %s, option: %d", extendedSpatialId, option)
 
 	// 座標を格納するスライス
 	outputPoint := []*object.Point{}
@@ -251,8 +240,6 @@ func GetPointOnExtendedSpatialId(
 			errors.NewSpatialIdError(errors.OptionFailedErrorCode, "")
 	}
 
-	logger.Debug("return value: %s", reflect.ValueOf(outputPoint))
-
 	// 拡張空間IDから取得した座標群を返却。
 	return outputPoint, nil
 }
@@ -281,11 +268,6 @@ func ConvertPointListToProjectedPointList(
 	projectedCrs int,
 ) ([]*object.ProjectedPoint, error) {
 
-	logger.Debug(
-		"pointList: %s, projectedCrs: %d",
-		reflect.ValueOf(pointList),
-		projectedCrs)
-
 	// 戻り値格納用変数
 	proPointList := make([]*object.ProjectedPoint, 0, len(pointList))
 
@@ -312,8 +294,6 @@ func ConvertPointListToProjectedPointList(
 			Alt: p.Alt(),
 		})
 	}
-
-	logger.Debug("return value: %s", reflect.ValueOf(proPointList))
 
 	return proPointList, nil
 }
@@ -342,11 +322,6 @@ func ConvertProjectedPointListToPointList(
 	projectedCrs int,
 ) ([]*object.Point, error) {
 
-	logger.Debug(
-		"pointList: %s, projectedCrs: %d",
-		reflect.ValueOf(projectedPointList),
-		projectedCrs)
-
 	// 戻り値格納用変数
 	pointList := make([]*object.Point, 0, len(projectedPointList))
 
@@ -370,8 +345,6 @@ func ConvertProjectedPointListToPointList(
 		newPoint, _ := object.NewPoint(x, y, p.Alt)
 		pointList = append(pointList, newPoint)
 	}
-
-	logger.Debug("return value: %s", reflect.ValueOf(pointList))
 
 	return pointList, nil
 }
@@ -453,7 +426,6 @@ func getExtendedSpatialIdAttrs(extendedSpatialId string) ([]int64, error) {
 //
 //	水平方向のタイルID
 func getHorizontalTileIdOnPoint(lon float64, lat float64, hZoom int64) string {
-	logger.Debug("lon: %v, lat: %v, hZoom: %v", lon, lat, hZoom)
 
 	// 経度に180が入力されているとタイルインデックス+1の値が出力されるため、補正する
 	if lon == 180 {
@@ -481,8 +453,6 @@ func getHorizontalTileIdOnPoint(lon float64, lat float64, hZoom int64) string {
 	// 水平精度及び、経度方向と緯度方向のIDを結合して水平方向タイルIDを生成
 	tileId := strings.Join(idParams, consts.SpatialIDDelimiter)
 
-	logger.Debug("return value: %s", tileId)
-
 	// 水平方向タイルIDを返却
 	return tileId
 }
@@ -501,7 +471,6 @@ func getHorizontalTileIdOnPoint(lon float64, lat float64, hZoom int64) string {
 //
 //	垂直方向のタイルID
 func getVerticalTileIdOnAltitude(alt float64, vZoom int64) string {
-	logger.Debug("alt: %v, vZoom: %d", alt, vZoom)
 
 	// 高さ全体の精度あたりの垂直方向の精度
 	altResolution := math.Pow(2, 25.0) / math.Pow(2, float64(vZoom))
@@ -517,8 +486,6 @@ func getVerticalTileIdOnAltitude(alt float64, vZoom int64) string {
 
 	// 垂直精度及び、高さ方向のIDを結合して垂直方向タイルIDを生成
 	tileId := strings.Join(idParams, consts.SpatialIDDelimiter)
-
-	logger.Debug("return value: %s", tileId)
 
 	// 垂直方向タイルIDを返却
 	return tileId
@@ -542,8 +509,6 @@ func getAltitudeOnVerticalIndexAndZoom(
 	vZoom int64,
 ) object.VerticalPoint {
 
-	logger.Debug("altIndex: %d, vZoom: %d", altIndex, vZoom)
-
 	// 垂直方向位置用の構造体初期化
 	vPoint := object.VerticalPoint{}
 
@@ -552,8 +517,6 @@ func getAltitudeOnVerticalIndexAndZoom(
 
 	// 高さを取得
 	vPoint.Alt = float64(altIndex) * vPoint.Resolution
-
-	logger.Debug("return value: %s", reflect.ValueOf(vPoint))
 
 	// 垂直方向インスタンスを返却
 	return vPoint
@@ -579,13 +542,6 @@ func getCenterPointOnVoxelOffset(
 	hZoom int64,
 	vPoint object.VerticalPoint,
 ) *object.Point {
-
-	logger.Debug(
-		"lonIndex: %d, latIndex: %d, hZoom: %d, vPoint %s",
-		lonIndex,
-		latIndex,
-		hZoom,
-		reflect.ValueOf(vPoint))
 
 	// 頂点座標から最大値と最小値を取得する。
 	pList := getVertexOnVoxelOffset(lonIndex, latIndex, hZoom, vPoint)
@@ -620,8 +576,6 @@ func getCenterPointOnVoxelOffset(
 	centerAlt := (altMax + altMin) / 2
 	point, _ := object.NewPoint(centerLon, centerLat, centerAlt)
 
-	logger.Debug("return value: %s", reflect.ValueOf(point))
-
 	// 中心点の座標を返却
 	return point
 }
@@ -646,13 +600,6 @@ func getVertexOnVoxelOffset(
 	hZoom int64,
 	vPoint object.VerticalPoint,
 ) []*object.Point {
-
-	logger.Debug(
-		"lonIndex: %d, latIndex: %d, hZoom: %d, vPoint %s",
-		lonIndex,
-		latIndex,
-		hZoom,
-		reflect.ValueOf(vPoint))
 
 	// 返却用のリスト。要素数は頂点の数に設定
 	pList := make([]*object.Point, 0, 8)
@@ -714,8 +661,6 @@ func getVertexOnVoxelOffset(
 	pList = append(pList, northEastTop)
 	pList = append(pList, southEastTop)
 	pList = append(pList, southWestTop)
-
-	logger.Debug("return value: %s", reflect.ValueOf(pList))
 
 	// 頂点座標群を返却
 	return pList

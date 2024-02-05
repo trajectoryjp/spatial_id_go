@@ -3,6 +3,8 @@ package operated
 import (
 	"reflect"
 	"testing"
+
+	"github.com/trajectoryjp/spatial_id_go/v2/common"
 )
 
 // TestGet6spatialIdsAdjacentToFaces01 正常系動作確認
@@ -113,7 +115,7 @@ func TestGetShiftingSpatialID01(t *testing.T) {
 // 試験詳細：
 // + 試験データ
 //   - パターン1：
-//		移動先の位置が(2^精度-1)を超えている場合
+//     移動先の位置が(2^精度-1)を超えている場合
 //     (空間ID:5/30/29/20/3, 空間IDを経度方向に動かす数値:2, 空間IDを緯度方向に動かす数値:3, 空間IDを高さ方向に動かす数値:4)
 //
 // + 確認内容
@@ -133,7 +135,7 @@ func TestGetShiftingSpatialID02(t *testing.T) {
 // 試験詳細：
 // + 試験データ
 //   - パターン1：
-//		移動先の位置が(2^精度-1)と等しい場合
+//     移動先の位置が(2^精度-1)と等しい場合
 //     (空間ID:5/29/28/20/3, 空間IDを経度方向に動かす数値:2, 空間IDを緯度方向に動かす数値:3, 空間IDを高さ方向に動かす数値:4)
 //
 // + 確認内容
@@ -155,7 +157,7 @@ func TestGetShiftingSpatialID03(t *testing.T) {
 // 試験詳細：
 // + 試験データ
 //   - パターン1：
-//		移動先の位置が(2^精度-1)未満の場合
+//     移動先の位置が(2^精度-1)未満の場合
 //     (空間ID:5/28/27/20/3, 空間IDを経度方向に動かす数値:2, 空間IDを緯度方向に動かす数値:3, 空間IDを高さ方向に動かす数値:4)
 //
 // + 確認内容
@@ -177,7 +179,7 @@ func TestGetShiftingSpatialID04(t *testing.T) {
 // 試験詳細：
 // + 試験データ
 //   - パターン1：
-//		移動先の位置が0より大きい場合
+//     移動先の位置が0より大きい場合
 //     (空間ID:5/-1/-2/20/3, 空間IDを経度方向に動かす数値:2, 空間IDを緯度方向に動かす数値:3, 空間IDを高さ方向に動かす数値:4)
 //
 // + 確認内容
@@ -199,7 +201,7 @@ func TestGetShiftingSpatialID05(t *testing.T) {
 // 試験詳細：
 // + 試験データ
 //   - パターン1：
-//		移動先の位置が0と等しい場合
+//     移動先の位置が0と等しい場合
 //     (空間ID:5/-2/-3/20/3, 空間IDを経度方向に動かす数値:2, 空間IDを緯度方向に動かす数値:3, 空間IDを高さ方向に動かす数値:4)
 //
 // + 確認内容
@@ -221,7 +223,7 @@ func TestGetShiftingSpatialID06(t *testing.T) {
 // 試験詳細：
 // + 試験データ
 //   - パターン1：
-//		移動先の位置が0より小さい場合
+//     移動先の位置が0より小さい場合
 //     (空間ID:5/-3/-4/20/3, 空間IDを経度方向に動かす数値:2, 空間IDを緯度方向に動かす数値:3, 空間IDを高さ方向に動かす数値:4)
 //
 // + 確認内容
@@ -237,6 +239,64 @@ func TestGetShiftingSpatialID07(t *testing.T) {
 		t.Errorf("空間ID - 期待値：%s, 取得値：%s", expectVal, resultVal)
 	}
 	t.Log("テスト終了")
+}
+
+func TestGetNspatialIdsAroundVoxcels01(t *testing.T) {
+
+	ids := []string{"10/10/10/10/10", "10/11/11/10/10"}
+	aroundIds1 := Get26spatialIdsAroundVoxel(ids[0])
+	aroundIds2 := Get26spatialIdsAroundVoxel(ids[1])
+	allAroundIds := append(aroundIds1, aroundIds2...)
+	expectVal := common.Unique(allAroundIds)
+	nLayer := 1
+
+	resultVal, error := GetNspatialIdsAroundVoxcels(ids, int64(nLayer), int64(nLayer))
+	if error != nil {
+		t.Error(error)
+	}
+
+	// using maps will allow comparison with deepEqual if order is different
+	map1, map2 := make(map[string]string), make(map[string]string)
+	for _, value := range expectVal {
+		map1[value] = value
+	}
+	for _, value := range resultVal {
+		map2[value] = value
+	}
+	if !reflect.DeepEqual(map1, map2) {
+		// 戻り値の空間IDが期待値と異なる場合Errorをログに出力
+		t.Errorf("空間ID - 期待値:%v, \n取得値: %v", map1, map2)
+	}
+	t.Log("テスト終了")
+
+}
+
+func TestGetNspatialIdsAroundVoxcels02(t *testing.T) {
+
+	ids := []string{"10/10/10/10/10"}
+	expectVal := Get26spatialIdsAroundVoxel(ids[0])
+
+	nLayer := 1
+
+	resultVal, error := GetNspatialIdsAroundVoxcels(ids, int64(nLayer), int64(nLayer))
+	if error != nil {
+		t.Error(error)
+	}
+
+	// using maps will allow comparison with deepEqual if order is different
+	map1, map2 := make(map[string]string), make(map[string]string)
+	for _, value := range expectVal {
+		map1[value] = value
+	}
+	for _, value := range resultVal {
+		map2[value] = value
+	}
+	if !reflect.DeepEqual(map1, map2) {
+		// 戻り値の空間IDが期待値と異なる場合Errorをログに出力
+		t.Errorf("空間ID - 期待値:%v, \n取得値: %v", map1, map2)
+	}
+	t.Log("テスト終了")
+
 }
 
 // stringスライスの中に指定文字列を含むか判定する

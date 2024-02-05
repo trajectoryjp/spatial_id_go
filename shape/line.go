@@ -2,14 +2,12 @@ package shape
 
 import (
 	"math"
-	"reflect"
 
-	"github.com/trajectoryjp/spatial_id_go/common"
-	"github.com/trajectoryjp/spatial_id_go/common/errors"
-	"github.com/trajectoryjp/spatial_id_go/common/logger"
-	"github.com/trajectoryjp/spatial_id_go/common/object"
-	"github.com/trajectoryjp/spatial_id_go/common/spatial"
-	"github.com/trajectoryjp/spatial_id_go/operated"
+	"github.com/trajectoryjp/spatial_id_go/v2/common"
+	"github.com/trajectoryjp/spatial_id_go/v2/common/errors"
+	"github.com/trajectoryjp/spatial_id_go/v2/common/object"
+	"github.com/trajectoryjp/spatial_id_go/v2/common/spatial"
+	"github.com/trajectoryjp/spatial_id_go/v2/operated"
 )
 
 const (
@@ -96,27 +94,17 @@ func GetExtendedSpatialIdsOnLine(
 		return []string{}, errors.NewSpatialIdError(errors.InputValueErrorCode, "")
 	}
 
-	logger.Debug("[START] 拡張空間ID変換(線分)")
-	logger.Debug("始点(地理座標系)=(%f, %f, %f)", start.Lon(), start.Lat(), start.Alt())
-	logger.Debug("終点(地理座標系)=(%f, %f, %f)", end.Lon(), end.Lat(), end.Alt())
-
 	// 始点・終点の拡張空間IDを格納
 	spatialIDs, e := GetExtendedSpatialIdsOnPoints([]*object.Point{start, end}, hZoom, vZoom)
 	if e != nil {
 		return spatialIDs, e
 	}
-	logger.Debug("始点の拡張空間ID=%s", spatialIDs[0])
-	logger.Debug("終点の拡張空間ID=%s", spatialIDs[1])
 
 	// 拡張空間IDをユニーク化
 	spatialIDs = common.Unique(spatialIDs)
 
 	// 始点・終点が同じ拡張空間IDかチェック
 	if len(spatialIDs) == 1 {
-		logger.Debug("始点終点が同一")
-		logger.Debug("線分範囲の拡張空間ID=%s", reflect.ValueOf(spatialIDs))
-		logger.Debug("[END] 拡張空間ID変換(線分)")
-
 		// 同じ拡張空間IDの場合、 始点・終点の拡張空間IDを返却
 		return spatialIDs, nil
 	}
@@ -200,9 +188,6 @@ func middleSpatialIds(
 	if math.Abs(vector.X) < lonMinima &&
 		math.Abs(vector.Y) < latMinima &&
 		math.Abs(vector.Z) < altMinima {
-		logger.Debug("ベクトルの成分が閾値未満のため終了")
-		logger.Debug("ベクトル成分:X=%g, Y=%g, Z=%g", vector.X, vector.Y, vector.Z)
-		logger.Debug("ベクトル閾値:X=%g, Y=%g, Z=%g", lonMinima, latMinima, altMinima)
 		return
 	}
 
@@ -219,8 +204,6 @@ func middleSpatialIds(
 	// 中点が始点・終点の周囲にある場合
 	if common.Include(start6SpatialIDs, middleSpatialID) &&
 		common.Include(end6SpatialIDs, middleSpatialID) {
-		logger.Debug("中点が始点・終点の周囲にあるため終了")
-		logger.Debug("中点ID:%s", middleSpatialID)
 		return
 
 		// 中点が始点の周囲にある場合

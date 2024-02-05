@@ -5,9 +5,9 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/trajectoryjp/spatial_id_go/common/consts"
-	"github.com/trajectoryjp/spatial_id_go/common/enum"
-	"github.com/trajectoryjp/spatial_id_go/common/object"
+	"github.com/trajectoryjp/spatial_id_go/v2/common/consts"
+	"github.com/trajectoryjp/spatial_id_go/v2/common/enum"
+	"github.com/trajectoryjp/spatial_id_go/v2/common/object"
 
 	"github.com/wroge/wgs84"
 )
