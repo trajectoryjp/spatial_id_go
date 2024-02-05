@@ -1,6 +1,7 @@
 package shape
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/trajectoryjp/spatial_id_go/common/enum"
@@ -407,6 +408,28 @@ func TestGetExtendedSpatialIdsOnLine09(t *testing.T) {
 		t.Errorf("error - 期待値：nil, 取得値：%s", resultVal)
 	}
 	t.Log("テスト終了")
+}
+
+func TestGetSpatialIdsOnLineForTests(t *testing.T) {
+
+	startPoint, error := object.NewPoint(139.788452, 35.670935, 100)
+	if error != nil {
+		t.Error(error)
+	}
+
+	endPoint, error := object.NewPoint(139.788074, 35.675711, 100)
+	if error != nil {
+		t.Error(error)
+	}
+
+	ids, error := GetExtendedSpatialIdsOnLine(startPoint, endPoint, 23, 23)
+	if error != nil {
+		t.Error(error)
+	}
+
+	for _, v := range ids {
+		fmt.Printf("\"%v\",", v)
+	}
 }
 
 // TestMiddleSpatialIds01 正常系動作確認 中点が始点・終点の周囲にある場合
