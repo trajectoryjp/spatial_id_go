@@ -1,4 +1,7 @@
 # 空間IDモジュール
+[![Go Doc](https://pkg.go.dev/badge/github.com/trajectoryjp/spatial_id_go)](https://pkg.go.dev/github.com/trajectoryjp/spatial_id_go)
+[![Go Report Card](https://goreportcard.com/badge/github.com/trajectoryjp/spatial_id_go)](https://goreportcard.com/report/github.com/trajectoryjp/spatial_id_go)
+
 
 ## 概要
 任意の座標を空間IDに変換するモジュールです。
