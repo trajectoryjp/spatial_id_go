@@ -183,9 +183,14 @@ func GetSpatialIdsWithinRadiusOfLine(startPoint *object.Point, endPoint *object.
 //	 error: エラー
 func FitClearanceAroundExtendedSpatialID(spatialID string, clearance float64) (horizontalLayer int64, verticalLayer int64, error error) {
 
-	// validate clearance
+	// validate clearance: There are two special cases:
+	// 1. The clearance must be non-negative (clearance must be >= 0)
+	// 2. If the clearance is exactly 0, return 0 for both the horizontalLayer and verticalLayer. This is because
+	// if clearance is 0, the only Spatial IDs that are on the route line should be used -- no surrounding Spatial IDs
 	if clearance < 0 {
 		return 0, 0, fmt.Errorf("\ninvalid clearance value. Clearance must be >= 0")
+	} else if clearance == 0 {
+		return 0, 0, nil
 	}
 
 	// validate and extract zoom info from spatialID
