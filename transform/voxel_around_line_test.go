@@ -13,6 +13,44 @@ import (
 	"github.com/trajectoryjp/spatial_id_go/v2/shape"
 )
 
+func TestGetSpatialIdsWithinRadiusOfLine(t *testing.T) {
+
+	var radius float64 = 0
+	var hZoom int64 = 25
+	var vZoom int64 = 25
+
+	startPoint, error := object.NewPoint(139.788452, 35.67093015, 0)
+	if error != nil {
+		t.Error(error)
+	}
+	endPoint, error := object.NewPoint(139.788452, 35.670840, 0)
+	if error != nil {
+		t.Error(error)
+	}
+
+	idsOnLine, error := shape.GetExtendedSpatialIdsOnLine(startPoint, endPoint, hZoom, vZoom)
+	if error != nil {
+		t.Error(error)
+	}
+	idsWithinRadiusOfLine, error := GetSpatialIdsWithinRadiusOfLine(startPoint, endPoint, radius, hZoom, vZoom, false)
+	if error != nil {
+		t.Error(error)
+	}
+
+	map1, map2 := make(map[string]string), make(map[string]string)
+	for _, value := range idsOnLine {
+		map1[value] = value
+	}
+	for _, value := range idsWithinRadiusOfLine {
+		map2[value] = value
+	}
+	if !reflect.DeepEqual(map1, map2) {
+		t.Errorf("期待値: %v 取得値: %v", idsOnLine, idsWithinRadiusOfLine)
+	}
+	t.Log("テスト終了")
+
+}
+
 func TestGetSpatialIdsWithinRadiusOfLine10m_r0_horizontal(t *testing.T) {
 
 	var radius float64 = 0
