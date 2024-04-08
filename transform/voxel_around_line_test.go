@@ -106,8 +106,8 @@ func TestGetSpatialIdsWithinRadiusOfLine10m_r0_horizontal(t *testing.T) {
 func TestFitClearanceAroundExtendedSpatialID01(t *testing.T) {
 
 	var clearance float64 = 0
-	var expectedHLayer int64 = 1
-	var expectedVLayer int64 = 1
+	var expectedHLayer int64 = 0
+	var expectedVLayer int64 = 0
 
 	point, error := object.NewPoint(139.788081, 35.672680, 100)
 	if error != nil {
@@ -180,6 +180,30 @@ func TestFitClearanceAroundExtendedSpatialID04(t *testing.T) {
 	var clearance float64 = 50
 	var expectedHLayer int64 = 4
 	var expectedVLayer int64 = 4
+
+	point, error := object.NewPoint(139.788081, 35.672680, 100)
+	if error != nil {
+		t.Error(error)
+	}
+	hLayer, vLayer, error := testFitClearanceAroundSpatialID(t, point, clearance, 21, 21)
+	if error != nil {
+		t.Error(error)
+	}
+
+	if hLayer != expectedHLayer {
+		t.Errorf("空間ID - 期待値：%v, 取得値：%v", expectedHLayer, hLayer)
+	}
+	if vLayer != expectedVLayer {
+		t.Errorf("空間ID - 期待値：%v, 取得値：%v", expectedVLayer, vLayer)
+	}
+
+}
+
+func TestFitClearanceAroundExtendedSpatialID05(t *testing.T) {
+
+	var clearance float64 = 0.01
+	var expectedHLayer int64 = 1
+	var expectedVLayer int64 = 1
 
 	point, error := object.NewPoint(139.788081, 35.672680, 100)
 	if error != nil {
