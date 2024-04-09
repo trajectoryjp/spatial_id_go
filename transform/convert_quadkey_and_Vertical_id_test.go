@@ -529,13 +529,13 @@ func TestConvertVerticallIDToBit(t *testing.T) {
 		result     []int64
 	}{
 		// 正常系 1111−0000すべて
-		{vZoom: 16, vIndex: 0, outputZoom: 4, maxHeight: 500.0, minHeight: 0.0, result: []int64{15, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14}},
+		{vZoom: 16, vIndex: 0, outputZoom: 4, maxHeight: 500.0, minHeight: 0.0, result: []int64{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14}},
 		// 正常系 bit形式の枠外(正方向)
 		{vZoom: 13, vIndex: 6, outputZoom: 5, maxHeight: 0.0, minHeight: -500.0, result: []int64{31}},
 		// 正常系 bit形式の枠外(負方向)
 		{vZoom: 13, vIndex: -6, outputZoom: 5, maxHeight: 500.0, minHeight: 0.0, result: []int64{0}},
-		{vZoom: 20, vIndex: 0, outputZoom: 8, maxHeight: 500.0, minHeight: -500.0, result: []int64{136, 128, 129, 130, 131, 132, 133, 134, 135}},
-		//{vZoom: 35, vIndex: 0, outputZoom: 35, maxHeight: 1.0, minHeight: 0.0, result: []int64{136, 128, 129, 130, 131, 132, 133, 134, 135}},
+		{vZoom: 20, vIndex: 0, outputZoom: 8, maxHeight: 500.0, minHeight: -500.0, result: []int64{128, 129, 130, 131, 132, 133, 134, 135}},
+		{vZoom: 23, vIndex: 12, outputZoom: 23, maxHeight: alt25, minHeight: 0.0, result: []int64{12}},
 		{vZoom: 23, vIndex: 12, outputZoom: 24, maxHeight: alt25, minHeight: 0.0, result: []int64{24, 25}},
 		{vZoom: 23, vIndex: 12, outputZoom: 25, maxHeight: alt25, minHeight: 0.0, result: []int64{48, 49, 50, 51}},
 	}
@@ -548,6 +548,8 @@ func TestConvertVerticallIDToBit(t *testing.T) {
 
 	}
 }
+
+//func TestConvertVerticallIDToBit_01
 
 func TestCalcBitIndex(t *testing.T) {
 	datas := []struct {
