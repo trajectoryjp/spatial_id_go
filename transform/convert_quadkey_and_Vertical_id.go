@@ -557,22 +557,29 @@ func convertVerticallIDToBit(vZoom int64, vIndex int64, outputZoom int64, maxHei
 	maxBitIndex := calcBitIndex(spatialIDMaxHeight, outputZoom, maxHeight, minHeight)
 	minBitIndex := calcBitIndex(spatialIDMinHeight, outputZoom, maxHeight, minHeight)
 
-	// インデックスが同値の場合、後続の処理は不要。
-	if maxBitIndex == minBitIndex {
-		return []int64{maxBitIndex}
-	}
+	difBitIndexes := maxBitIndex - minBitIndex
 
-	// bitをintにキャスト
-	bitIndexes := []int64{
-		maxBitIndex, minBitIndex,
-	}
+	switch difBitIndexes {
+	// case 0: the difference in heights is smaller than a 1 SpatialID-distance. maxBitIndex == minBitIndex. Return the min.
+	case 0:
+		return []int64{minBitIndex}
+	// case 1: the difference in heights is exactly a 1 SpatialID-distance. Return the min.
+	case 1:
+		return []int64{minBitIndex}
+	// case >1: the difference in heights is greater than a 1 SpatialID-distance. Return all bit indexes but maxBitIndex
+	default:
+		bitIndexes := []int64{
+			minBitIndex,
+		}
 
-	// インデックスの隙間を補完し、IDとして返却用変数に格納する。
-	for i := minBitIndex + 1; i < maxBitIndex; i++ {
-		bitIndexes = append(bitIndexes, i)
-	}
+		// インデックスの隙間を補完し、IDとして返却用変数に格納する。
+		for i := minBitIndex + 1; i < maxBitIndex; i++ {
+			bitIndexes = append(bitIndexes, i)
+		}
 
-	return bitIndexes
+		return bitIndexes
+
+	}
 
 }
 
