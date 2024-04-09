@@ -536,6 +536,8 @@ func TestConvertVerticallIDToBit(t *testing.T) {
 		{vZoom: 13, vIndex: -6, outputZoom: 5, maxHeight: 500.0, minHeight: 0.0, result: []int64{0}},
 		{vZoom: 20, vIndex: 0, outputZoom: 8, maxHeight: 500.0, minHeight: -500.0, result: []int64{136, 128, 129, 130, 131, 132, 133, 134, 135}},
 		//{vZoom: 35, vIndex: 0, outputZoom: 35, maxHeight: 1.0, minHeight: 0.0, result: []int64{136, 128, 129, 130, 131, 132, 133, 134, 135}},
+		{vZoom: 23, vIndex: 12, outputZoom: 24, maxHeight: alt25, minHeight: 0.0, result: []int64{24, 25}},
+		{vZoom: 23, vIndex: 12, outputZoom: 25, maxHeight: alt25, minHeight: 0.0, result: []int64{48, 49, 50, 51}},
 	}
 	for _, p := range datas {
 		result := convertVerticallIDToBit(p.vZoom, p.vIndex, p.outputZoom, p.maxHeight, p.minHeight)
