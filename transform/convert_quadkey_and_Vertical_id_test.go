@@ -9,6 +9,7 @@ import (
 
 	"github.com/trajectoryjp/spatial_id_go/v2/common/errors"
 	"github.com/trajectoryjp/spatial_id_go/v2/common/object"
+	"github.com/trajectoryjp/spatial_id_go/v2/shape"
 )
 
 func TestConvertQuadkeysAndVerticalIDsToExtendedSpatialIDs(t *testing.T) {
@@ -349,6 +350,81 @@ func TestConvertSpatialIdsToQuadkeysAndVerticalIDs(t *testing.T) {
 		}
 
 	}
+}
+
+func TestConvertSpatialIdsToQuadkeysAndVerticalIDs_02(t *testing.T) {
+
+	var (
+		hZoom     int64   = 23
+		vZoom     int64   = 23
+		maxHeight float64 = alt25
+		minHeight float64 = 0
+	)
+
+	startPoint, error := object.NewPoint(137.425712, 34.844234, 50)
+	if error != nil {
+		t.Fatal(error)
+	}
+
+	ExtendedSpatialIds, error := shape.GetExtendedSpatialIdsOnPoints(
+		[]*object.Point{startPoint},
+		hZoom,
+		vZoom,
+	)
+	if error != nil {
+		t.Fatal(error)
+	}
+
+	FromExtendedSpatialIdsToQuadKeysAndVerticalIds, error := ConvertExtendedSpatialIDsToQuadkeysAndVerticalIDs(
+		ExtendedSpatialIds,
+		hZoom,
+		vZoom,
+		maxHeight,
+		minHeight,
+	)
+	if error != nil {
+		t.Fatal(error)
+	}
+
+	var QuadKeysAndVerticalIds []*object.QuadkeyAndVerticalID
+
+	for _, keyset := range FromExtendedSpatialIdsToQuadKeysAndVerticalIds {
+		for _, innerId := range keyset.InnerIDList() {
+			newQuadKeyAndVerticalID := object.NewQuadkeyAndVerticalID(
+				keyset.QuadkeyZoom(),
+				innerId[0],
+				keyset.VerticalZoom(),
+				innerId[1],
+				keyset.MaxHeight(),
+				keyset.MinHeight(),
+			)
+
+			QuadKeysAndVerticalIds = append(QuadKeysAndVerticalIds, newQuadKeyAndVerticalID)
+		}
+	}
+
+	ExtendedSpatialIds2, error := ConvertQuadkeysAndVerticalIDsToExtendedSpatialIDs(
+		QuadKeysAndVerticalIds,
+		hZoom,
+		vZoom,
+	)
+	if error != nil {
+		t.Fatal(error)
+	}
+
+	// ExtendedSpatialIds should be equal to ExtendedSpatialIds2
+	map1, map2 := make(map[string]string), make(map[string]string)
+	for _, value := range ExtendedSpatialIds {
+		map1[value] = value
+	}
+	for _, value := range ExtendedSpatialIds2 {
+		map2[value] = value
+	}
+	if !reflect.DeepEqual(map1, map2) {
+		t.Errorf("空間ID - 期待値:%v, \n取得値: %v", map1, map2)
+	}
+	t.Log("テスト終了")
+
 }
 
 func SortCheck(r []*object.FromExtendedSpatialIDToQuadkeyAndVerticalID, rt []*object.FromExtendedSpatialIDToQuadkeyAndVerticalID) bool {
