@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/trajectoryjp/spatial_id_go/v2/common"
 	"github.com/trajectoryjp/spatial_id_go/v2/common/errors"
 	"github.com/trajectoryjp/spatial_id_go/v2/common/object"
 	"github.com/trajectoryjp/spatial_id_go/v2/integrate"
@@ -642,37 +643,40 @@ func convertBitToVerticalID(vZoom int64, vIndex int64, outputZoom int64, maxHeig
 	// 2分木によるBit化形式のボクセルの高さを計算する。
 	maxAltitude := float64(vIndex+1)*voxelHeight + minHeight
 	minAltitude := float64(vIndex)*voxelHeight + minHeight
-
 	//高さを拡張空間IDに変換する。
-	maxOutputPoint, _ := object.NewPoint(0.0, 0.0, maxAltitude)
+
+	var outputPoints []*object.Point
+
 	minOutputPoint, _ := object.NewPoint(0.0, 0.0, minAltitude)
-	outputPoints := make([]*object.Point, 0, 2)
-	outputPoints = append(outputPoints, maxOutputPoint)
 	outputPoints = append(outputPoints, minOutputPoint)
+
+	maxOutputPoint, _ := object.NewPoint(0.0, 0.0, maxAltitude)
+	outputPoints = append(outputPoints, maxOutputPoint)
+
 	// 高さのID抽出用スライス
 	verticalIndexes := []string{}
-	vIndexes := []string{}
+	vIndexes := []int64{}
 	// 高さと出力の制度を引数に拡張空間IDインデックス形式のIDを取得する。
-	spatialIDs, _ := shape.GetExtendedSpatialIdsOnPoints(outputPoints, 0, outputZoom)
+	extendedSpatialIds, _ := shape.GetExtendedSpatialIdsOnPoints(outputPoints, 0, outputZoom)
 
 	// 2分木によるBit形式のIDボクセルの最高高度と最低高度を拡張空間IDにする
-	for _, id := range spatialIDs {
-		// 高さ成分のみを取り出す
-		vID := strings.ReplaceAll(id, "0/0/0/", "")
-		// インデックスを取得
-		vIndexes = append(vIndexes, strings.Split(vID, "/")[1])
+	for _, string := range extendedSpatialIds {
+		id, _ := object.NewExtendedSpatialID(string)
+		vIndexes = append(vIndexes, id.Z())
 	}
-	maxIndex, _ := strconv.ParseInt(vIndexes[0], 10, 64)
-	minIndex, _ := strconv.ParseInt(vIndexes[1], 10, 64)
-	verticalIndexes = append(verticalIndexes, strconv.Itoa(int(outputZoom))+"/"+vIndexes[0])
-	verticalIndexes = append(verticalIndexes, strconv.Itoa(int(outputZoom))+"/"+vIndexes[1])
+
+	maxIndex, _ := common.Max(vIndexes)
+	minIndex, _ := common.Min(vIndexes)
 
 	// 拡張空間IDインデックスの隙間を補完する。同値の場合は補完をスキップする。
 	if maxIndex != minIndex {
-		for i := minIndex + 1; i < maxIndex; i++ {
+		for i := minIndex; i < maxIndex; i++ {
 			verticalIndexes = append(verticalIndexes, strconv.FormatInt(outputZoom, 10)+"/"+strconv.FormatInt(i, 10))
 		}
+	} else {
+		verticalIndexes = append(verticalIndexes, strconv.FormatInt(outputZoom, 10)+"/"+strconv.FormatInt(minIndex, 10))
 	}
+
 	return verticalIndexes
 }
 
