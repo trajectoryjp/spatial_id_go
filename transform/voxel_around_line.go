@@ -17,7 +17,7 @@ import (
 	geodesy "github.com/trajectoryjp/geodesy_go/coordinates"
 )
 
-// GetSpatialIdsWithinRadiusOfLine
+// GetExtendedSpatialIdsWithinRadiusOfLine
 // 直線と線からradiusの距離以内の拡張空間IDを取得する
 //
 // 引数：
@@ -33,7 +33,7 @@ import (
 //	拡張空間IDスライス： []string
 //  error: エラー
 
-func GetSpatialIdsWithinRadiusOfLine(startPoint *object.Point, endPoint *object.Point, radius float64, hZoom int64, vZoom int64, skipsMeasurement bool) ([]string, error) {
+func GetExtendedSpatialIdsWithinRadiusOfLine(startPoint *object.Point, endPoint *object.Point, radius float64, hZoom int64, vZoom int64, skipsMeasurement bool) ([]string, error) {
 
 	// 1. Return the Extended Spatial Ids on the line determined by startPoint and endPoint
 

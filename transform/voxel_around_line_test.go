@@ -13,7 +13,7 @@ import (
 	"github.com/trajectoryjp/spatial_id_go/v2/shape"
 )
 
-func TestGetSpatialIdsWithinRadiusOfLine10m_r0_horizontal(t *testing.T) {
+func TestGetExtendedSpatialIdsWithinRadiusOfLine10m_r0_horizontal(t *testing.T) {
 
 	var radius float64 = 0
 	var hZoom int64 = 25
@@ -44,7 +44,7 @@ func TestGetSpatialIdsWithinRadiusOfLine10m_r0_horizontal(t *testing.T) {
 		t.Error(error)
 	}
 	start := time.Now()
-	idsWithinRadiusOfLine, error := GetSpatialIdsWithinRadiusOfLine(startPoint, endPoint, radius, hZoom, vZoom, false)
+	idsWithinRadiusOfLine, error := GetExtendedSpatialIdsWithinRadiusOfLine(startPoint, endPoint, radius, hZoom, vZoom, false)
 	elapsed := time.Since(start)
 	if error != nil {
 		t.Error(error)
