@@ -161,7 +161,7 @@ func TestConvertExtendedSpatialIdsToQuadkeysAndVerticalIDs(t *testing.T) {
 	//horizontalID: "5/4562451/2343566", result: 429},             //"12231"
 
 	quadkeyAndVerticalIDs := []*object.FromExtendedSpatialIDToQuadkeyAndVerticalID{}
-	newQuadkeyAndVerticalID := object.NewFromExtendedSpatialIDToQuadkeyAndVerticalID(21, [][2]int64{{29728048124, 58}, {29728048124, 57}, {29728048125, 58}, {29728048125, 57}, {29728048126, 58}, {29728048126, 57}, {29728048127, 58}, {29728048127, 57}}, 10, 500, 0)
+	newQuadkeyAndVerticalID := object.NewFromExtendedSpatialIDToQuadkeyAndVerticalID(21, [][2]int64{{29728048124, 57}, {29728048125, 57}, {29728048126, 57}, {29728048127, 57}}, 10, 500, 0)
 	quadkeyAndVerticalIDs = append(quadkeyAndVerticalIDs, newQuadkeyAndVerticalID)
 
 	quadkeyAndVerticalIDsSpatialIDs := []*object.FromExtendedSpatialIDToQuadkeyAndVerticalID{}
@@ -172,7 +172,7 @@ func TestConvertExtendedSpatialIdsToQuadkeysAndVerticalIDs(t *testing.T) {
 	newQuadkeyAndVerticalID = object.NewFromExtendedSpatialIDToQuadkeyAndVerticalID(1, [][2]int64{{0, 56}}, 26, 0, 0)
 	quadkeyAndVerticalIDsHBorders1 = append(quadkeyAndVerticalIDsHBorders1, newQuadkeyAndVerticalID)
 	quadkeyAndVerticalIDsHBorders31 := []*object.FromExtendedSpatialIDToQuadkeyAndVerticalID{}
-	newQuadkeyAndVerticalID = object.NewFromExtendedSpatialIDToQuadkeyAndVerticalID(31, [][2]int64{{29031296, 1}, {29031296, 0}}, 10, 500, 0)
+	newQuadkeyAndVerticalID = object.NewFromExtendedSpatialIDToQuadkeyAndVerticalID(31, [][2]int64{{29031296, 0}}, 10, 500, 0)
 	quadkeyAndVerticalIDsHBorders31 = append(quadkeyAndVerticalIDsHBorders31, newQuadkeyAndVerticalID)
 
 	quadkeyAndVerticalIDsValueE := []*object.FromExtendedSpatialIDToQuadkeyAndVerticalID{}
@@ -196,10 +196,10 @@ func TestConvertExtendedSpatialIdsToQuadkeysAndVerticalIDs(t *testing.T) {
 		{spatialIds: []string{"20/85263/65423/26/56"}, ToHZoom: 19, ToVZoom: 26, maxHeight: 0, minHeight: 0.0, result: quadkeyAndVerticalIDsSpatialIDs, pattern: 0},
 
 		// 水平精度個数確認 低精度は1、高精度は精度差^4
-		{spatialIds: []string{"20/85263/65423/26/56"}, ToHZoom: 24, ToVZoom: 10, maxHeight: 500, minHeight: 0.0, result: quadkeyAndVerticalIDs, resultLength: 512, pattern: 2},
-		{spatialIds: []string{"20/85263/65423/26/56"}, ToHZoom: 2, ToVZoom: 10, maxHeight: 500, minHeight: 0.0, result: quadkeyAndVerticalIDs, resultLength: 2, pattern: 2},
+		{spatialIds: []string{"20/85263/65423/26/56"}, ToHZoom: 24, ToVZoom: 10, maxHeight: 500, minHeight: 0.0, result: quadkeyAndVerticalIDs, resultLength: 256, pattern: 2},
+		{spatialIds: []string{"20/85263/65423/26/56"}, ToHZoom: 2, ToVZoom: 10, maxHeight: 500, minHeight: 0.0, result: quadkeyAndVerticalIDs, resultLength: 1, pattern: 2},
 		// 水平精度境界値
-		{spatialIds: []string{"20/85263/65423/26/0"}, ToHZoom: 1, ToVZoom: 10, maxHeight: 500, minHeight: 0.0, result: quadkeyAndVerticalIDsHBorders1, resultLength: 2, pattern: 2},
+		{spatialIds: []string{"20/85263/65423/26/0"}, ToHZoom: 1, ToVZoom: 10, maxHeight: 500, minHeight: 0.0, result: quadkeyAndVerticalIDsHBorders1, resultLength: 1, pattern: 2},
 		{spatialIds: []string{"35/85263/65423/26/0"}, ToHZoom: 31, ToVZoom: 10, maxHeight: 500, minHeight: 0.0, result: quadkeyAndVerticalIDsHBorders31, pattern: 0},
 
 		// 垂直精度境界値
@@ -310,7 +310,7 @@ func TestConvertSpatialIdsToQuadkeysAndVerticalIDs(t *testing.T) {
 		{spatialIds: []string{"20/56/85263/65423"}, ToHZoom: 24, ToVZoom: 10, maxHeight: 500, minHeight: 0.0, result: quadkeyAndVerticalIDs, resultLength: 256, pattern: 2},
 		{spatialIds: []string{"20/56/85263/65423"}, ToHZoom: 2, ToVZoom: 10, maxHeight: 500, minHeight: 0.0, result: quadkeyAndVerticalIDs, resultLength: 1, pattern: 2},
 		// 水平精度境界値
-		{spatialIds: []string{"20/0/85263/65423"}, ToHZoom: 1, ToVZoom: 10, maxHeight: 500, minHeight: 0.0, result: quadkeyAndVerticalIDsHBorders1, resultLength: 66, pattern: 2},
+		{spatialIds: []string{"20/0/85263/65423"}, ToHZoom: 1, ToVZoom: 10, maxHeight: 500, minHeight: 0.0, result: quadkeyAndVerticalIDsHBorders1, resultLength: 65, pattern: 2},
 		{spatialIds: []string{"35/0/85263/65423"}, ToHZoom: 31, ToVZoom: 10, maxHeight: 500, minHeight: 0.0, result: quadkeyAndVerticalIDsHBorders31, pattern: 0},
 
 		// 垂直精度境界値
