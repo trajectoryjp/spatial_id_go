@@ -299,6 +299,63 @@ func TestGetNspatialIdsAroundVoxcels02(t *testing.T) {
 
 }
 
+func TestGetNspatialIdsAroundVoxcels03(t *testing.T) {
+
+	ids := []string{"10/10/10/10/10"}
+	expectVal := []string{}
+
+	nLayer := 0
+
+	resultVal, error := GetNspatialIdsAroundVoxcels(ids, int64(nLayer), int64(nLayer))
+	if error != nil {
+		t.Error(error)
+	}
+
+	// using maps will allow comparison with deepEqual if order is different
+	map1, map2 := make(map[string]string), make(map[string]string)
+	for _, value := range expectVal {
+		map1[value] = value
+	}
+	for _, value := range resultVal {
+		map2[value] = value
+	}
+	if !reflect.DeepEqual(map1, map2) {
+		// 戻り値の空間IDが期待値と異なる場合Errorをログに出力
+		t.Errorf("空間ID - 期待値:%v, \n取得値: %v", map1, map2)
+	}
+	t.Log("テスト終了")
+
+}
+
+func TestGetNspatialIdsAroundVoxcels04(t *testing.T) {
+
+	ids := []string{"10/10/10/10/10"}
+	expectVal := []string{"10/10/10/10/9", "10/10/10/10/11"}
+
+	resultVal, error := GetNspatialIdsAroundVoxcels(
+		ids,
+		0,
+		1)
+	if error != nil {
+		t.Error(error)
+	}
+
+	// using maps will allow comparison with deepEqual if order is different
+	map1, map2 := make(map[string]string), make(map[string]string)
+	for _, value := range expectVal {
+		map1[value] = value
+	}
+	for _, value := range resultVal {
+		map2[value] = value
+	}
+	if !reflect.DeepEqual(map1, map2) {
+		// 戻り値の空間IDが期待値と異なる場合Errorをログに出力
+		t.Errorf("空間ID - 期待値:%v, \n取得値: %v", map1, map2)
+	}
+	t.Log("テスト終了")
+
+}
+
 // stringスライスの中に指定文字列を含むか判定する
 //
 // 引数：
