@@ -41,11 +41,6 @@ func GetSpatialIdsWithinRadiusOfLine(startPoint *object.Point, endPoint *object.
 	if error != nil {
 		return nil, error
 	}
-
-	if radius == 0 {
-		return common.Unique(idsOnLine), nil
-	}
-
 	// 2. Find the Spatial Ids that are not on the line but within the radius distance of the line
 
 	// Variable Setup
