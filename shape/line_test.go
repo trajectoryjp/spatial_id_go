@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/trajectoryjp/spatial_id_go/v2/common/enum"
-	"github.com/trajectoryjp/spatial_id_go/v2/common/object"
-	"github.com/trajectoryjp/spatial_id_go/v2/common/spatial"
+	"github.com/trajectoryjp/spatial_id_go/v3/common/enum"
+	"github.com/trajectoryjp/spatial_id_go/v3/common/object"
+	"github.com/trajectoryjp/spatial_id_go/v3/common/spatial"
 )
 
 // TestGetSpatialIdsOnLine01 正常系動作確認

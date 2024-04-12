@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/trajectoryjp/spatial_id_go/v2/common"
-	"github.com/trajectoryjp/spatial_id_go/v2/common/consts"
-	"github.com/trajectoryjp/spatial_id_go/v2/common/enum"
-	"github.com/trajectoryjp/spatial_id_go/v2/common/object"
-	"github.com/trajectoryjp/spatial_id_go/v2/operated"
-	"github.com/trajectoryjp/spatial_id_go/v2/shape"
+	"github.com/trajectoryjp/spatial_id_go/v3/common"
+	"github.com/trajectoryjp/spatial_id_go/v3/common/consts"
+	"github.com/trajectoryjp/spatial_id_go/v3/common/enum"
+	"github.com/trajectoryjp/spatial_id_go/v3/common/object"
+	"github.com/trajectoryjp/spatial_id_go/v3/operated"
+	"github.com/trajectoryjp/spatial_id_go/v3/shape"
 
 	"github.com/go-gl/mathgl/mgl64"
 

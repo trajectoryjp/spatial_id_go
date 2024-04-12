@@ -24,11 +24,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/trajectoryjp/spatial_id_go/v2/common"
-	"github.com/trajectoryjp/spatial_id_go/v2/common/consts"
-	"github.com/trajectoryjp/spatial_id_go/v2/common/enum"
-	"github.com/trajectoryjp/spatial_id_go/v2/common/errors"
-	"github.com/trajectoryjp/spatial_id_go/v2/common/object"
+	"github.com/trajectoryjp/spatial_id_go/v3/common"
+	"github.com/trajectoryjp/spatial_id_go/v3/common/consts"
+	"github.com/trajectoryjp/spatial_id_go/v3/common/enum"
+	"github.com/trajectoryjp/spatial_id_go/v3/common/errors"
+	"github.com/trajectoryjp/spatial_id_go/v3/common/object"
 
 	"github.com/wroge/wgs84"
 )

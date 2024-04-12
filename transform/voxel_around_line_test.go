@@ -8,9 +8,9 @@ import (
 	"github.com/go-gl/mathgl/mgl64"
 	closest "github.com/trajectoryjp/closest_go"
 	geodesy "github.com/trajectoryjp/geodesy_go/coordinates"
-	"github.com/trajectoryjp/spatial_id_go/v2/common/errors"
-	"github.com/trajectoryjp/spatial_id_go/v2/common/object"
-	"github.com/trajectoryjp/spatial_id_go/v2/shape"
+	"github.com/trajectoryjp/spatial_id_go/v3/common/errors"
+	"github.com/trajectoryjp/spatial_id_go/v3/common/object"
+	"github.com/trajectoryjp/spatial_id_go/v3/shape"
 )
 
 func TestGetExtendedSpatialIdsWithinRadiusOfLine10m_r0_horizontal(t *testing.T) {
