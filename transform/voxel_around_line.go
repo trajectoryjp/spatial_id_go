@@ -189,8 +189,6 @@ func FitClearanceAroundExtendedSpatialID(spatialID string, clearance float64) (h
 	// if clearance is 0, the only Spatial IDs that are on the route line should be used -- no surrounding Spatial IDs
 	if clearance < 0 {
 		return 0, 0, fmt.Errorf("\ninvalid clearance value. Clearance must be >= 0")
-	} else if clearance == 0 {
-		return 0, 0, nil
 	}
 
 	// validate and extract zoom info from spatialID
@@ -208,8 +206,8 @@ func FitClearanceAroundExtendedSpatialID(spatialID string, clearance float64) (h
 	// vLayyer is the number of vertical spatialID distances required to fit the clearance
 	var vLayer int64
 
-	var hUnits int64 = 2
-	var vUnits int64 = 2
+	var hUnits int64 = 1
+	var vUnits int64 = 1
 
 	// Begin horizonal fitting loop (determine hLayer)
 	for {
