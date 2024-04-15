@@ -13,7 +13,7 @@ import (
 	"github.com/trajectoryjp/spatial_id_go/v2/shape"
 )
 
-func TestGetSpatialIdsWithinRadiusOfLine(t *testing.T) {
+func TestGetSpatialIdsWithinRadiusOfLine01(t *testing.T) {
 
 	var radius float64 = 0
 	var hZoom int64 = 25
@@ -32,7 +32,7 @@ func TestGetSpatialIdsWithinRadiusOfLine(t *testing.T) {
 	if error != nil {
 		t.Error(error)
 	}
-	idsWithinRadiusOfLine, error := GetSpatialIdsWithinRadiusOfLine(startPoint, endPoint, radius, hZoom, vZoom, false)
+	idsWithinRadiusOfLine, error := GetSpatialIdsWithinRadiusOfLine(startPoint, endPoint, radius, hZoom, vZoom, true)
 	if error != nil {
 		t.Error(error)
 	}
@@ -48,6 +48,43 @@ func TestGetSpatialIdsWithinRadiusOfLine(t *testing.T) {
 		t.Errorf("期待値: %v 取得値: %v", idsOnLine, idsWithinRadiusOfLine)
 	}
 	t.Log("テスト終了")
+
+}
+
+// TestGetSpatialIdsWithinRadiusOfLine02 tests when skipsMeasurement=true and radius > 0 but radius is
+// less than than the length of a voxcel.
+// Expected value should return 54 voxcels:
+// - GetExtendedSpatialIdsOnLine: 4 ids
+// - FitClearanceAroundSpatialId: hlayer=1, vlayer=1
+// - GetNspatialIdsAroundVoxcels: (count excludes ids on line) 50
+// - GetSpatialIdsWithinRadiusOfLine: (count includes ids on line) 9 ids per layer * 6 layers = 54 ids expected
+func TestGetSpatialIdsWithinRadiusOfLine02(t *testing.T) {
+
+	var radius float64 = 0.1
+	var hZoom int64 = 23
+	var vZoom int64 = 23
+
+	startPoint, error := object.NewPoint(139.788452, 35.67093015, 0)
+	if error != nil {
+		t.Error(error)
+	}
+	endPoint, error := object.NewPoint(139.788452, 35.670840, 0)
+	if error != nil {
+		t.Error(error)
+	}
+
+	idsOnLine, error := shape.GetExtendedSpatialIdsOnLine(startPoint, endPoint, hZoom, vZoom)
+	if error != nil {
+		t.Error(error)
+	}
+	idsWithinRadiusOfLine, error := GetSpatialIdsWithinRadiusOfLine(startPoint, endPoint, radius, hZoom, vZoom, true)
+	if error != nil {
+		t.Error(error)
+	}
+
+	if len(idsOnLine) != 4 || len(idsWithinRadiusOfLine) != 54 {
+		t.Fatalf("Expected values not returned. \nExpected Number of Extended Spatial Ids on Line: 4; returned: %v\nExpected number of extended Spatial Ids within radius of line: 54; returned: %v", len(idsOnLine), len(idsWithinRadiusOfLine))
+	}
 
 }
 
