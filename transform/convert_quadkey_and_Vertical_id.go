@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-
+	"github.com/trajectoryjp/spatial_id_go/v3/common"
 	"github.com/trajectoryjp/spatial_id_go/v3/common/errors"
 	"github.com/trajectoryjp/spatial_id_go/v3/common/object"
 	"github.com/trajectoryjp/spatial_id_go/v3/integrate"
