@@ -32,7 +32,7 @@ func TestGetSpatialIdsWithinRadiusOfLine01(t *testing.T) {
 	if error != nil {
 		t.Error(error)
 	}
-	idsWithinRadiusOfLine, error := GetSpatialIdsWithinRadiusOfLine(startPoint, endPoint, radius, hZoom, vZoom, true)
+	idsWithinRadiusOfLine, error := GetExtendedSpatialIdsWithinRadiusOfLine(startPoint, endPoint, radius, hZoom, vZoom, true)
 	if error != nil {
 		t.Error(error)
 	}
@@ -58,7 +58,7 @@ func TestGetSpatialIdsWithinRadiusOfLine01(t *testing.T) {
 // - FitClearanceAroundSpatialId: hlayer=1, vlayer=1
 // - GetNspatialIdsAroundVoxcels: (count excludes ids on line) 50
 // - GetSpatialIdsWithinRadiusOfLine: (count includes ids on line) 9 ids per layer * 6 layers = 54 ids expected
-func TestGetSpatialIdsWithinRadiusOfLine02(t *testing.T) {
+func TestGetExtendedSpatialIdsWithinRadiusOfLine02(t *testing.T) {
 
 	var radius float64 = 0.1
 	var hZoom int64 = 23
@@ -77,7 +77,7 @@ func TestGetSpatialIdsWithinRadiusOfLine02(t *testing.T) {
 	if error != nil {
 		t.Error(error)
 	}
-	idsWithinRadiusOfLine, error := GetSpatialIdsWithinRadiusOfLine(startPoint, endPoint, radius, hZoom, vZoom, true)
+	idsWithinRadiusOfLine, error := GetExtendedSpatialIdsWithinRadiusOfLine(startPoint, endPoint, radius, hZoom, vZoom, true)
 	if error != nil {
 		t.Error(error)
 	}
@@ -119,7 +119,7 @@ func TestGetSpatialIdsWithinRadiusOfLine10m_r0_horizontal(t *testing.T) {
 		t.Error(error)
 	}
 	start := time.Now()
-	idsWithinRadiusOfLine, error := GetSpatialIdsWithinRadiusOfLine(startPoint, endPoint, radius, hZoom, vZoom, false)
+	idsWithinRadiusOfLine, error := GetExtendedSpatialIdsWithinRadiusOfLine(startPoint, endPoint, radius, hZoom, vZoom, false)
 	elapsed := time.Since(start)
 	if error != nil {
 		t.Error(error)
