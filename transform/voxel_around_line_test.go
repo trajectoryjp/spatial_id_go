@@ -8,12 +8,12 @@ import (
 	"github.com/go-gl/mathgl/mgl64"
 	closest "github.com/trajectoryjp/closest_go"
 	geodesy "github.com/trajectoryjp/geodesy_go/coordinates"
-	"github.com/trajectoryjp/spatial_id_go/v2/common/errors"
-	"github.com/trajectoryjp/spatial_id_go/v2/common/object"
-	"github.com/trajectoryjp/spatial_id_go/v2/shape"
+	"github.com/trajectoryjp/spatial_id_go/v3/common/errors"
+	"github.com/trajectoryjp/spatial_id_go/v3/common/object"
+	"github.com/trajectoryjp/spatial_id_go/v3/shape"
 )
 
-func TestGetSpatialIdsWithinRadiusOfLine01(t *testing.T) {
+func TestGetExtendedSpatialIdsWithinRadiusOfLine01(t *testing.T) {
 
 	var radius float64 = 0
 	var hZoom int64 = 25
@@ -88,7 +88,7 @@ func TestGetExtendedSpatialIdsWithinRadiusOfLine02(t *testing.T) {
 
 }
 
-func TestGetSpatialIdsWithinRadiusOfLine10m_r0_horizontal(t *testing.T) {
+func TestGetExtendedSpatialIdsWithinRadiusOfLine10m_r0_horizontal(t *testing.T) {
 
 	var radius float64 = 0
 	var hZoom int64 = 25

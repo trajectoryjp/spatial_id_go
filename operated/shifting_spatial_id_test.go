@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/trajectoryjp/spatial_id_go/v2/common"
+	"github.com/trajectoryjp/spatial_id_go/v3/common"
 )
 
 // TestGet6spatialIdsAdjacentToFaces01 正常系動作確認

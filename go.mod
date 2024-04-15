@@ -1,4 +1,4 @@
-module github.com/trajectoryjp/spatial_id_go/v2
+module github.com/trajectoryjp/spatial_id_go/v3
 
 go 1.19
 
@@ -11,8 +11,4 @@ require (
 
 require golang.org/x/image v0.7.0 // indirect
 
-require (
-	github.com/trajectoryjp/closest_go v1.0.1
-	go.uber.org/atomic v1.7.0 // indirect
-	go.uber.org/multierr v1.6.0 // indirect
-)
+require github.com/trajectoryjp/closest_go v1.0.1

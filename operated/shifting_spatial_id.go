@@ -7,9 +7,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/trajectoryjp/spatial_id_go/v2/common"
-	"github.com/trajectoryjp/spatial_id_go/v2/common/consts"
-	"github.com/trajectoryjp/spatial_id_go/v2/common/object"
+	"github.com/trajectoryjp/spatial_id_go/v3/common"
+	"github.com/trajectoryjp/spatial_id_go/v3/common/consts"
+	"github.com/trajectoryjp/spatial_id_go/v3/common/object"
 )
 
 // Get6spatialIdsAdjacentToFaces 拡張空間IDの面6個の拡張空間ID取得関数
