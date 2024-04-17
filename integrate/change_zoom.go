@@ -6,10 +6,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/trajectoryjp/spatial_id_go/v2/common"
-	"github.com/trajectoryjp/spatial_id_go/v2/common/errors"
-	"github.com/trajectoryjp/spatial_id_go/v2/common/object"
-	"github.com/trajectoryjp/spatial_id_go/v2/shape"
+	"github.com/trajectoryjp/spatial_id_go/v3/common"
+	"github.com/trajectoryjp/spatial_id_go/v3/common/errors"
+	"github.com/trajectoryjp/spatial_id_go/v3/common/object"
+	"github.com/trajectoryjp/spatial_id_go/v3/shape"
 )
 
 // ChangeSpatialIdsZoom 空間IDの精度変換関数

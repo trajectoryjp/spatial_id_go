@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/trajectoryjp/spatial_id_go/v2/common"
-	"github.com/trajectoryjp/spatial_id_go/v2/common/consts"
-	"github.com/trajectoryjp/spatial_id_go/v2/common/enum"
-	"github.com/trajectoryjp/spatial_id_go/v2/common/object"
-	"github.com/trajectoryjp/spatial_id_go/v2/operated"
-	"github.com/trajectoryjp/spatial_id_go/v2/shape"
+	"github.com/trajectoryjp/spatial_id_go/v3/common"
+	"github.com/trajectoryjp/spatial_id_go/v3/common/consts"
+	"github.com/trajectoryjp/spatial_id_go/v3/common/enum"
+	"github.com/trajectoryjp/spatial_id_go/v3/common/object"
+	"github.com/trajectoryjp/spatial_id_go/v3/operated"
+	"github.com/trajectoryjp/spatial_id_go/v3/shape"
 
 	"github.com/go-gl/mathgl/mgl64"
 
@@ -17,7 +17,7 @@ import (
 	geodesy "github.com/trajectoryjp/geodesy_go/coordinates"
 )
 
-// GetSpatialIdsWithinRadiusOfLine
+// GetExtendedSpatialIdsWithinRadiusOfLine
 // 直線と線からradiusの距離以内の拡張空間IDを取得する
 //
 // 引数：
@@ -27,13 +27,14 @@ import (
 //	radius: 半径。拡張空間IDはradius以内だと、戻り値のスライスを追加される。
 //  hZoom: 垂直方向の精度レベル
 //  vZoom: 水平方向の精度レベル
+//  skipsMeasurement: 始点と終点の線と収取された空間IDの距離を計る処理を飛ばすかどうか
 //
 // 戻り値：
 //
 //	拡張空間IDスライス： []string
 //  error: エラー
 
-func GetSpatialIdsWithinRadiusOfLine(startPoint *object.Point, endPoint *object.Point, radius float64, hZoom int64, vZoom int64, skipsMeasurement bool) ([]string, error) {
+func GetExtendedSpatialIdsWithinRadiusOfLine(startPoint *object.Point, endPoint *object.Point, radius float64, hZoom int64, vZoom int64, skipsMeasurement bool) ([]string, error) {
 
 	// 1. Return the Extended Spatial Ids on the line determined by startPoint and endPoint
 

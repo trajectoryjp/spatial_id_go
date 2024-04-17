@@ -4,7 +4,7 @@ package common
 import (
 	"math"
 
-	"github.com/trajectoryjp/spatial_id_go/v2/common/errors"
+	"github.com/trajectoryjp/spatial_id_go/v3/common/errors"
 )
 
 // AlmostEqual 同値確認関数
