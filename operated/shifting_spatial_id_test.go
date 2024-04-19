@@ -241,6 +241,8 @@ func TestGetShiftingSpatialID07(t *testing.T) {
 	t.Log("テスト終了")
 }
 
+// TestGetNspatialIdsAroundVoxcels01 tests hLayers=1 and vLayers=1 around two spatial IDs
+// Expected value should return the same result as the combined, unique result of Get26spatialIdsAroundVoxel() for each of the two "ids"
 func TestGetNspatialIdsAroundVoxcels01(t *testing.T) {
 
 	ids := []string{"10/10/10/10/10", "10/11/11/10/10"}
@@ -271,6 +273,8 @@ func TestGetNspatialIdsAroundVoxcels01(t *testing.T) {
 
 }
 
+// TestGetNspatialIdsAroundVoxcels02 tests hLayers=1 and vLayers=1
+// Expected value should be the same result as Get26spatialIdsAroundVoxel()
 func TestGetNspatialIdsAroundVoxcels02(t *testing.T) {
 
 	ids := []string{"10/10/10/10/10"}
@@ -299,6 +303,8 @@ func TestGetNspatialIdsAroundVoxcels02(t *testing.T) {
 
 }
 
+// TestGetNspatialIdsAroundVoxcels03 tests hLayers=0 and vLayers=0
+// Expected value should be 0 Extended Spatial IDs, or an empty string []string{}
 func TestGetNspatialIdsAroundVoxcels03(t *testing.T) {
 
 	ids := []string{"10/10/10/10/10"}
@@ -327,6 +333,8 @@ func TestGetNspatialIdsAroundVoxcels03(t *testing.T) {
 
 }
 
+// TestGetNspatialIdsAroundVoxcels04 tests hLayers=0 and vLayers=1
+// Expected value should be 1 Extended Spatial ID above and 1 Extended Spatial ID below "id"
 func TestGetNspatialIdsAroundVoxcels04(t *testing.T) {
 
 	ids := []string{"10/10/10/10/10"}

@@ -13,6 +13,8 @@ import (
 	"github.com/trajectoryjp/spatial_id_go/v3/shape"
 )
 
+// TestGetExtendedSpatialIdsWithinRadiusOfLine01 tests when skipsMeasurement=true and radius =0
+// Expected value should return the exact same voxels as GetExtendedSpatialIdsOnLine
 func TestGetExtendedSpatialIdsWithinRadiusOfLine01(t *testing.T) {
 
 	var radius float64 = 0
