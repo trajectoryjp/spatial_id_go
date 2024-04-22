@@ -13,6 +13,83 @@ import (
 	"github.com/trajectoryjp/spatial_id_go/v3/shape"
 )
 
+// TestGetExtendedSpatialIdsWithinRadiusOfLine01 tests when skipsMeasurement=true and radius =0
+// Expected value should return the exact same voxels as GetExtendedSpatialIdsOnLine
+func TestGetExtendedSpatialIdsWithinRadiusOfLine01(t *testing.T) {
+
+	var radius float64 = 0
+	var hZoom int64 = 25
+	var vZoom int64 = 25
+
+	startPoint, error := object.NewPoint(139.788452, 35.67093015, 0)
+	if error != nil {
+		t.Error(error)
+	}
+	endPoint, error := object.NewPoint(139.788452, 35.670840, 0)
+	if error != nil {
+		t.Error(error)
+	}
+
+	idsOnLine, error := shape.GetExtendedSpatialIdsOnLine(startPoint, endPoint, hZoom, vZoom)
+	if error != nil {
+		t.Error(error)
+	}
+	idsWithinRadiusOfLine, error := GetExtendedSpatialIdsWithinRadiusOfLine(startPoint, endPoint, radius, hZoom, vZoom, true)
+	if error != nil {
+		t.Error(error)
+	}
+
+	map1, map2 := make(map[string]string), make(map[string]string)
+	for _, value := range idsOnLine {
+		map1[value] = value
+	}
+	for _, value := range idsWithinRadiusOfLine {
+		map2[value] = value
+	}
+	if !reflect.DeepEqual(map1, map2) {
+		t.Errorf("期待値: %v 取得値: %v", idsOnLine, idsWithinRadiusOfLine)
+	}
+	t.Log("テスト終了")
+
+}
+
+// TestGetSpatialIdsWithinRadiusOfLine02 tests when skipsMeasurement=true and radius > 0 but radius is
+// less than than the length of a voxcel.
+// Expected value should return 54 voxcels:
+// - GetExtendedSpatialIdsOnLine: 4 ids
+// - FitClearanceAroundSpatialId: hlayer=1, vlayer=1
+// - GetNspatialIdsAroundVoxcels: (count excludes ids on line) 50
+// - GetSpatialIdsWithinRadiusOfLine: (count includes ids on line) 9 ids per layer * 6 layers = 54 ids expected
+func TestGetExtendedSpatialIdsWithinRadiusOfLine02(t *testing.T) {
+
+	var radius float64 = 0.1
+	var hZoom int64 = 23
+	var vZoom int64 = 23
+
+	startPoint, error := object.NewPoint(139.788452, 35.67093015, 0)
+	if error != nil {
+		t.Error(error)
+	}
+	endPoint, error := object.NewPoint(139.788452, 35.670840, 0)
+	if error != nil {
+		t.Error(error)
+	}
+
+	idsOnLine, error := shape.GetExtendedSpatialIdsOnLine(startPoint, endPoint, hZoom, vZoom)
+	if error != nil {
+		t.Error(error)
+	}
+	idsWithinRadiusOfLine, error := GetExtendedSpatialIdsWithinRadiusOfLine(startPoint, endPoint, radius, hZoom, vZoom, true)
+	if error != nil {
+		t.Error(error)
+	}
+
+	if len(idsOnLine) != 4 || len(idsWithinRadiusOfLine) != 54 {
+		t.Fatalf("Expected values not returned. \nExpected Number of Extended Spatial Ids on Line: 4; returned: %v\nExpected number of extended Spatial Ids within radius of line: 54; returned: %v", len(idsOnLine), len(idsWithinRadiusOfLine))
+	}
+
+}
+
 func TestGetExtendedSpatialIdsWithinRadiusOfLine10m_r0_horizontal(t *testing.T) {
 
 	var radius float64 = 0
@@ -68,8 +145,8 @@ func TestGetExtendedSpatialIdsWithinRadiusOfLine10m_r0_horizontal(t *testing.T) 
 func TestFitClearanceAroundExtendedSpatialID01(t *testing.T) {
 
 	var clearance float64 = 0
-	var expectedHLayer int64 = 1
-	var expectedVLayer int64 = 1
+	var expectedHLayer int64 = 0
+	var expectedVLayer int64 = 0
 
 	point, error := object.NewPoint(139.788081, 35.672680, 100)
 	if error != nil {
@@ -142,6 +219,30 @@ func TestFitClearanceAroundExtendedSpatialID04(t *testing.T) {
 	var clearance float64 = 50
 	var expectedHLayer int64 = 4
 	var expectedVLayer int64 = 4
+
+	point, error := object.NewPoint(139.788081, 35.672680, 100)
+	if error != nil {
+		t.Error(error)
+	}
+	hLayer, vLayer, error := testFitClearanceAroundSpatialID(t, point, clearance, 21, 21)
+	if error != nil {
+		t.Error(error)
+	}
+
+	if hLayer != expectedHLayer {
+		t.Errorf("空間ID - 期待値：%v, 取得値：%v", expectedHLayer, hLayer)
+	}
+	if vLayer != expectedVLayer {
+		t.Errorf("空間ID - 期待値：%v, 取得値：%v", expectedVLayer, vLayer)
+	}
+
+}
+
+func TestFitClearanceAroundExtendedSpatialID05(t *testing.T) {
+
+	var clearance float64 = 0.01
+	var expectedHLayer int64 = 1
+	var expectedVLayer int64 = 1
 
 	point, error := object.NewPoint(139.788081, 35.672680, 100)
 	if error != nil {
