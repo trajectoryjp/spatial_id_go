@@ -614,7 +614,7 @@ func TestConvertVerticalIndex(t *testing.T) {
 		{inputZoom: 25, outputZoom: 27, inputIndex: 100, zoomScalar: 0, offset: 28, expectedOutputIndex: 428},
 		{inputZoom: 25, outputZoom: 14, inputIndex: 100, zoomScalar: 11, offset: 0, expectedOutputIndex: 100},
 		{inputZoom: 25, outputZoom: 14, inputIndex: 100, zoomScalar: 11, offset: -512, expectedOutputIndex: -412},
-		// {inputZoom: 8, outputZoom: 25, inputIndex: 0, zoomScalar: 0, offset: 0, expectedOutputIndex: },
+		//{inputZoom: 24, outputZoom: 25, inputIndex: 0, zoomScalar: 0, offset: 0, expectedOutputIndex: },
 	}
 
 	for _, p := range datas {
