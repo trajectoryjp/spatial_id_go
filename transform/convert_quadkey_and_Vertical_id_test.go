@@ -597,3 +597,62 @@ func TestSpatialIDCheckZoom(t *testing.T) {
 	}
 
 }
+
+func TestConvertVerticalIndex(t *testing.T) {
+	datas := []struct {
+		inputZoom  int64
+		inputIndex int64
+		outputZoom int64
+		zoomScalar int64
+		//outputIndex  int64
+		offset int64
+
+		expectedOutputIndex int64
+	}{
+		{inputZoom: 25, outputZoom: 25, inputIndex: 100, zoomScalar: 0, offset: 0, expectedOutputIndex: 100},
+		{inputZoom: 25, outputZoom: 25, inputIndex: 100, zoomScalar: 0, offset: -47, expectedOutputIndex: 53},
+		{inputZoom: 25, outputZoom: 27, inputIndex: 100, zoomScalar: 0, offset: 28, expectedOutputIndex: 428},
+		{inputZoom: 25, outputZoom: 14, inputIndex: 100, zoomScalar: 11, offset: 0, expectedOutputIndex: 100},
+		{inputZoom: 25, outputZoom: 14, inputIndex: 100, zoomScalar: 11, offset: -512, expectedOutputIndex: -412},
+		// {inputZoom: 8, outputZoom: 25, inputIndex: 0, zoomScalar: 0, offset: 0, expectedOutputIndex: },
+	}
+
+	for _, p := range datas {
+		result, error := convertVerticalIndex(p.inputIndex, p.inputZoom, p.outputZoom, p.zoomScalar, p.offset)
+		if error != nil {
+			t.Log(t.Name())
+			t.Error(error)
+		}
+		if result != p.expectedOutputIndex {
+			t.Log(t.Name())
+			t.Errorf("convertVerticalIndex(%v, %v, %v, %v, %v) == %v, result: %v", p.inputIndex, p.inputZoom, p.outputZoom, p.zoomScalar, p.offset, p.expectedOutputIndex, result)
+		}
+	}
+}
+
+func TestReturnAltitudesOfVerticalIndex(t *testing.T) {
+	datas := []struct {
+		index          int64
+		zoom           int64
+		zoomScalar     int64
+		offset         int64
+		expectedOutput *VerticalIndexAltitudes
+	}{
+		{index: 1, zoom: 27, zoomScalar: 0, offset: 0, expectedOutput: &VerticalIndexAltitudes{MinAltitude: 0.25, MaxAltitude: 0.5}},
+		{index: 1, zoom: 25, zoomScalar: 0, offset: 0, expectedOutput: &VerticalIndexAltitudes{MinAltitude: 1, MaxAltitude: 2}},
+		{index: 1, zoom: 24, zoomScalar: 0, offset: 0, expectedOutput: &VerticalIndexAltitudes{MinAltitude: 2, MaxAltitude: 4}},
+		{index: 1, zoom: 24, zoomScalar: 0, offset: -1, expectedOutput: &VerticalIndexAltitudes{MinAltitude: 1, MaxAltitude: 3}},
+	}
+
+	for _, p := range datas {
+		result, error := returnAltitudesOfVerticalIndex(p.index, p.zoom, p.zoomScalar, p.offset)
+		if error != nil {
+			t.Log(t.Name())
+			t.Error(error)
+		}
+		if result != p.expectedOutput {
+			t.Log(t.Name())
+			t.Errorf("convertVerticalIndex(%v, %v, %v, %v) == %v, result: %v", p.index, p.zoom, p.zoomScalar, p.offset, p.expectedOutput, result)
+		}
+	}
+}
