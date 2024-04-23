@@ -663,11 +663,18 @@ func convertVerticallIDToBit(vZoom int64, vIndex int64, outputZoom int64, maxHei
 func convertVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, zoomScalar int64, offset int64) (int64, error) {
 
 	outputIndex := math.Floor(
-		float64(offset) + float64(inputIndex)*math.Pow(2, float64(inputZoom)-float64(outputZoom)+float64(zoomScalar)),
+		float64(offset) + float64(inputIndex)*math.Pow(2, float64(outputZoom)-float64(inputZoom)+float64(zoomScalar)),
 	)
 
 	return int64(outputIndex), nil
 
+}
+
+func returnAltitudesOfVerticalIndex(index int64, zoom int64, zoomScalar int64, offset int64) (float64, error) {
+
+	altitude := float64(offset) + (float64(index) / math.Pow(2, float64(zoom)-float64(25)+float64(zoomScalar)))
+
+	return altitude, nil
 }
 
 // 高さのbit形式のインデックスを計算する。
