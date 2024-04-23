@@ -17,6 +17,12 @@ var (
 	alt25 = math.Pow(2, 25)
 )
 
+// VerticalIndexAltitudes represents the lower limit (inclusive) and upper limit (exclusive) of a VerticalIndex
+type VerticalIndexAltitudes struct {
+	MinAltitude float64
+	MaxAltitude float64
+}
+
 // ConvertQuadkeysAndVerticalIDsToExtendedSpatialIDs 内部形式IDを拡張空間IDに変換する。
 //
 // 変換後の水平方向のIDはXYZ形式のタイルIDとなる。
@@ -670,11 +676,15 @@ func convertVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, z
 
 }
 
-func returnAltitudesOfVerticalIndex(index int64, zoom int64, zoomScalar int64, offset int64) (float64, error) {
+func returnAltitudesOfVerticalIndex(index int64, zoom int64, zoomScalar int64, offset int64) (*VerticalIndexAltitudes, error) {
 
-	altitude := float64(offset) + (float64(index) / math.Pow(2, float64(zoom)-float64(25)+float64(zoomScalar)))
+	MinAltitude := float64(offset) + (float64(index) / math.Pow(2, float64(zoom)-float64(25)+float64(zoomScalar)))
+	MaxAltitude := float64(offset) + (float64(index+1) / math.Pow(2, float64(zoom)-float64(25)+float64(zoomScalar)))
 
-	return altitude, nil
+	return &VerticalIndexAltitudes{
+		MinAltitude: MinAltitude,
+		MaxAltitude: MaxAltitude,
+	}, nil
 }
 
 // 高さのbit形式のインデックスを計算する。
