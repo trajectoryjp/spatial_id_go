@@ -679,7 +679,10 @@ func convertVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, z
 		return nil, error
 	}
 
-	for i := -1000; i < 1000; i++ {
+	minGlobalIndex := -(calculateVerticalResolution(outputZoom + zoomScalar)) + offset
+	maxGlobalIndex := calculateVerticalResolution(outputZoom+zoomScalar) + offset
+
+	for i := minGlobalIndex; i <= maxGlobalIndex; i++ {
 
 		currentIndexAltitudes, error = returnAltitudesOfVerticalIndexB(int64(i), outputZoom, zoomScalar, offset)
 		if error != nil {
