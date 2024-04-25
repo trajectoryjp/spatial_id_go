@@ -731,6 +731,10 @@ func returnAltitudesOfVerticalIndexB(index int64, zoom int64, zoomScalar int64, 
 		MaxAltitude: MaxAltitude,
 	}, nil
 }
+func calculateVerticalResolution(zoomLevel int64) int64 {
+	verticalResolution := math.Pow(2, float64(zoomLevel))
+	return int64(verticalResolution)
+}
 
 // VoxelHeight = [spatialIDMaxHeight] - [spatialIDMinHeight], or
 //
