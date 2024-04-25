@@ -666,16 +666,47 @@ func convertVerticallIDToBit(vZoom int64, vIndex int64, outputZoom int64, maxHei
 
 }
 
-// converts a vertical index from one set of zoom parameters to another
-func convertVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, zoomScalar int64, offset int64) (int64, error) {
+func convertVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, zoomScalar int64, offset int64) ([]int64, error) {
 
-	outputIndex := math.Floor(
-		float64(offset) + float64(inputIndex)*math.Pow(2, float64(outputZoom)-float64(inputZoom)+float64(zoomScalar)),
+	var (
+		outputIndexes                        []int64
+		indexAltitues, currentIndexAltitudes *VerticalIndexAltitudes
+		error                                error
 	)
 
-	return int64(outputIndex), nil
+	indexAltitues, error = returnAltitudesOfVerticalIndex(inputIndex, inputZoom, 0, 0)
+	if error != nil {
+		return nil, error
+	}
+
+	for i := 0; i < 1000; i++ {
+
+		currentIndexAltitudes, error = returnAltitudesOfVerticalIndex(int64(i), outputZoom, zoomScalar, offset)
+		if error != nil {
+			return nil, error
+		}
+
+		if currentIndexAltitudes.MinAltitude >= indexAltitues.MinAltitude &&
+			currentIndexAltitudes.MaxAltitude <= indexAltitues.MaxAltitude {
+			outputIndexes = append(outputIndexes, int64(i))
+		}
+
+	}
+
+	return outputIndexes, nil
 
 }
+
+// converts a vertical index from one set of zoom parameters to another
+// func convertVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, zoomScalar int64, offset int64) (int64, error) {
+
+// 	outputIndex := math.Floor(
+// 		float64(offset) + float64(inputIndex)*math.Pow(2, float64(outputZoom)-float64(inputZoom)+float64(zoomScalar)),
+// 	)
+
+// 	return int64(outputIndex), nil
+
+// }
 
 // returns the min and max altitudes of a given vertical index, zoomLevel, zoomScalar, and offset
 func returnAltitudesOfVerticalIndex(index int64, zoom int64, zoomScalar int64, offset int64) (*VerticalIndexAltitudes, error) {
