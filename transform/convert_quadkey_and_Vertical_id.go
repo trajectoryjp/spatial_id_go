@@ -674,14 +674,14 @@ func convertVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, z
 		error                                error
 	)
 
-	indexAltitues, error = returnAltitudesOfVerticalIndex(inputIndex, inputZoom, 0, 0)
+	indexAltitues, error = returnAltitudesOfVerticalIndexB(inputIndex, inputZoom, 0, 0)
 	if error != nil {
 		return nil, error
 	}
 
-	for i := 0; i < 1000; i++ {
+	for i := -1000; i < 1000; i++ {
 
-		currentIndexAltitudes, error = returnAltitudesOfVerticalIndex(int64(i), outputZoom, zoomScalar, offset)
+		currentIndexAltitudes, error = returnAltitudesOfVerticalIndexB(int64(i), outputZoom, zoomScalar, offset)
 		if error != nil {
 			return nil, error
 		}
@@ -708,11 +708,23 @@ func convertVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, z
 
 // }
 
-// returns the min and max altitudes of a given vertical index, zoomLevel, zoomScalar, and offset
+// returns the min and max altitudes of a given vertical index, zoomLevel, zoomScalar, and offset (add alpha)
 func returnAltitudesOfVerticalIndex(index int64, zoom int64, zoomScalar int64, offset int64) (*VerticalIndexAltitudes, error) {
 
 	MinAltitude := (float64(index) / math.Pow(2, float64(zoom)-float64(25)+float64(zoomScalar))) + float64(offset)
 	MaxAltitude := (float64(index+1) / math.Pow(2, float64(zoom)-float64(25)+float64(zoomScalar))) + float64(offset)
+
+	return &VerticalIndexAltitudes{
+		MinAltitude: MinAltitude,
+		MaxAltitude: MaxAltitude,
+	}, nil
+}
+
+// for use in situations where h is a multidimensional set (subtract alpha)
+func returnAltitudesOfVerticalIndexB(index int64, zoom int64, zoomScalar int64, offset int64) (*VerticalIndexAltitudes, error) {
+
+	MinAltitude := (float64(index) / math.Pow(2, float64(zoom)-float64(25)+float64(zoomScalar))) - float64(offset)
+	MaxAltitude := (float64(index+1) / math.Pow(2, float64(zoom)-float64(25)+float64(zoomScalar))) - float64(offset)
 
 	return &VerticalIndexAltitudes{
 		MinAltitude: MinAltitude,
