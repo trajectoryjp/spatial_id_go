@@ -723,14 +723,16 @@ func returnAltitudesOfVerticalIndex(index int64, zoom int64, zoomScalar int64, o
 // for use in situations where h is a multidimensional set (subtract alpha)
 func returnAltitudesOfVerticalIndexB(index int64, zoom int64, zoomScalar int64, offset int64) (*VerticalIndexAltitudes, error) {
 
-	MinAltitude := (float64(index) / math.Pow(2, float64(zoom)-float64(25)+float64(zoomScalar))) - float64(offset)
-	MaxAltitude := (float64(index+1) / math.Pow(2, float64(zoom)-float64(25)+float64(zoomScalar))) - float64(offset)
+	MinAltitude := (float64(index) * math.Pow(2, float64(25)-float64(zoom)-float64(zoomScalar))) - float64(offset)
+	MaxAltitude := (float64(index+1) * math.Pow(2, float64(25)-float64(zoom)-float64(zoomScalar))) - float64(offset)
 
 	return &VerticalIndexAltitudes{
 		MinAltitude: MinAltitude,
 		MaxAltitude: MaxAltitude,
 	}, nil
 }
+
+// returns the number of indexes from global min to global max altitudes
 func calculateVerticalResolution(zoomLevel int64) int64 {
 	verticalResolution := math.Pow(2, float64(zoomLevel))
 	return int64(verticalResolution)
