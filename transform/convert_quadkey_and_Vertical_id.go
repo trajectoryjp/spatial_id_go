@@ -675,7 +675,7 @@ func convertVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, z
 	)
 
 	// return altitues of original index
-	indexAltitues, error = returnAltitudesOfVerticalIndexB(inputIndex, inputZoom, 0, 0)
+	indexAltitues, error = returnAltitudesOfVerticalIndex(inputIndex, inputZoom, 0, 0)
 	if error != nil {
 		return nil, error
 	}
@@ -693,13 +693,13 @@ func convertVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, z
 	// solve by checking for each index between lower and upper bounds
 	for i := lowerBounds; i <= upperBounds; i++ {
 
-		currentIndexAltitudes, error = returnAltitudesOfVerticalIndexB(int64(i), outputZoom, zoomScalar, 0)
+		currentIndexAltitudes, error = returnAltitudesOfVerticalIndex(int64(i), outputZoom, zoomScalar, offset)
 		if error != nil {
 			return nil, error
 		}
 
-		if currentIndexAltitudes.MinAltitude >= indexAltitues.MinAltitude &&
-			currentIndexAltitudes.MaxAltitude <= indexAltitues.MaxAltitude {
+		if currentIndexAltitudes.MinAltitude-float64(offset) >= indexAltitues.MinAltitude &&
+			currentIndexAltitudes.MaxAltitude-float64(offset) <= indexAltitues.MaxAltitude {
 			outputIndexes = append(outputIndexes, int64(i))
 		}
 
