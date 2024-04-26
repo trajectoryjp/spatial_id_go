@@ -754,7 +754,7 @@ func calculateVerticalResolution(zoomLevel int64) int64 {
 //	         float64(vIndex) * alt25 / float64(math.Pow(2, float64(vZoom)))
 //	= (globalMaxHeight - globalMinHeight) / float64(math.Pow(2, float64(vZoom)))
 func calculateVoxelHeight(vZoom int64, globalMaxHeight float64, globalMinHeight float64) float64 {
-	return (globalMaxHeight - globalMinHeight) / float64(math.Pow(2, float64(vZoom)))
+	return (globalMaxHeight - globalMinHeight) / float64(calculateVerticalResolution(vZoom))
 }
 
 // 高さのbit形式のインデックスを計算する。
