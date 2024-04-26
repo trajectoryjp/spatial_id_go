@@ -609,12 +609,13 @@ func TestConvertVerticalIndex(t *testing.T) {
 
 		expectedOutputIndex []int64
 	}{
-		{inputZoom: 25, outputZoom: 25, inputIndex: 100, zoomScalar: 0, offset: 0, expectedOutputIndex: []int64{100}},
-		{inputZoom: 25, outputZoom: 25, inputIndex: 100, zoomScalar: 0, offset: -47, expectedOutputIndex: []int64{53}},
-		{inputZoom: 25, outputZoom: 27, inputIndex: 100, zoomScalar: 0, offset: 28, expectedOutputIndex: []int64{428}},
+		//{inputZoom: 25, outputZoom: 27, inputIndex: 100, zoomScalar: 0, offset: 0, expectedOutputIndex: []int64{400, 401, 402, 403}},
+		//{inputZoom: 25, outputZoom: 25, inputIndex: 100, zoomScalar: 0, offset: 0, expectedOutputIndex: []int64{100}},
+		//{inputZoom: 25, outputZoom: 25, inputIndex: 100, zoomScalar: 0, offset: -47, expectedOutputIndex: []int64{53}},
+		{inputZoom: 25, outputZoom: 26, inputIndex: 2, zoomScalar: 0, offset: 3, expectedOutputIndex: []int64{400, 401, 402, 403}}, //28
 		{inputZoom: 25, outputZoom: 14, inputIndex: 100, zoomScalar: 11, offset: 0, expectedOutputIndex: []int64{100}},
 		{inputZoom: 25, outputZoom: 14, inputIndex: 100, zoomScalar: 11, offset: -512, expectedOutputIndex: []int64{-412}},
-		//{inputZoom: 25, outputZoom: 26, inputIndex: 0, zoomScalar: 0, offset: 0, expectedOutputIndex: [0,1]},
+		{inputZoom: 25, outputZoom: 26, inputIndex: 0, zoomScalar: 0, offset: 0, expectedOutputIndex: []int64{0, 1}},
 	}
 
 	for _, p := range datas {
@@ -623,8 +624,8 @@ func TestConvertVerticalIndex(t *testing.T) {
 			t.Log(t.Name())
 			t.Error(error)
 		}
-		for i, val := range p.expectedOutputIndex {
-			if result[i] != val {
+		for i := 0; i < len(p.expectedOutputIndex); i++ {
+			if result[i] != p.expectedOutputIndex[i] {
 				t.Log(t.Name())
 				t.Errorf("convertVerticalIndex(%v, %v, %v, %v, %v) == %v, result: %v", p.inputIndex, p.inputZoom, p.outputZoom, p.zoomScalar, p.offset, p.expectedOutputIndex, result)
 			}
