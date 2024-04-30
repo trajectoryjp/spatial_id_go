@@ -712,7 +712,8 @@ func convertVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, z
 // converts a vertical index from one set of zoom parameters to another disregarding the floor() cacluation. This creates a simplier system of equations where the solution set for height is a single variable. However, this does not describe the full solution set of height since we have excluded the floor calculation; it describes the condition where m = x, given m = floor(x) if and only if m <= x < m +1;
 func calculateMinVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, zoomScalar int64, offset int64) (int64, error) {
 
-	outputIndex := float64(offset) + float64(inputIndex)*float64(calculateVerticalResolution((outputZoom-inputZoom+zoomScalar)))
+	outputIndex := (float64(offset) * (float64(calculateVerticalResolution(outputZoom + zoomScalar - 25)))) +
+		float64(inputIndex)*float64(calculateVerticalResolution((outputZoom-inputZoom+zoomScalar)))
 
 	return int64(outputIndex), nil
 
