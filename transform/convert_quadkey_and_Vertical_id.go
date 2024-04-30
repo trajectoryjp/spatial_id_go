@@ -743,9 +743,9 @@ func returnAltitudesOfVerticalIndexB(index int64, zoom int64, zoomScalar int64, 
 }
 
 // returns the number of indexes from global min to global max altitudes
-func calculateVerticalResolution(zoomLevel int64) int64 {
+func calculateVerticalResolution(zoomLevel int64) float64 {
 	verticalResolution := math.Pow(2, float64(zoomLevel))
-	return int64(verticalResolution)
+	return verticalResolution
 }
 
 // VoxelHeight = [spatialIDMaxHeight] - [spatialIDMinHeight], or
