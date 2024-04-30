@@ -609,9 +609,9 @@ func TestConvertVerticalIndex(t *testing.T) {
 
 		expectedOutputIndex []int64
 	}{
-		//{inputZoom: 25, outputZoom: 27, inputIndex: 100, zoomScalar: 0, offset: 0, expectedOutputIndex: []int64{400, 401, 402, 403}},
-		//{inputZoom: 25, outputZoom: 25, inputIndex: 100, zoomScalar: 0, offset: 0, expectedOutputIndex: []int64{100}},
-		//{inputZoom: 25, outputZoom: 25, inputIndex: 100, zoomScalar: 0, offset: -47, expectedOutputIndex: []int64{53}},
+		{inputZoom: 25, outputZoom: 27, inputIndex: 100, zoomScalar: 0, offset: 0, expectedOutputIndex: []int64{400, 401, 402, 403}},
+		{inputZoom: 25, outputZoom: 25, inputIndex: 100, zoomScalar: 0, offset: 0, expectedOutputIndex: []int64{100}},
+		{inputZoom: 25, outputZoom: 25, inputIndex: 100, zoomScalar: 0, offset: -47, expectedOutputIndex: []int64{53}},
 		{inputZoom: 25, outputZoom: 26, inputIndex: 0, zoomScalar: 0, offset: 3, expectedOutputIndex: []int64{6, 7}},
 		{inputZoom: 25, outputZoom: 14, inputIndex: 100, zoomScalar: 11, offset: 0, expectedOutputIndex: []int64{100}},
 		{inputZoom: 25, outputZoom: 14, inputIndex: 100, zoomScalar: 11, offset: -512, expectedOutputIndex: []int64{-412}},
@@ -648,6 +648,7 @@ func TestReturnAltitudesOfVerticalIndex(t *testing.T) {
 		{index: 1, zoom: 25, zoomScalar: 0, offset: -1, expectedOutput: &VerticalIndexAltitudes{MinAltitude: 0, MaxAltitude: 1}},
 		{index: 1, zoom: 25, zoomScalar: 0, offset: 1, expectedOutput: &VerticalIndexAltitudes{MinAltitude: 2, MaxAltitude: 3}},
 		{index: 0, zoom: 25, zoomScalar: 1, offset: 3, expectedOutput: &VerticalIndexAltitudes{MinAltitude: 3, MaxAltitude: 3.5}},
+		{index: 10, zoom: 24, zoomScalar: 1, offset: 3, expectedOutput: &VerticalIndexAltitudes{MinAltitude: 13, MaxAltitude: 14}},
 	}
 
 	for _, p := range datas {
