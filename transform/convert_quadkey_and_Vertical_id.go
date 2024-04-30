@@ -666,6 +666,23 @@ func convertVerticallIDToBit(vZoom int64, vIndex int64, outputZoom int64, maxHei
 
 }
 
+// transforms the vertical index with a given index-ZoomLevel pair and returns the vertical index(es) that occupy the same vertical space with a new zoomLevel, zoomScalar, and vertical offset.
+//
+// input:
+//
+//	inputIndex: the index to transform
+//
+//	inputZoom: the zoomLevel of the inputIndex
+//
+//	outputZoom: the zoomLevel of the outputIndex, before using zoomScalar (net outputZoom = outputZoom+zoomScalar)
+//
+//	zoomScalar: a scalar to add to outputZoom (net outputZoom = outputZoom+zoomScalar)
+//
+//	offset: an integer to shift the height of the inputIndex up or down. A positive offset means the transformed index is higher in altitude than that of the input.
+//
+// output:
+//
+//	[]int64 list of vertical index(es), error
 func convertVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, zoomScalar int64, offset int64) ([]int64, error) {
 
 	var (
@@ -734,18 +751,6 @@ func returnAltitudesOfVerticalIndex(index int64, zoomLevel int64, zoomScalar int
 		MaxAltitude: MaxAltitude,
 	}, nil
 }
-
-// for use in situations where h is a multidimensional set (subtract alpha)
-// func returnAltitudesOfVerticalIndexB(index int64, zoom int64, zoomScalar int64, offset int64) (*VerticalIndexAltitudes, error) {
-
-// 	MinAltitude := (float64(index) * math.Pow(2, float64(25)-float64(zoom)-float64(zoomScalar))) - float64(offset)
-// 	MaxAltitude := (float64(index+1) * math.Pow(2, float64(25)-float64(zoom)-float64(zoomScalar))) - float64(offset)
-
-// 	return &VerticalIndexAltitudes{
-// 		MinAltitude: MinAltitude,
-// 		MaxAltitude: MaxAltitude,
-// 	}, nil
-// }
 
 // returns the number of indexes from global min to global max altitudes
 func calculateVerticalResolution(zoomLevel int64) float64 {
