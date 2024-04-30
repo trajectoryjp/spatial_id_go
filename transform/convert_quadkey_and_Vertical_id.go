@@ -722,8 +722,12 @@ func calculateMinVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int
 // returns the min and max altitudes of a given vertical index, zoomLevel, zoomScalar, and offset (add alpha)
 func returnAltitudesOfVerticalIndex(index int64, zoomLevel int64, zoomScalar int64, offset int64) (*VerticalIndexAltitudes, error) {
 
-	MinAltitude := float64(offset) + float64(index)*math.Pow(2, float64(25-zoomLevel-zoomScalar))
-	MaxAltitude := float64(offset) + float64(index+1)*math.Pow(2, float64(25-zoomLevel-zoomScalar))
+	netZoomLevel := zoomLevel - zoomScalar - 25
+	resolution := calculateVerticalResolution(netZoomLevel)
+
+	MinAltitude := (float64(index) + (float64(offset) * float64(resolution))) / resolution
+	MaxAltitude := (float64(index+1) + (float64(offset) * float64(resolution))) / resolution
+
 	return &VerticalIndexAltitudes{
 		MinAltitude: MinAltitude,
 		MaxAltitude: MaxAltitude,

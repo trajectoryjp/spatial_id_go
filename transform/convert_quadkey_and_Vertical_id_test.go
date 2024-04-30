@@ -647,6 +647,7 @@ func TestReturnAltitudesOfVerticalIndex(t *testing.T) {
 		{index: 1, zoom: 24, zoomScalar: 0, offset: 0, expectedOutput: &VerticalIndexAltitudes{MinAltitude: 2, MaxAltitude: 4}},
 		{index: 1, zoom: 25, zoomScalar: 0, offset: -1, expectedOutput: &VerticalIndexAltitudes{MinAltitude: 0, MaxAltitude: 1}},
 		{index: 1, zoom: 25, zoomScalar: 0, offset: 1, expectedOutput: &VerticalIndexAltitudes{MinAltitude: 2, MaxAltitude: 3}},
+		{index: 0, zoom: 25, zoomScalar: 1, offset: 3, expectedOutput: &VerticalIndexAltitudes{MinAltitude: 3, MaxAltitude: 3.5}},
 	}
 
 	for _, p := range datas {
