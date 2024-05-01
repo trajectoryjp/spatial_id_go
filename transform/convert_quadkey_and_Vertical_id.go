@@ -385,7 +385,7 @@ func ConvertExtendedSpatialIDsToQuadkeysAndVerticalIDsV2(extendedSpatialIDs []st
 		// 2. altitudeOffset is an integer
 		// 3. the net outputZoom = outputVZoom + zoomScalar
 
-		vIndexes, error = convertVerticalIndex(currentID.VZoom(), currentID.Z(), outputVZoom, zoomScalar, altitudeOffset)
+		vIndexes, error = convertVerticalIndex(currentID.VZoom(), currentID.Z(), outputVZoom, altitudeOffset)
 		if error != nil {
 			return nil, error
 		}
@@ -700,8 +700,8 @@ func convertVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, i
 			return nil, error
 		}
 
-		if currentIndexAltitudes.MinAltitude-float64(indexOffset) >= indexAltitues.MinAltitude &&
-			currentIndexAltitudes.MaxAltitude-float64(indexOffset) <= indexAltitues.MaxAltitude {
+		if currentIndexAltitudes.MinAltitude >= indexAltitues.MinAltitude &&
+			currentIndexAltitudes.MaxAltitude <= indexAltitues.MaxAltitude {
 			outputIndexes = append(outputIndexes, int64(i))
 		}
 
@@ -717,14 +717,14 @@ func calculateMinVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int
 	// check to make sure the input index exists in the input world
 	inputResolution := calculateVerticalResolution(inputZoom)
 
-	maxIndex := inputResolution - 1
+	maxIndex := int64(inputResolution - 1)
 	minIndex := int64(0)
 
 	if inputIndex > maxIndex || inputIndex < minIndex {
 		return 0, errors.NewSpatialIdError(errors.InputValueErrorCode, "input index does not exist")
 	}
 
-	outputIndex := (indexOffset) + (inputIndex * calculateVerticalResolution(outputZoom-inputZoom))
+	outputIndex := (indexOffset) + int64(float64(inputIndex)*calculateVerticalResolution(outputZoom-inputZoom))
 
 	return outputIndex, nil
 
@@ -733,31 +733,30 @@ func calculateMinVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int
 // returns the min and max altitudes of a given vertical index, zoomLevel, and indexOfset (add alpha)
 func returnAltitudesOfVerticalIndex(index int64, zoomLevel int64, indexOffset int64) (*VerticalIndexAltitudes, error) {
 
-	netZoomLevel := zoomLevel - 25
-	resolution := calculateVerticalResolution(netZoomLevel)
+	netZoomLevel := 25 - zoomLevel
+	netResolution := calculateVerticalResolution(netZoomLevel)
 
-	// if the index does not exist, return an error. Theoretically, since the first index value is 0, the maximum possible index value is the resolution-1. The minimum value is 0+indexOffset
-	// value = resolution-1
-	maxIndex := resolution - 1 + indexOffset
-	minIndex := indexOffset
+	// if the index does not exist, return an error. Theoretically, since the first index value is 0, the maximum possible index value is the resolution-1. The minimum value is 0
+	maxIndex := int64(calculateVerticalResolution(zoomLevel)) - 1
+	minIndex := int64(0)
 
 	if index > maxIndex || index < minIndex {
 		return nil, errors.NewSpatialIdError(errors.InputValueErrorCode, "index does not exist")
 	}
 
-	MinAltitude := (index + (indexOffset * resolution)) / resolution
-	MaxAltitude := ((index + 1) + (indexOffset * resolution)) / resolution
+	MinAltitude := float64(index+indexOffset) * netResolution
+	MaxAltitude := float64(index+indexOffset+1) * netResolution
 
 	return &VerticalIndexAltitudes{
-		MinAltitude: float64(MinAltitude),
-		MaxAltitude: float64(MaxAltitude),
+		MinAltitude: MinAltitude,
+		MaxAltitude: MaxAltitude,
 	}, nil
 }
 
 // returns the number of indexes from global min to global max altitudes
-func calculateVerticalResolution(zoomLevel int64) int64 {
+func calculateVerticalResolution(zoomLevel int64) float64 {
 	verticalResolution := math.Pow(2, float64(zoomLevel))
-	return int64(verticalResolution)
+	return verticalResolution
 }
 
 func fIndexShift(zoomLevel int64, altitudeShift int64) (fIndexShift int64) {
