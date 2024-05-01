@@ -711,7 +711,7 @@ func convertVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, z
 
 }
 
-// converts a vertical index from one set of zoom parameters to another disregarding the floor() cacluation. This creates a simplier system of equations where the solution set for height is a single variable. However, this does not describe the full solution set of height since we have excluded the floor calculation; it describes the condition where m = x, given m = floor(x) if and only if m <= x < m +1;
+// converts a vertical index from one set of zoom parameters to another disregarding the floor() cacluation. This creates a simplier system of equations where the solu	tion set for height is a single variable. However, this does not describe the full solution set of height since we have excluded the floor calculation; it describes the condition where m = x, given m = floor(x) if and only if m <= x < m +1;
 func calculateMinVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, zoomScalar int64, offset int64) (int64, error) {
 
 	outputIndex := (float64(offset) * (float64(calculateVerticalResolution(outputZoom + zoomScalar - 25)))) +
@@ -740,6 +740,11 @@ func returnAltitudesOfVerticalIndex(index int64, zoomLevel int64, zoomScalar int
 func calculateVerticalResolution(zoomLevel int64) float64 {
 	verticalResolution := math.Pow(2, float64(zoomLevel))
 	return verticalResolution
+}
+
+func fIndexShift(zoomLevel int64, altitudeShift int64) (fIndexShift int64) {
+
+	return int64(math.Pow(2, float64(zoomLevel)-25) * float64(altitudeShift))
 }
 
 // VoxelHeight = [spatialIDMaxHeight] - [spatialIDMinHeight], or
