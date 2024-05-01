@@ -682,8 +682,14 @@ func convertVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, i
 	}
 
 	// determine the upper and lower index bounds to search for matches in height solution space
-	lowerBounds := calculateMinVerticalIndex(inputIndex, inputZoom, outputZoom, indexOffset)
-	upperBounds := calculateMinVerticalIndex(inputIndex+1, inputZoom, outputZoom, indexOffset)
+	lowerBounds, error := calculateMinVerticalIndex(inputIndex, inputZoom, outputZoom, indexOffset)
+	if error != nil {
+		return nil, error
+	}
+	upperBounds, error := calculateMinVerticalIndex(inputIndex+1, inputZoom, outputZoom, indexOffset)
+	if error != nil {
+		return nil, error
+	}
 
 	// solve by checking for each index between lower and upper bounds
 	for i := lowerBounds; i <= upperBounds; i++ {
@@ -706,11 +712,21 @@ func convertVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, i
 }
 
 // converts a vertical index from one set of zoom parameters to another disregarding the floor() cacluation. This creates a simplier system of equations where the solu	tion set for height is a single variable. However, this does not describe the full solution set of height since we have excluded the floor calculation; it describes the condition where m = x, given m = floor(x) if and only if m <= x < m +1;
-func calculateMinVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, indexOffset int64) int64 {
+func calculateMinVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, indexOffset int64) (int64, error) {
 
-	outputIndex := (indexOffset) + (inputIndex * calculateVerticalResolution((outputZoom - inputZoom)))
+	// check to make sure the input index exists in the input world
+	inputResolution := calculateVerticalResolution(inputZoom)
 
-	return outputIndex
+	maxIndex := inputResolution - 1
+	minIndex := int64(0)
+
+	if inputIndex > maxIndex || inputIndex < minIndex {
+		return 0, errors.NewSpatialIdError(errors.InputValueErrorCode, "input index does not exist")
+	}
+
+	outputIndex := (indexOffset) + (inputIndex * calculateVerticalResolution(outputZoom-inputZoom))
+
+	return outputIndex, nil
 
 }
 
@@ -719,6 +735,15 @@ func returnAltitudesOfVerticalIndex(index int64, zoomLevel int64, indexOffset in
 
 	netZoomLevel := zoomLevel - 25
 	resolution := calculateVerticalResolution(netZoomLevel)
+
+	// if the index does not exist, return an error. Theoretically, since the first index value is 0, the maximum possible index value is the resolution-1. The minimum value is 0+indexOffset
+	// value = resolution-1
+	maxIndex := resolution - 1 + indexOffset
+	minIndex := indexOffset
+
+	if index > maxIndex || index < minIndex {
+		return nil, errors.NewSpatialIdError(errors.InputValueErrorCode, "index does not exist")
+	}
 
 	MinAltitude := (index + (indexOffset * resolution)) / resolution
 	MaxAltitude := ((index + 1) + (indexOffset * resolution)) / resolution
