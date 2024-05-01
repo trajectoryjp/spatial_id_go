@@ -348,89 +348,73 @@ func ConvertExtendedSpatialIDsToQuadkeysAndVerticalIDs(extendedSpatialIDs []stri
 	return extendedSpatialIDToQuadkeyAndVerticalID, nil
 }
 
-// func ConvertExtendedSpatialIDsToQuadkeysAndVerticalIDsV2(extendedSpatialIDs []string, outputHZoom int64, outputVZoom int64, outputMaxHeight int64, outputMinHeight int64) ([]*object.FromExtendedSpatialIDToQuadkeyAndVerticalID, error) {
-// 	extendedSpatialIDToQuadkeyAndVerticalID := []*object.FromExtendedSpatialIDToQuadkeyAndVerticalID{}
+func ConvertExtendedSpatialIDsToQuadkeysAndVerticalIDsV2(extendedSpatialIDs []string, outputHZoom int64, outputVZoom int64, zoomScalar int64, altitudeOffset int64) ([]*object.FromExtendedSpatialIDToQuadkeyAndVerticalID, error) {
+	extendedSpatialIDToQuadkeyAndVerticalID := []*object.FromExtendedSpatialIDToQuadkeyAndVerticalID{}
 
-// 	// validate zoom levels
-// 	if !quadkeyCheckZoom(outputHZoom, outputVZoom) {
-// 		return []*object.FromExtendedSpatialIDToQuadkeyAndVerticalID{}, errors.NewSpatialIdError(errors.InputValueErrorCode, "")
-// 	}
-// 	// outputのZoomレベルが指定されている前提のため、QuadkeyとAltitudeKeyのみを比較
-// 	deduplication := map[[2]int64]interface{}{}
+	// validate zoom levels
+	if !quadkeyCheckZoom(outputHZoom, outputVZoom) {
+		return []*object.FromExtendedSpatialIDToQuadkeyAndVerticalID{}, errors.NewSpatialIdError(errors.InputValueErrorCode, "")
+	}
+	// outputのZoomレベルが指定されている前提のため、QuadkeyとAltitudeKeyのみを比較
+	deduplication := map[[2]int64]interface{}{}
 
-// 	for _, idString := range extendedSpatialIDs {
-// 		vIndexes := []int64{}
-// 		quadkeys := []int64{}
+	for _, idString := range extendedSpatialIDs {
+		vIndexes := []int64{}
+		quadkeys := []int64{}
 
-// 		currentID, error := object.NewExtendedSpatialID(idString)
-// 		if error != nil {
-// 			return nil, error
-// 		}
+		currentID, error := object.NewExtendedSpatialID(idString)
+		if error != nil {
+			return nil, error
+		}
 
-// 		// hZoom := indexesInt[0]
-// 		// xIndex := indexesInt[1]
-// 		// yIndex := indexesInt[2]
-// 		// vZoom := indexesInt[3]
-// 		// vIndex := indexesInt[4]
+		// check zoom of currentID
+		if !extendedSpatialIDCheckZoom(currentID.HZoom(), currentID.VZoom()) {
+			return []*object.FromExtendedSpatialIDToQuadkeyAndVerticalID{}, errors.NewSpatialIdError(errors.InputValueErrorCode, "")
+		}
+		// A. convert horizontal IDs to quadkeys to fit output Horizontal Zoom Level
+		horizontalIDs := integrate.HorizontalZoom(currentID.HZoom(), currentID.X(), currentID.Y(), outputHZoom)
 
-// 		// check zoom of currentID
-// 		if !extendedSpatialIDCheckZoom(currentID.HZoom(), currentID.VZoom()) {
-// 			return []*object.FromExtendedSpatialIDToQuadkeyAndVerticalID{}, errors.NewSpatialIdError(errors.InputValueErrorCode, "")
-// 		}
-// 		// A. convert horizontal IDs to quadkeys to fit output Horizontal Zoom Level
-// 		horizontalIDs := integrate.HorizontalZoom(currentID.HZoom(), currentID.X(), currentID.Y(), outputHZoom)
+		for _, horizontalID := range horizontalIDs {
+			quadkey := convertHorizontalIDToQuadkey(horizontalID)
+			quadkeys = append(quadkeys, quadkey)
+		}
 
-// 		for _, horizontalID := range horizontalIDs {
-// 			quadkey := convertHorizontalIDToQuadkey(horizontalID)
-// 			quadkeys = append(quadkeys, quadkey)
-// 		}
+		// B. convert vertical IDs to fit Output Vertical Zoom Level
+		// Here we make the following assumptions about altitude, zoomLevel, and minHeight:
+		// 1. the output minHeight and MaxHeight are each shifted + altitudeOffset such that differfences in minHeight-maxHeight is the same in input and output
+		// 2. altitudeOffset is an integer
+		// 3. the net outputZoom = outputVZoom + zoomScalar
 
-// 		// B. convert vertical IDs to fit Output Vertical Zoom Level
-// 		// Here there are three possible cases and the expected output of each
-// 		// 1) outputMaxHeight == outputMinHeight: use input verticalIds
-// 		// 2) outputMaxHeight > outputMinHeight: use convertBitIndex to find outputBitIndex
-// 		// 3) outputMaxHeight < outputMinHeight: should not be possible. Return an error.
-// 		if outputMaxHeight == outputMinHeight {
-// 			// 精度変換のみ実行する。重複しているIDを削除する
-// 			verticalIDs := deleteDuplicationList(integrate.VerticalZoom(currentID.VZoom(), currentID.Z(), outputVZoom))
-// 			for _, verticalID := range verticalIDs {
-// 				// 「精度/高さのインデックス」 から高さのインデックスのみを抽出する。
-// 				vIndex, _ := strconv.ParseInt(strings.Split(verticalID, "/")[1], 10, 64)
-// 				vIndexes = append(vIndexes, vIndex)
-// 			}
+		vIndexes, error = convertVerticalIndex(currentID.VZoom(), currentID.Z(), outputVZoom, zoomScalar, altitudeOffset)
+		if error != nil {
+			return nil, error
+		}
 
-// 		} else if outputMaxHeight > outputMinHeight {
-// 			vIndexes, error = convertVerticalIndex(currentID.VZoom(), currentID.Z(), outputVZoom, outputMaxHeight, outputMinHeight)
-// 			if error != nil {
-// 				return nil, error
-// 			}
-// 		} else {
-// 			return extendedSpatialIDToQuadkeyAndVerticalID,
-// 				errors.NewSpatialIdError(errors.InputValueErrorCode, "")
-// 		}
-// 		// 水平方向と垂直方向の組み合わせを作成する
-// 		idList := [][2]int64{}
-// 		for _, quadkey := range quadkeys {
-// 			for _, vIndex := range vIndexes {
-// 				newID := [2]int64{quadkey, vIndex}
-// 				if _, ok := deduplication[newID]; ok {
-// 					continue
-// 				} else {
-// 					deduplication[newID] = new(interface{})
-// 				}
-// 				idList = append(idList, [2]int64{quadkey, vIndex})
-// 			}
-// 		}
-// 		if len(idList) == 0 {
-// 			continue
-// 		}
-// 		newQuadkeyAndVerticalID := object.NewFromExtendedSpatialIDToQuadkeyAndVerticalID(outputHZoom, idList, outputVZoom, float64(outputMaxHeight), float64(outputMinHeight))
-// 		extendedSpatialIDToQuadkeyAndVerticalID = append(extendedSpatialIDToQuadkeyAndVerticalID, newQuadkeyAndVerticalID)
-// 	}
+		// 水平方向と垂直方向の組み合わせを作成する
+		idList := [][2]int64{}
+		for _, quadkey := range quadkeys {
+			for _, vIndex := range vIndexes {
+				newID := [2]int64{quadkey, vIndex}
+				if _, ok := deduplication[newID]; ok {
+					continue
+				} else {
+					deduplication[newID] = new(interface{})
+				}
+				idList = append(idList, [2]int64{quadkey, vIndex})
+			}
+		}
+		if len(idList) == 0 {
+			continue
+		}
 
-// 	// 構造体のスライスを返却する。
-// 	return extendedSpatialIDToQuadkeyAndVerticalID, nil
-// }
+		// the newQuadkeyAndVerticalID will use alt25 (2^25) + altitudeOffset as MaxHeight and 0 + altitudeOffset as MinHeight
+		newQuadkeyAndVerticalID := object.NewFromExtendedSpatialIDToQuadkeyAndVerticalID(outputHZoom, idList, outputVZoom, float64(alt25+float64(altitudeOffset)), float64(altitudeOffset))
+		extendedSpatialIDToQuadkeyAndVerticalID = append(extendedSpatialIDToQuadkeyAndVerticalID, newQuadkeyAndVerticalID)
+	}
+
+	// 構造体のスライスを返却する。
+	return extendedSpatialIDToQuadkeyAndVerticalID, nil
+}
 
 // ConvertSpatialIDsToQuadkeysAndVerticalIDs 空間IDを内部形式IDに変換する。
 //
