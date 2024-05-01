@@ -667,7 +667,7 @@ func convertVerticallIDToBit(vZoom int64, vIndex int64, outputZoom int64, maxHei
 // output:
 //
 //	[]int64 list of vertical index(es), error
-func convertVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, zoomScalar int64, offset int64) ([]int64, error) {
+func convertVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, zoomScalar int64, indexOffset int64) ([]int64, error) {
 
 	var (
 		outputIndexes                        []int64
@@ -682,11 +682,11 @@ func convertVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, z
 	}
 
 	// determine the upper and lower index bounds to search for matches in height solution space
-	lowerBounds, error := calculateMinVerticalIndex(inputIndex, inputZoom, outputZoom, zoomScalar, offset)
+	lowerBounds, error := calculateMinVerticalIndex(inputIndex, inputZoom, outputZoom, zoomScalar, indexOffset)
 	if error != nil {
 		return nil, error
 	}
-	upperBounds, error := calculateMinVerticalIndex(inputIndex+1, inputZoom, outputZoom, zoomScalar, offset)
+	upperBounds, error := calculateMinVerticalIndex(inputIndex+1, inputZoom, outputZoom, zoomScalar, indexOffset)
 	if error != nil {
 		return nil, error
 	}
@@ -700,8 +700,8 @@ func convertVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, z
 			return nil, error
 		}
 
-		if currentIndexAltitudes.MinAltitude-float64(offset) >= indexAltitues.MinAltitude &&
-			currentIndexAltitudes.MaxAltitude-float64(offset) <= indexAltitues.MaxAltitude {
+		if currentIndexAltitudes.MinAltitude-float64(indexOffset) >= indexAltitues.MinAltitude &&
+			currentIndexAltitudes.MaxAltitude-float64(indexOffset) <= indexAltitues.MaxAltitude {
 			outputIndexes = append(outputIndexes, int64(i))
 		}
 
@@ -727,19 +727,19 @@ func returnAltitudesOfVerticalIndex(index int64, zoomLevel int64, zoomScalar int
 	netZoomLevel := zoomLevel + zoomScalar - 25
 	resolution := calculateVerticalResolution(netZoomLevel)
 
-	MinAltitude := (float64(index) + (float64(indexOffset) * float64(resolution))) / resolution
-	MaxAltitude := (float64(index+1) + (float64(indexOffset) * float64(resolution))) / resolution
+	MinAltitude := (index + (indexOffset * resolution)) / resolution
+	MaxAltitude := ((index + 1) + (indexOffset * resolution)) / resolution
 
 	return &VerticalIndexAltitudes{
-		MinAltitude: MinAltitude,
-		MaxAltitude: MaxAltitude,
+		MinAltitude: float64(MinAltitude),
+		MaxAltitude: float64(MaxAltitude),
 	}, nil
 }
 
 // returns the number of indexes from global min to global max altitudes
-func calculateVerticalResolution(zoomLevel int64) float64 {
+func calculateVerticalResolution(zoomLevel int64) int64 {
 	verticalResolution := math.Pow(2, float64(zoomLevel))
-	return verticalResolution
+	return int64(verticalResolution)
 }
 
 func fIndexShift(zoomLevel int64, altitudeShift int64) (fIndexShift int64) {
