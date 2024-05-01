@@ -712,23 +712,23 @@ func convertVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, z
 }
 
 // converts a vertical index from one set of zoom parameters to another disregarding the floor() cacluation. This creates a simplier system of equations where the solu	tion set for height is a single variable. However, this does not describe the full solution set of height since we have excluded the floor calculation; it describes the condition where m = x, given m = floor(x) if and only if m <= x < m +1;
-func calculateMinVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, zoomScalar int64, offset int64) (int64, error) {
+func calculateMinVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, zoomScalar int64, indexOffset int64) (int64, error) {
 
-	outputIndex := (float64(offset) * (float64(calculateVerticalResolution(outputZoom + zoomScalar - 25)))) +
+	outputIndex := (float64(indexOffset) * (float64(calculateVerticalResolution(outputZoom + zoomScalar - 25)))) +
 		float64(inputIndex)*float64(calculateVerticalResolution((outputZoom-inputZoom+zoomScalar)))
 
 	return int64(outputIndex), nil
 
 }
 
-// returns the min and max altitudes of a given vertical index, zoomLevel, zoomScalar, and offset (add alpha)
-func returnAltitudesOfVerticalIndex(index int64, zoomLevel int64, zoomScalar int64, offset int64) (*VerticalIndexAltitudes, error) {
+// returns the min and max altitudes of a given vertical index, zoomLevel, zoomScalar, and indexOfset (add alpha)
+func returnAltitudesOfVerticalIndex(index int64, zoomLevel int64, zoomScalar int64, indexOffset int64) (*VerticalIndexAltitudes, error) {
 
 	netZoomLevel := zoomLevel + zoomScalar - 25
 	resolution := calculateVerticalResolution(netZoomLevel)
 
-	MinAltitude := (float64(index) + (float64(offset) * float64(resolution))) / resolution
-	MaxAltitude := (float64(index+1) + (float64(offset) * float64(resolution))) / resolution
+	MinAltitude := (float64(index) + (float64(indexOffset) * float64(resolution))) / resolution
+	MaxAltitude := (float64(index+1) + (float64(indexOffset) * float64(resolution))) / resolution
 
 	return &VerticalIndexAltitudes{
 		MinAltitude: MinAltitude,
