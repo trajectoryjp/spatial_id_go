@@ -667,7 +667,7 @@ func convertVerticallIDToBit(vZoom int64, vIndex int64, outputZoom int64, maxHei
 // output:
 //
 //	[]int64 list of vertical index(es), error
-func convertVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, zoomScalar int64, indexOffset int64) ([]int64, error) {
+func convertVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, indexOffset int64) ([]int64, error) {
 
 	var (
 		outputIndexes                        []int64
@@ -676,17 +676,17 @@ func convertVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, z
 	)
 
 	// return altitues of original index
-	indexAltitues, error = returnAltitudesOfVerticalIndex(inputIndex, inputZoom, 0, 0)
+	indexAltitues, error = returnAltitudesOfVerticalIndex(inputIndex, inputZoom, 0)
 	if error != nil {
 		return nil, error
 	}
 
 	// determine the upper and lower index bounds to search for matches in height solution space
-	lowerBounds, error := calculateMinVerticalIndex(inputIndex, inputZoom, outputZoom, zoomScalar, indexOffset)
+	lowerBounds, error := calculateMinVerticalIndex(inputIndex, inputZoom, outputZoom, indexOffset)
 	if error != nil {
 		return nil, error
 	}
-	upperBounds, error := calculateMinVerticalIndex(inputIndex+1, inputZoom, outputZoom, zoomScalar, indexOffset)
+	upperBounds, error := calculateMinVerticalIndex(inputIndex+1, inputZoom, outputZoom, indexOffset)
 	if error != nil {
 		return nil, error
 	}
@@ -695,7 +695,7 @@ func convertVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, z
 	for i := lowerBounds; i <= upperBounds; i++ {
 
 		// don't use offset, since it has been accounted for in calculateMinVerticalIndex
-		currentIndexAltitudes, error = returnAltitudesOfVerticalIndex(int64(i), outputZoom, zoomScalar, 0)
+		currentIndexAltitudes, error = returnAltitudesOfVerticalIndex(int64(i), outputZoom, 0)
 		if error != nil {
 			return nil, error
 		}
@@ -712,19 +712,19 @@ func convertVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, z
 }
 
 // converts a vertical index from one set of zoom parameters to another disregarding the floor() cacluation. This creates a simplier system of equations where the solu	tion set for height is a single variable. However, this does not describe the full solution set of height since we have excluded the floor calculation; it describes the condition where m = x, given m = floor(x) if and only if m <= x < m +1;
-func calculateMinVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, zoomScalar int64, indexOffset int64) (int64, error) {
+func calculateMinVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, indexOffset int64) (int64, error) {
 
-	outputIndex := (float64(indexOffset) * (float64(calculateVerticalResolution(outputZoom + zoomScalar - 25)))) +
-		float64(inputIndex)*float64(calculateVerticalResolution((outputZoom-inputZoom+zoomScalar)))
+	outputIndex := (float64(indexOffset) * (float64(calculateVerticalResolution(outputZoom - 25)))) +
+		float64(inputIndex)*float64(calculateVerticalResolution((outputZoom-inputZoom)))
 
 	return int64(outputIndex), nil
 
 }
 
-// returns the min and max altitudes of a given vertical index, zoomLevel, zoomScalar, and indexOfset (add alpha)
-func returnAltitudesOfVerticalIndex(index int64, zoomLevel int64, zoomScalar int64, indexOffset int64) (*VerticalIndexAltitudes, error) {
+// returns the min and max altitudes of a given vertical index, zoomLevel, and indexOfset (add alpha)
+func returnAltitudesOfVerticalIndex(index int64, zoomLevel int64, indexOffset int64) (*VerticalIndexAltitudes, error) {
 
-	netZoomLevel := zoomLevel + zoomScalar - 25
+	netZoomLevel := zoomLevel - 25
 	resolution := calculateVerticalResolution(netZoomLevel)
 
 	MinAltitude := (index + (indexOffset * resolution)) / resolution
