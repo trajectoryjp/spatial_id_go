@@ -682,14 +682,8 @@ func convertVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, i
 	}
 
 	// determine the upper and lower index bounds to search for matches in height solution space
-	lowerBounds, error := calculateMinVerticalIndex(inputIndex, inputZoom, outputZoom, indexOffset)
-	if error != nil {
-		return nil, error
-	}
-	upperBounds, error := calculateMinVerticalIndex(inputIndex+1, inputZoom, outputZoom, indexOffset)
-	if error != nil {
-		return nil, error
-	}
+	lowerBounds := calculateMinVerticalIndex(inputIndex, inputZoom, outputZoom, indexOffset)
+	upperBounds := calculateMinVerticalIndex(inputIndex+1, inputZoom, outputZoom, indexOffset)
 
 	// solve by checking for each index between lower and upper bounds
 	for i := lowerBounds; i <= upperBounds; i++ {
@@ -712,12 +706,11 @@ func convertVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, i
 }
 
 // converts a vertical index from one set of zoom parameters to another disregarding the floor() cacluation. This creates a simplier system of equations where the solu	tion set for height is a single variable. However, this does not describe the full solution set of height since we have excluded the floor calculation; it describes the condition where m = x, given m = floor(x) if and only if m <= x < m +1;
-func calculateMinVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, indexOffset int64) (int64, error) {
+func calculateMinVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, indexOffset int64) int64 {
 
-	outputIndex := (float64(indexOffset) * (float64(calculateVerticalResolution(outputZoom - 25)))) +
-		float64(inputIndex)*float64(calculateVerticalResolution((outputZoom-inputZoom)))
+	outputIndex := (indexOffset) + (inputIndex * calculateVerticalResolution((outputZoom - inputZoom)))
 
-	return int64(outputIndex), nil
+	return outputIndex
 
 }
 
