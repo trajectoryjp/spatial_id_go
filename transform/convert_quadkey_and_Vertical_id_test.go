@@ -788,3 +788,27 @@ func TestReturnAltitudesOfVerticalIndex(t *testing.T) {
 		}
 	}
 }
+
+// Expected Output: voxelHeight = 2^(25-vZoomScalar - vZoom)
+func TestCalculateVoxelHeight(t *testing.T) {
+	datas := []struct {
+		vZoom          int64
+		vZoomScalar    int64
+		expectedOutput float64
+	}{
+		{vZoom: 25, vZoomScalar: 0, expectedOutput: 1},
+		{vZoom: 27, vZoomScalar: 0, expectedOutput: 0.25},
+		{vZoom: 10, vZoomScalar: 0, expectedOutput: 32768},
+		{vZoom: 10, vZoomScalar: 15, expectedOutput: 1},
+		{vZoom: 25, vZoomScalar: 1, expectedOutput: 0.5},
+		{vZoom: 31, vZoomScalar: -1, expectedOutput: 0.03125},
+	}
+
+	for _, p := range datas {
+		result := calculateVoxelHeight(p.vZoom, p.vZoomScalar)
+		if result != p.expectedOutput {
+			t.Log(t.Name())
+			t.Errorf("convertVerticalIndex(%v, %v) == %v, result: %v", p.vZoom, p.vZoomScalar, p.expectedOutput, result)
+		}
+	}
+}

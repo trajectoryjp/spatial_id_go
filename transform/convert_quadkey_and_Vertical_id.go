@@ -757,13 +757,10 @@ func fIndexShift(zoomLevel int64, altitudeShift int64) (fIndexShift int64) {
 	return int64(math.Pow(2, float64(zoomLevel)-25) * float64(altitudeShift))
 }
 
-// VoxelHeight = [spatialIDMaxHeight] - [spatialIDMinHeight], or
-//
-//	= [float64(vIndex+1) * alt25 / float64(math.Pow(2, float64(vZoom))) ] -
-//	         float64(vIndex) * alt25 / float64(math.Pow(2, float64(vZoom)))
-//	= (globalMaxHeight - globalMinHeight) / float64(math.Pow(2, float64(vZoom)))
-func calculateVoxelHeight(vZoom int64, globalMaxHeight float64, globalMinHeight float64) float64 {
-	return (globalMaxHeight - globalMinHeight) / float64(calculateVerticalResolution(vZoom))
+// returns the height of a single voxel given a vZoomScalar and an output vZoom
+// voxel height = (2^(25-vZoomScalar-vZoom))
+func calculateVoxelHeight(vZoom int64, vZoomScalar int64) float64 {
+	return calculateVerticalResolution(25 - vZoomScalar - vZoom)
 }
 
 // 高さのbit形式のインデックスを計算する。
