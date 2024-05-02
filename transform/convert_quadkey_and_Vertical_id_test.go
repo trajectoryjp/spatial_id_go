@@ -269,6 +269,24 @@ func TestConvertExtendedSpatialIdsToQuadkeysAndVerticalIDsV2(t *testing.T) {
 			0,
 		),
 	}
+	expectedValue4 := []*object.FromExtendedSpatialIDToQuadkeyAndVerticalID{ // adjusts altitudeRangeScalar, output VZoom and verticalIndexOffset
+		object.NewFromExtendedSpatialIDToQuadkeyAndVerticalID(
+			20,
+			[][2]int64{{7432012031, 54}},
+			12,
+			16572, // 2^14 + 47*4
+			188,   // 0 + 47*4
+		),
+	}
+	expectedValue5 := []*object.FromExtendedSpatialIDToQuadkeyAndVerticalID{ // adjusts altitudeRangeScalar, output VZoom, outputHZoom, and verticalIndexOffset
+		object.NewFromExtendedSpatialIDToQuadkeyAndVerticalID(
+			21,
+			[][2]int64{{29728048124, 12}, {29728048124, 13}, {29728048125, 12}, {29728048125, 13}, {29728048126, 12}, {29728048126, 13}, {29728048127, 12}, {29728048127, 13}},
+			15,
+			16334, // 2^14 + -100*0.5
+			-50,   // 0 + -100*0.5
+		),
+	}
 
 	// quadkeyAndVerticalIDsSpatialIDs := []*object.FromExtendedSpatialIDToQuadkeyAndVerticalID{}
 	// newQuadkeyAndVerticalID = object.NewFromExtendedSpatialIDToQuadkeyAndVerticalID(19, [][2]int64{{1858003007, 56}}, 26, 0, 0)
@@ -301,6 +319,8 @@ func TestConvertExtendedSpatialIdsToQuadkeysAndVerticalIDsV2(t *testing.T) {
 		{spatialIds: []string{"20/85263/65423/26/56"}, outputHZoom: 20, outputVZoom: 26, altitudeRangeScalar: 0, verticalIndexOffset: 0, expectedValue: expectedValue1, pattern: 0},
 		{spatialIds: []string{"20/85263/65423/26/56"}, outputHZoom: 21, outputVZoom: 26, altitudeRangeScalar: 0, verticalIndexOffset: 0, expectedValue: expectedValue2, pattern: 0},
 		{spatialIds: []string{"20/85263/65423/26/56"}, outputHZoom: 20, outputVZoom: 12, altitudeRangeScalar: 11, expectedValue: expectedValue3, pattern: 0},
+		{spatialIds: []string{"20/85263/65423/26/56"}, outputHZoom: 20, outputVZoom: 12, altitudeRangeScalar: 11, verticalIndexOffset: 47, expectedValue: expectedValue4, pattern: 0},
+		{spatialIds: []string{"20/85263/65423/25/56"}, outputHZoom: 21, outputVZoom: 15, altitudeRangeScalar: 11, verticalIndexOffset: -100, expectedValue: expectedValue5, pattern: 0},
 
 		// // 水平精度個数確認 低精度は1、高精度は精度差^4
 		// {spatialIds: []string{"20/85263/65423/26/56"}, outputHZoom: 24, outputVZoom: 10, outputMaxHeight: 500, outputMinHeight: 0.0, result: quadkeyAndVerticalIDs, resultLength: 512, pattern: 2},
