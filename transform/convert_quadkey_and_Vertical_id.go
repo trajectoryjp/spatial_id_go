@@ -677,31 +677,31 @@ func convertVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, i
 
 	// return altitues of original index
 	indexAltitues = returnAltitudesOfVerticalIndex(inputIndex, inputZoom, 0)
-	if error != nil {
-		return nil, error
-	}
 
 	// determine the upper and lower index bounds to search for matches in height solution space
-	lowerBounds, error := calculateMinVerticalIndex(inputIndex, inputZoom, outputZoom, indexOffset)
+	lowerBound, error := calculateMinVerticalIndex(inputIndex, inputZoom, outputZoom, indexOffset)
 	if error != nil {
 		return nil, error
 	}
-	upperBounds, error := calculateMinVerticalIndex(inputIndex+1, inputZoom, outputZoom, indexOffset)
+	upperBound, error := calculateMinVerticalIndex(inputIndex+1, inputZoom, outputZoom, indexOffset)
 	if error != nil {
 		return nil, error
 	}
 
-	// solve by checking for each index between lower and upper bounds
-	for i := lowerBounds; i <= upperBounds; i++ {
+	// Determine the vertical index/indicies to return.
+	// a) always return the lowerBound index. Regardless of the difference between the inputZoom and outputZoom,
+	// mathematically the altitude associated with the lower bounds will always satisfy the solution set.
+	// b) cycle through indicies from lowerBounds+1 to upperBounds with i. If the minAltitude associated
+	// with i is less than the maxAltitude of the inputIndex, then the altitude associated with i
+	// satisfies the solution set. Add this index to the list of indicies to return
+	outputIndexes = append(outputIndexes, lowerBound)
 
-		// don't use offset, since it has been accounted for in calculateMinVerticalIndex
+	for i := lowerBound + 1; i <= upperBound; i++ {
+
+		// use inverse of offset, since we want to compare altitudes with the original inputIndex
 		currentIndexAltitudes = returnAltitudesOfVerticalIndex(int64(i), outputZoom, -indexOffset)
-		if error != nil {
-			return nil, error
-		}
 
-		if currentIndexAltitudes.MinAltitude >= indexAltitues.MinAltitude &&
-			currentIndexAltitudes.MaxAltitude <= indexAltitues.MaxAltitude {
+		if currentIndexAltitudes.MinAltitude < indexAltitues.MaxAltitude {
 			outputIndexes = append(outputIndexes, int64(i))
 		}
 
