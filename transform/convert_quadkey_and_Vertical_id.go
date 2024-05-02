@@ -729,15 +729,23 @@ func calculateMinVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int
 	// check to make sure the input index exists in the input world
 	inputResolution := calculateVerticalResolution(inputZoom)
 
-	maxIndex := int64(inputResolution - 1)
-	minIndex := int64(0)
+	maxInputIndex := int64(inputResolution - 1)
+	minInputIndex := int64(0)
 
-	if inputIndex > maxIndex || inputIndex < minIndex {
+	outputResolution := calculateVerticalResolution(outputZoom)
+	maxOutputIndex := int64(outputResolution-1) + indexOffset
+	minOutputIndex := indexOffset
+
+	if inputIndex > maxInputIndex || inputIndex < minInputIndex {
 		return 0, errors.NewSpatialIdError(errors.InputValueErrorCode, "input index does not exist")
 	}
 
 	// note that in the case of decimals, int64 rounds down to the nearest integer. This is desired behavior.
-	outputIndex := (indexOffset) + int64(float64(inputIndex)*calculateVerticalResolution(outputZoom-inputZoom+altitudeRangeScalar)) // include altittude scalar here.
+	outputIndex := (indexOffset) + int64(float64(inputIndex)*calculateVerticalResolution(outputZoom-inputZoom+altitudeRangeScalar))
+
+	if outputIndex > maxOutputIndex || outputIndex < minOutputIndex {
+		return 0, errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, altitudeRangeScalar, and indexOffset")
+	}
 
 	return outputIndex, nil
 
