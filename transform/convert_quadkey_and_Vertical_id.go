@@ -724,6 +724,7 @@ func calculateMinVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int
 		return 0, errors.NewSpatialIdError(errors.InputValueErrorCode, "input index does not exist")
 	}
 
+	// note that in the case of decimals, int64 rounds down to the nearest integer. This is desired behavior.
 	outputIndex := (indexOffset) + int64(float64(inputIndex)*calculateVerticalResolution(outputZoom-inputZoom))
 
 	return outputIndex, nil

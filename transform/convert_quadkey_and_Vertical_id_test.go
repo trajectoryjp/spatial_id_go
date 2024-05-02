@@ -726,6 +726,37 @@ func TestConvertVerticalIndex(t *testing.T) {
 	}
 }
 
+func TestCalculateMinVerticalIndex(t *testing.T) {
+	data := []struct {
+		inputIndex     int64
+		inputZoom      int64
+		outputZoom     int64
+		indexOffset    int64
+		expectedOutput int64
+	}{
+		{inputIndex: 0, inputZoom: 25, outputZoom: 25, indexOffset: 0, expectedOutput: 0},
+		{inputIndex: 0, inputZoom: 25, outputZoom: 25, indexOffset: 47, expectedOutput: 47},
+		{inputIndex: 0, inputZoom: 25, outputZoom: 27, indexOffset: 0, expectedOutput: 0},
+		{inputIndex: 1, inputZoom: 25, outputZoom: 27, indexOffset: 0, expectedOutput: 4},
+		{inputIndex: 100, inputZoom: 10, outputZoom: 25, indexOffset: 0, expectedOutput: 3276800},
+		{inputIndex: 100, inputZoom: 10, outputZoom: 25, indexOffset: -3276801, expectedOutput: -1},
+		{inputIndex: 47, inputZoom: 25, outputZoom: 24, indexOffset: 1, expectedOutput: 24},
+		{inputIndex: 47, inputZoom: 25, outputZoom: 20, indexOffset: 1, expectedOutput: 2},
+	}
+
+	for _, p := range data {
+		result, error := calculateMinVerticalIndex(p.inputIndex, p.inputZoom, p.outputZoom, p.indexOffset)
+		if error != nil {
+			t.Log(t.Name())
+			t.Error(error)
+		}
+		if result != p.expectedOutput {
+			t.Log(t.Name())
+			t.Errorf("convertVerticalIndex(%v, %v, %v, %v) == %v, result: %v", p.inputIndex, p.inputZoom, p.outputZoom, p.indexOffset, p.expectedOutput, result)
+		}
+	}
+}
+
 func TestReturnAltitudesOfVerticalIndex(t *testing.T) {
 	datas := []struct {
 		index          int64
