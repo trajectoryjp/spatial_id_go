@@ -689,29 +689,34 @@ func TestSpatialIDCheckZoom(t *testing.T) {
 
 }
 
+// expected output is defined as outputIndex, e_i, where e_i is the set of integers that satisfy the solution set conditions:
+//  1. the altitudes of the input index is:
+//     (inputIndex)*(2^25-inputZoom) <= altitude < (inputIndex +1)*(2^25-inputZoom)
+//  2. the altitudes associated with index i is:
+//     (index_i + indexOffset)*(2^25-outputZoom) <= altitude < (index_i + indexOffset +1)*(2^25-outputZoom)
+//  3. the minimum altitude of index i is less than the maximum altitude of the inputIndex
+//  4. assuming inputIndex exists, the number of integers in e_i >= 1
 func TestConvertVerticalIndex(t *testing.T) {
 	datas := []struct {
-		inputZoom  int64
-		inputIndex int64
-		outputZoom int64
-		zoomScalar int64
-		//outputIndex  int64
-		offset int64
+		inputZoom   int64
+		inputIndex  int64
+		outputZoom  int64
+		indexOffset int64
 
 		expectedOutputIndex []int64
 	}{
-		{inputZoom: 25, outputZoom: 27, inputIndex: 100, zoomScalar: 0, offset: 0, expectedOutputIndex: []int64{400, 401, 402, 403}},
-		{inputZoom: 25, outputZoom: 24, inputIndex: 100, zoomScalar: 0, offset: 0, expectedOutputIndex: []int64{50}},
-		{inputZoom: 25, outputZoom: 25, inputIndex: 100, zoomScalar: 0, offset: 0, expectedOutputIndex: []int64{100}},
-		{inputZoom: 25, outputZoom: 25, inputIndex: 100, zoomScalar: 0, offset: -47, expectedOutputIndex: []int64{53}},
-		{inputZoom: 25, outputZoom: 26, inputIndex: 0, zoomScalar: 0, offset: 3, expectedOutputIndex: []int64{6, 7}},
-		{inputZoom: 25, outputZoom: 14, inputIndex: 100, zoomScalar: 11, offset: 0, expectedOutputIndex: []int64{100}},
-		{inputZoom: 25, outputZoom: 14, inputIndex: 100, zoomScalar: 11, offset: -512, expectedOutputIndex: []int64{-412}},
-		{inputZoom: 25, outputZoom: 26, inputIndex: 0, zoomScalar: 0, offset: 0, expectedOutputIndex: []int64{0, 1}},
+		{inputZoom: 25, outputZoom: 27, inputIndex: 100, indexOffset: 0, expectedOutputIndex: []int64{400, 401, 402, 403}},
+		{inputZoom: 25, outputZoom: 24, inputIndex: 100, indexOffset: 0, expectedOutputIndex: []int64{50}},
+		{inputZoom: 25, outputZoom: 25, inputIndex: 100, indexOffset: 0, expectedOutputIndex: []int64{100}},
+		{inputZoom: 25, outputZoom: 25, inputIndex: 100, indexOffset: -47, expectedOutputIndex: []int64{53}},
+		{inputZoom: 25, outputZoom: 26, inputIndex: 0, indexOffset: 3, expectedOutputIndex: []int64{3, 4}},
+		{inputZoom: 25, outputZoom: 21, inputIndex: 100, indexOffset: -17, expectedOutputIndex: []int64{-11}},
+		{inputZoom: 25, outputZoom: 25, inputIndex: 100, indexOffset: -512, expectedOutputIndex: []int64{-412}},
+		{inputZoom: 25, outputZoom: 14, inputIndex: 28, indexOffset: 1000, expectedOutputIndex: []int64{1000}},
 	}
 
 	for _, p := range datas {
-		result, error := convertVerticalIndex(p.inputIndex, p.inputZoom, p.outputZoom, p.offset)
+		result, error := convertVerticalIndex(p.inputIndex, p.inputZoom, p.outputZoom, p.indexOffset)
 		if error != nil {
 			t.Log(t.Name())
 			t.Error(error)
@@ -719,13 +724,14 @@ func TestConvertVerticalIndex(t *testing.T) {
 		for i := 0; i < len(p.expectedOutputIndex); i++ {
 			if result[i] != p.expectedOutputIndex[i] {
 				t.Log(t.Name())
-				t.Errorf("convertVerticalIndex(%v, %v, %v, %v, %v) == %v, result: %v", p.inputIndex, p.inputZoom, p.outputZoom, p.zoomScalar, p.offset, p.expectedOutputIndex, result)
+				t.Errorf("convertVerticalIndex(%v, %v, %v, %v) == %v, result: %v", p.inputIndex, p.inputZoom, p.outputZoom, p.indexOffset, p.expectedOutputIndex, result)
 			}
 		}
 
 	}
 }
 
+// expected output is defined as expectedOutput = inputIndex*2^(outputZoom-InputZoom) + indexOffset
 func TestCalculateMinVerticalIndex(t *testing.T) {
 	data := []struct {
 		inputIndex     int64
@@ -774,11 +780,7 @@ func TestReturnAltitudesOfVerticalIndex(t *testing.T) {
 	}
 
 	for _, p := range datas {
-		result, error := returnAltitudesOfVerticalIndex(p.index, p.zoom, p.offset)
-		if error != nil {
-			t.Log(t.Name())
-			t.Error(error)
-		}
+		result := returnAltitudesOfVerticalIndex(p.index, p.zoom, p.offset)
 		if result.MaxAltitude != p.expectedOutput.MaxAltitude &&
 			result.MinAltitude != p.expectedOutput.MinAltitude {
 			t.Log(t.Name())
