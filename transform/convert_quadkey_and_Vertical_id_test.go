@@ -288,22 +288,6 @@ func TestConvertExtendedSpatialIdsToQuadkeysAndVerticalIDsV2(t *testing.T) {
 		),
 	}
 
-	// quadkeyAndVerticalIDsSpatialIDs := []*object.FromExtendedSpatialIDToQuadkeyAndVerticalID{}
-	// newQuadkeyAndVerticalID = object.NewFromExtendedSpatialIDToQuadkeyAndVerticalID(19, [][2]int64{{1858003007, 56}}, 26, 0, 0)
-	// quadkeyAndVerticalIDsSpatialIDs = append(quadkeyAndVerticalIDsSpatialIDs, newQuadkeyAndVerticalID)
-
-	// quadkeyAndVerticalIDsHBorders1 := []*object.FromExtendedSpatialIDToQuadkeyAndVerticalID{}
-	// newQuadkeyAndVerticalID = object.NewFromExtendedSpatialIDToQuadkeyAndVerticalID(1, [][2]int64{{0, 56}}, 26, 0, 0)
-	// quadkeyAndVerticalIDsHBorders1 = append(quadkeyAndVerticalIDsHBorders1, newQuadkeyAndVerticalID)
-	// quadkeyAndVerticalIDsHBorders31 := []*object.FromExtendedSpatialIDToQuadkeyAndVerticalID{}
-	// newQuadkeyAndVerticalID = object.NewFromExtendedSpatialIDToQuadkeyAndVerticalID(31, [][2]int64{{29031296, 1}, {29031296, 0}}, 10, 500, 0)
-	// quadkeyAndVerticalIDsHBorders31 = append(quadkeyAndVerticalIDsHBorders31, newQuadkeyAndVerticalID)
-
-	// quadkeyAndVerticalIDsValueE := []*object.FromExtendedSpatialIDToQuadkeyAndVerticalID{}
-	// newQuadkeyAndVerticalID = object.NewFromExtendedSpatialIDToQuadkeyAndVerticalID(31, [][2]int64{{29031296, 1}, {29031296, 0}}, 10, 500, 0)
-	// quadkeyAndVerticalIDsValueE = append(quadkeyAndVerticalIDsValueE, newQuadkeyAndVerticalID)
-
-	//_, err := strconv.ParseInt("test", 10, 64)
 	datas := []struct {
 		spatialIds          []string
 		outputHZoom         int64
@@ -321,30 +305,6 @@ func TestConvertExtendedSpatialIdsToQuadkeysAndVerticalIDsV2(t *testing.T) {
 		{spatialIds: []string{"20/85263/65423/26/56"}, outputHZoom: 20, outputVZoom: 12, altitudeRangeScalar: 11, expectedValue: expectedValue3, pattern: 0},
 		{spatialIds: []string{"20/85263/65423/26/56"}, outputHZoom: 20, outputVZoom: 12, altitudeRangeScalar: 11, verticalIndexOffset: 47, expectedValue: expectedValue4, pattern: 0},
 		{spatialIds: []string{"20/85263/65423/25/56"}, outputHZoom: 21, outputVZoom: 15, altitudeRangeScalar: 11, verticalIndexOffset: -100, expectedValue: expectedValue5, pattern: 0},
-
-		// // 水平精度個数確認 低精度は1、高精度は精度差^4
-		// {spatialIds: []string{"20/85263/65423/26/56"}, outputHZoom: 24, outputVZoom: 10, outputMaxHeight: 500, outputMinHeight: 0.0, result: quadkeyAndVerticalIDs, resultLength: 512, pattern: 2},
-		// {spatialIds: []string{"20/85263/65423/26/56"}, outputHZoom: 2, outputVZoom: 10, outputMaxHeight: 500, outputMinHeight: 0.0, result: quadkeyAndVerticalIDs, resultLength: 2, pattern: 2},
-		// // 水平精度境界値
-		// {spatialIds: []string{"20/85263/65423/26/0"}, outputHZoom: 1, outputVZoom: 10, outputMaxHeight: 500, outputMinHeight: 0.0, result: quadkeyAndVerticalIDsHBorders1, resultLength: 2, pattern: 2},
-		// {spatialIds: []string{"35/85263/65423/26/0"}, outputHZoom: 31, outputVZoom: 10, outputMaxHeight: 500, outputMinHeight: 0.0, result: quadkeyAndVerticalIDsHBorders31, pattern: 0},
-
-		// // 垂直精度境界値
-		// {spatialIds: []string{"20/85263/65423/26/0"}, outputHZoom: 21, outputVZoom: 0, outputMaxHeight: 500, outputMinHeight: 0.0, result: quadkeyAndVerticalIDs, resultLength: 4, pattern: 3},
-		// {spatialIds: []string{"20/85263/65423/26/0"}, outputHZoom: 21, outputVZoom: 1, outputMaxHeight: 500, outputMinHeight: 0.0, result: quadkeyAndVerticalIDs, resultLength: 4, pattern: 3},
-
-		// // 異常系(精度エラー)
-		// {spatialIds: []string{"20/85263/65423/26/56"}, outputHZoom: 0, outputVZoom: 10, outputMaxHeight: 0, outputMinHeight: 0.0, pattern: 1, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "")},
-		// {spatialIds: []string{"20/85263/65423/26/56"}, outputHZoom: 20, outputVZoom: -1, outputMaxHeight: 0, outputMinHeight: 0.0, pattern: 1, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "")},
-		// {spatialIds: []string{"35/85263/65423/26/56"}, outputHZoom: 32, outputVZoom: 10, outputMaxHeight: 0, outputMinHeight: 0.0, pattern: 1, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "")},
-		// {spatialIds: []string{"20/85263/65423/35/56"}, outputHZoom: 20, outputVZoom: 36, outputMaxHeight: 0, outputMinHeight: 0.0, pattern: 1, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "")},
-		// {spatialIds: []string{"36/85263/65423/26/56"}, outputHZoom: 1, outputVZoom: 10, outputMaxHeight: 500.0, outputMinHeight: 0.0, pattern: 1, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "")},
-		// {spatialIds: []string{"20/85263/65423/36/56"}, outputHZoom: 1, outputVZoom: 10, outputMaxHeight: 500.0, outputMinHeight: 0.0, pattern: 1, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "")},
-
-		// // 異常系(高度エラー)
-		// {spatialIds: []string{"20/85263/65423/26/56"}, outputHZoom: 1, outputVZoom: 10, outputMaxHeight: -500.0, outputMinHeight: 0.0, pattern: 1, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "")},
-		// // 異常系(入力エラー)
-		// {spatialIds: []string{"20/test/65423/26/56"}, outputHZoom: 1, outputVZoom: 10, outputMaxHeight: 500.0, outputMinHeight: 0.0, pattern: 1, e: errors.NewSpatialIdError(errors.InputValueErrorCode, err.Error())},
 	}
 	for _, p := range datas {
 
