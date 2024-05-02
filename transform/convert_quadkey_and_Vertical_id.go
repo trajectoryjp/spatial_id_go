@@ -676,7 +676,7 @@ func convertVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, i
 	)
 
 	// return altitues of original index
-	indexAltitues, error = returnAltitudesOfVerticalIndex(inputIndex, inputZoom, 0)
+	indexAltitues = returnAltitudesOfVerticalIndex(inputIndex, inputZoom, 0)
 	if error != nil {
 		return nil, error
 	}
@@ -695,7 +695,7 @@ func convertVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, i
 	for i := lowerBounds; i <= upperBounds; i++ {
 
 		// don't use offset, since it has been accounted for in calculateMinVerticalIndex
-		currentIndexAltitudes, error = returnAltitudesOfVerticalIndex(int64(i), outputZoom, 0)
+		currentIndexAltitudes = returnAltitudesOfVerticalIndex(int64(i), outputZoom, -indexOffset)
 		if error != nil {
 			return nil, error
 		}
@@ -732,18 +732,10 @@ func calculateMinVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int
 }
 
 // returns the min and max altitudes of a given vertical index, zoomLevel, and indexOfset (add alpha)
-func returnAltitudesOfVerticalIndex(index int64, zoomLevel int64, indexOffset int64) (*VerticalIndexAltitudes, error) {
+func returnAltitudesOfVerticalIndex(index int64, zoomLevel int64, indexOffset int64) *VerticalIndexAltitudes {
 
 	netZoomLevel := 25 - zoomLevel
 	netResolution := calculateVerticalResolution(netZoomLevel)
-
-	// if the index does not exist, return an error. Theoretically, since the first index value is 0, the maximum possible index value is the resolution-1. The minimum value is 0
-	maxIndex := int64(calculateVerticalResolution(zoomLevel)) - 1
-	minIndex := int64(0)
-
-	if index > maxIndex || index < minIndex {
-		return nil, errors.NewSpatialIdError(errors.InputValueErrorCode, "index does not exist")
-	}
 
 	MinAltitude := float64(index+indexOffset) * netResolution
 	MaxAltitude := float64(index+indexOffset+1) * netResolution
@@ -751,7 +743,7 @@ func returnAltitudesOfVerticalIndex(index int64, zoomLevel int64, indexOffset in
 	return &VerticalIndexAltitudes{
 		MinAltitude: MinAltitude,
 		MaxAltitude: MaxAltitude,
-	}, nil
+	}
 }
 
 // returns the number of indexes from global min to global max altitudes
