@@ -348,7 +348,7 @@ func ConvertExtendedSpatialIDsToQuadkeysAndVerticalIDs(extendedSpatialIDs []stri
 	return extendedSpatialIDToQuadkeyAndVerticalID, nil
 }
 
-func ConvertExtendedSpatialIDsToQuadkeysAndVerticalIDsV2(extendedSpatialIDs []string, outputHZoom int64, outputVZoom int64, zoomScalar int64, altitudeOffset int64) ([]*object.FromExtendedSpatialIDToQuadkeyAndVerticalID, error) {
+func ConvertExtendedSpatialIDsToQuadkeysAndVerticalIDsV2(extendedSpatialIDs []string, outputHZoom int64, outputVZoom int64, altitudeRangeScalar int64, verticalIndexOffset int64) ([]*object.FromExtendedSpatialIDToQuadkeyAndVerticalID, error) {
 	extendedSpatialIDToQuadkeyAndVerticalID := []*object.FromExtendedSpatialIDToQuadkeyAndVerticalID{}
 
 	// validate zoom levels
@@ -380,12 +380,7 @@ func ConvertExtendedSpatialIDsToQuadkeysAndVerticalIDsV2(extendedSpatialIDs []st
 		}
 
 		// B. convert vertical IDs to fit Output Vertical Zoom Level
-		// Here we make the following assumptions about altitude, zoomLevel, and minHeight:
-		// 1. the output minHeight and MaxHeight are each shifted + altitudeOffset such that differfences in minHeight-maxHeight is the same in input and output
-		// 2. altitudeOffset is an integer
-		// 3. the net outputZoom = outputVZoom + zoomScalar
-
-		vIndexes, error = convertVerticalIndex(currentID.VZoom(), currentID.Z(), outputVZoom, altitudeOffset)
+		vIndexes, error = convertVerticalIndex(currentID.Z(), currentID.VZoom(), outputVZoom, altitudeRangeScalar, verticalIndexOffset)
 		if error != nil {
 			return nil, error
 		}
@@ -407,8 +402,25 @@ func ConvertExtendedSpatialIDsToQuadkeysAndVerticalIDsV2(extendedSpatialIDs []st
 			continue
 		}
 
-		// the newQuadkeyAndVerticalID will use alt25 (2^25) + altitudeOffset as MaxHeight and 0 + altitudeOffset as MinHeight
-		newQuadkeyAndVerticalID := object.NewFromExtendedSpatialIDToQuadkeyAndVerticalID(outputHZoom, idList, outputVZoom, float64(alt25+float64(altitudeOffset)), float64(altitudeOffset))
+		// create a new QuadKeyandVerticalID object by using top and bottom altitudes that account for
+		// vZoomScalar and verticalIndexOffset
+		//    altitudeOffset = (output voxel height)*verticalIndexOffset
+		//    topAltitude = 2^(outputVZoom) + altitudeOffset
+		//    bottomAltitude = 0 + altitudeOffset
+
+		altitudeOffset := float64(verticalIndexOffset) * (calculateVoxelHeight(outputVZoom, altitudeRangeScalar))
+
+		topAltitude := math.Pow(2, float64(25-altitudeRangeScalar)) + altitudeOffset
+		bottomAltitude := 0 + altitudeOffset
+
+		newQuadkeyAndVerticalID := object.NewFromExtendedSpatialIDToQuadkeyAndVerticalID(
+			outputHZoom,
+			idList,
+			outputVZoom,
+			topAltitude,
+			bottomAltitude,
+		)
+
 		extendedSpatialIDToQuadkeyAndVerticalID = append(extendedSpatialIDToQuadkeyAndVerticalID, newQuadkeyAndVerticalID)
 	}
 
@@ -667,7 +679,7 @@ func convertVerticallIDToBit(vZoom int64, vIndex int64, outputZoom int64, maxHei
 // output:
 //
 //	[]int64 list of vertical index(es), error
-func convertVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, indexOffset int64) ([]int64, error) {
+func convertVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, altitudeRangeScalar int64, indexOffset int64) ([]int64, error) {
 
 	var (
 		outputIndexes                        []int64
@@ -676,14 +688,14 @@ func convertVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, i
 	)
 
 	// return altitues of original index
-	indexAltitues = returnAltitudesOfVerticalIndex(inputIndex, inputZoom, 0)
+	indexAltitues = returnAltitudesOfVerticalIndex(inputIndex, inputZoom, 0, 0)
 
 	// determine the upper and lower index bounds to search for matches in height solution space
-	lowerBound, error := calculateMinVerticalIndex(inputIndex, inputZoom, outputZoom, indexOffset)
+	lowerBound, error := calculateMinVerticalIndex(inputIndex, inputZoom, outputZoom, altitudeRangeScalar, indexOffset)
 	if error != nil {
 		return nil, error
 	}
-	upperBound, error := calculateMinVerticalIndex(inputIndex+1, inputZoom, outputZoom, indexOffset)
+	upperBound, error := calculateMinVerticalIndex(inputIndex+1, inputZoom, outputZoom, altitudeRangeScalar, indexOffset)
 	if error != nil {
 		return nil, error
 	}
@@ -699,7 +711,7 @@ func convertVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, i
 	for i := lowerBound + 1; i <= upperBound; i++ {
 
 		// use inverse of offset, since we want to compare altitudes with the original inputIndex
-		currentIndexAltitudes = returnAltitudesOfVerticalIndex(int64(i), outputZoom, -indexOffset)
+		currentIndexAltitudes = returnAltitudesOfVerticalIndex(int64(i), outputZoom, altitudeRangeScalar, -indexOffset)
 
 		if currentIndexAltitudes.MinAltitude < indexAltitues.MaxAltitude {
 			outputIndexes = append(outputIndexes, int64(i))
@@ -712,7 +724,7 @@ func convertVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, i
 }
 
 // converts a vertical index from one set of zoom parameters to another disregarding the floor() cacluation. This creates a simplier system of equations where the solu	tion set for height is a single variable. However, this does not describe the full solution set of height since we have excluded the floor calculation; it describes the condition where m = x, given m = floor(x) if and only if m <= x < m +1;
-func calculateMinVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, indexOffset int64) (int64, error) {
+func calculateMinVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, altitudeRangeScalar int64, indexOffset int64) (int64, error) {
 
 	// check to make sure the input index exists in the input world
 	inputResolution := calculateVerticalResolution(inputZoom)
@@ -725,16 +737,16 @@ func calculateMinVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int
 	}
 
 	// note that in the case of decimals, int64 rounds down to the nearest integer. This is desired behavior.
-	outputIndex := (indexOffset) + int64(float64(inputIndex)*calculateVerticalResolution(outputZoom-inputZoom))
+	outputIndex := (indexOffset) + int64(float64(inputIndex)*calculateVerticalResolution(outputZoom-inputZoom+altitudeRangeScalar)) // include altittude scalar here.
 
 	return outputIndex, nil
 
 }
 
 // returns the min and max altitudes of a given vertical index, zoomLevel, and indexOfset (add alpha)
-func returnAltitudesOfVerticalIndex(index int64, zoomLevel int64, indexOffset int64) *VerticalIndexAltitudes {
+func returnAltitudesOfVerticalIndex(index int64, zoomLevel int64, altitudeRangeScalar int64, indexOffset int64) *VerticalIndexAltitudes {
 
-	netZoomLevel := 25 - zoomLevel
+	netZoomLevel := 25 - zoomLevel - altitudeRangeScalar
 	netResolution := calculateVerticalResolution(netZoomLevel)
 
 	MinAltitude := float64(index+indexOffset) * netResolution
@@ -757,10 +769,10 @@ func fIndexShift(zoomLevel int64, altitudeShift int64) (fIndexShift int64) {
 	return int64(math.Pow(2, float64(zoomLevel)-25) * float64(altitudeShift))
 }
 
-// returns the height of a single voxel given a vZoomScalar and an output vZoom
-// voxel height = (2^(25-vZoomScalar-vZoom))
-func calculateVoxelHeight(vZoom int64, vZoomScalar int64) float64 {
-	return calculateVerticalResolution(25 - vZoomScalar - vZoom)
+// returns the height of a single voxel given an altitudeRangeScalar and an output vZoom
+// voxel height = (2^(25-altitudeRangeScalar-vZoom))
+func calculateVoxelHeight(vZoom int64, altitudeRangeScalar int64) float64 {
+	return calculateVerticalResolution(25 - altitudeRangeScalar - vZoom)
 }
 
 // 高さのbit形式のインデックスを計算する。

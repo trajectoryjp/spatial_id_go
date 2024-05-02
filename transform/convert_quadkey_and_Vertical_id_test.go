@@ -241,96 +241,113 @@ func TestConvertExtendedSpatialIdsToQuadkeysAndVerticalIDs(t *testing.T) {
 	}
 }
 
-// func TestConvertExtendedSpatialIdsToQuadkeysAndVerticalIDsV2(t *testing.T) {
-// 	// 結果確認用の構造体を作成する
-// 	//"20/85263/65423"→ 00012322332320003333 →7432012031 21:29728048124,29728048125,29728048126,29728048127,
-// 	//horizontalID: "20/45621/43566", result: 3448507833},         //"00003031203000312321"
-// 	//horizontalID: "26/4562451/2343566", result: 26508024119725}, //"00012001233201113020012231"
-// 	//horizontalID: "26/1/2", result: 9},                          //"00000000000000000000000021"
-// 	//horizontalID: "26/2/1", result: 6},                          //"00000000000000000000000012"
-// 	//horizontalID: "5/4562451/2343566", result: 429},             //"12231"
+func TestConvertExtendedSpatialIdsToQuadkeysAndVerticalIDsV2(t *testing.T) {
+	expectedValue1 := []*object.FromExtendedSpatialIDToQuadkeyAndVerticalID{ // returns same as input
+		object.NewFromExtendedSpatialIDToQuadkeyAndVerticalID(
+			20,
+			[][2]int64{{7432012031, 56}},
+			26,
+			33554432, // 2^25
+			0,
+		),
+	}
+	expectedValue2 := []*object.FromExtendedSpatialIDToQuadkeyAndVerticalID{ // adjust horizontal zoom up
+		object.NewFromExtendedSpatialIDToQuadkeyAndVerticalID(
+			21,
+			[][2]int64{{29728048124, 56}, {29728048125, 56}, {29728048126, 56}, {29728048127, 56}},
+			26,
+			33554432, // 2^25
+			0,
+		),
+	}
+	expectedValue3 := []*object.FromExtendedSpatialIDToQuadkeyAndVerticalID{ // adjusts altitudeRangeScalar and output VZoom
+		object.NewFromExtendedSpatialIDToQuadkeyAndVerticalID(
+			20,
+			[][2]int64{{7432012031, 7}},
+			12,
+			16384, // 2^14
+			0,
+		),
+	}
 
-// 	quadkeyAndVerticalIDs := []*object.FromExtendedSpatialIDToQuadkeyAndVerticalID{}
-// 	newQuadkeyAndVerticalID := object.NewFromExtendedSpatialIDToQuadkeyAndVerticalID(21, [][2]int64{{29728048124, 58}, {29728048124, 57}, {29728048125, 58}, {29728048125, 57}, {29728048126, 58}, {29728048126, 57}, {29728048127, 58}, {29728048127, 57}}, 10, 500, 0)
-// 	quadkeyAndVerticalIDs = append(quadkeyAndVerticalIDs, newQuadkeyAndVerticalID)
+	// quadkeyAndVerticalIDsSpatialIDs := []*object.FromExtendedSpatialIDToQuadkeyAndVerticalID{}
+	// newQuadkeyAndVerticalID = object.NewFromExtendedSpatialIDToQuadkeyAndVerticalID(19, [][2]int64{{1858003007, 56}}, 26, 0, 0)
+	// quadkeyAndVerticalIDsSpatialIDs = append(quadkeyAndVerticalIDsSpatialIDs, newQuadkeyAndVerticalID)
 
-// 	quadkeyAndVerticalIDsSpatialIDs := []*object.FromExtendedSpatialIDToQuadkeyAndVerticalID{}
-// 	newQuadkeyAndVerticalID = object.NewFromExtendedSpatialIDToQuadkeyAndVerticalID(19, [][2]int64{{1858003007, 56}}, 26, 0, 0)
-// 	quadkeyAndVerticalIDsSpatialIDs = append(quadkeyAndVerticalIDsSpatialIDs, newQuadkeyAndVerticalID)
+	// quadkeyAndVerticalIDsHBorders1 := []*object.FromExtendedSpatialIDToQuadkeyAndVerticalID{}
+	// newQuadkeyAndVerticalID = object.NewFromExtendedSpatialIDToQuadkeyAndVerticalID(1, [][2]int64{{0, 56}}, 26, 0, 0)
+	// quadkeyAndVerticalIDsHBorders1 = append(quadkeyAndVerticalIDsHBorders1, newQuadkeyAndVerticalID)
+	// quadkeyAndVerticalIDsHBorders31 := []*object.FromExtendedSpatialIDToQuadkeyAndVerticalID{}
+	// newQuadkeyAndVerticalID = object.NewFromExtendedSpatialIDToQuadkeyAndVerticalID(31, [][2]int64{{29031296, 1}, {29031296, 0}}, 10, 500, 0)
+	// quadkeyAndVerticalIDsHBorders31 = append(quadkeyAndVerticalIDsHBorders31, newQuadkeyAndVerticalID)
 
-// 	quadkeyAndVerticalIDsHBorders1 := []*object.FromExtendedSpatialIDToQuadkeyAndVerticalID{}
-// 	newQuadkeyAndVerticalID = object.NewFromExtendedSpatialIDToQuadkeyAndVerticalID(1, [][2]int64{{0, 56}}, 26, 0, 0)
-// 	quadkeyAndVerticalIDsHBorders1 = append(quadkeyAndVerticalIDsHBorders1, newQuadkeyAndVerticalID)
-// 	quadkeyAndVerticalIDsHBorders31 := []*object.FromExtendedSpatialIDToQuadkeyAndVerticalID{}
-// 	newQuadkeyAndVerticalID = object.NewFromExtendedSpatialIDToQuadkeyAndVerticalID(31, [][2]int64{{29031296, 1}, {29031296, 0}}, 10, 500, 0)
-// 	quadkeyAndVerticalIDsHBorders31 = append(quadkeyAndVerticalIDsHBorders31, newQuadkeyAndVerticalID)
+	// quadkeyAndVerticalIDsValueE := []*object.FromExtendedSpatialIDToQuadkeyAndVerticalID{}
+	// newQuadkeyAndVerticalID = object.NewFromExtendedSpatialIDToQuadkeyAndVerticalID(31, [][2]int64{{29031296, 1}, {29031296, 0}}, 10, 500, 0)
+	// quadkeyAndVerticalIDsValueE = append(quadkeyAndVerticalIDsValueE, newQuadkeyAndVerticalID)
 
-// 	quadkeyAndVerticalIDsValueE := []*object.FromExtendedSpatialIDToQuadkeyAndVerticalID{}
-// 	newQuadkeyAndVerticalID = object.NewFromExtendedSpatialIDToQuadkeyAndVerticalID(31, [][2]int64{{29031296, 1}, {29031296, 0}}, 10, 500, 0)
-// 	quadkeyAndVerticalIDsValueE = append(quadkeyAndVerticalIDsValueE, newQuadkeyAndVerticalID)
+	//_, err := strconv.ParseInt("test", 10, 64)
+	datas := []struct {
+		spatialIds          []string
+		outputHZoom         int64
+		outputVZoom         int64
+		altitudeRangeScalar int64
+		verticalIndexOffset int64
+		expectedValue       []*object.FromExtendedSpatialIDToQuadkeyAndVerticalID
+		resultLength        int
+		pattern             int64 // 0:正常 1:異常 2:個数(水平) 3:個数(垂直)
+		e                   error
+	}{
+		// 正常
+		{spatialIds: []string{"20/85263/65423/26/56"}, outputHZoom: 20, outputVZoom: 26, altitudeRangeScalar: 0, verticalIndexOffset: 0, expectedValue: expectedValue1, pattern: 0},
+		{spatialIds: []string{"20/85263/65423/26/56"}, outputHZoom: 21, outputVZoom: 26, altitudeRangeScalar: 0, verticalIndexOffset: 0, expectedValue: expectedValue2, pattern: 0},
+		{spatialIds: []string{"20/85263/65423/26/56"}, outputHZoom: 20, outputVZoom: 12, altitudeRangeScalar: 11, expectedValue: expectedValue3, pattern: 0},
 
-// 	_, err := strconv.ParseInt("test", 10, 64)
-// 	datas := []struct {
-// 		spatialIds     []string
-// 		outputHZoom    int64
-// 		outputVZoom    int64
-// 		zoomScalar     int64
-// 		altitudeOffset int64
-// 		result         []*object.FromExtendedSpatialIDToQuadkeyAndVerticalID
-// 		resultLength   int
-// 		pattern        int64 // 0:正常 1:異常 2:個数(水平) 3:個数(垂直)
-// 		e              error
-// 	}{
-// 		// 正常
-// 		{spatialIds: []string{"20/85263/65423/26/56"}, outputHZoom: 21, outputVZoom: 10, outputMaxHeight: 500, outputMinHeight: 0.0, result: quadkeyAndVerticalIDs, pattern: 0},
-// 		{spatialIds: []string{"20/85263/65423/26/56"}, outputHZoom: 19, outputVZoom: 26, outputMaxHeight: 0, outputMinHeight: 0.0, result: quadkeyAndVerticalIDsSpatialIDs, pattern: 0},
+		// // 水平精度個数確認 低精度は1、高精度は精度差^4
+		// {spatialIds: []string{"20/85263/65423/26/56"}, outputHZoom: 24, outputVZoom: 10, outputMaxHeight: 500, outputMinHeight: 0.0, result: quadkeyAndVerticalIDs, resultLength: 512, pattern: 2},
+		// {spatialIds: []string{"20/85263/65423/26/56"}, outputHZoom: 2, outputVZoom: 10, outputMaxHeight: 500, outputMinHeight: 0.0, result: quadkeyAndVerticalIDs, resultLength: 2, pattern: 2},
+		// // 水平精度境界値
+		// {spatialIds: []string{"20/85263/65423/26/0"}, outputHZoom: 1, outputVZoom: 10, outputMaxHeight: 500, outputMinHeight: 0.0, result: quadkeyAndVerticalIDsHBorders1, resultLength: 2, pattern: 2},
+		// {spatialIds: []string{"35/85263/65423/26/0"}, outputHZoom: 31, outputVZoom: 10, outputMaxHeight: 500, outputMinHeight: 0.0, result: quadkeyAndVerticalIDsHBorders31, pattern: 0},
 
-// 		// 水平精度個数確認 低精度は1、高精度は精度差^4
-// 		{spatialIds: []string{"20/85263/65423/26/56"}, outputHZoom: 24, outputVZoom: 10, outputMaxHeight: 500, outputMinHeight: 0.0, result: quadkeyAndVerticalIDs, resultLength: 512, pattern: 2},
-// 		{spatialIds: []string{"20/85263/65423/26/56"}, outputHZoom: 2, outputVZoom: 10, outputMaxHeight: 500, outputMinHeight: 0.0, result: quadkeyAndVerticalIDs, resultLength: 2, pattern: 2},
-// 		// 水平精度境界値
-// 		{spatialIds: []string{"20/85263/65423/26/0"}, outputHZoom: 1, outputVZoom: 10, outputMaxHeight: 500, outputMinHeight: 0.0, result: quadkeyAndVerticalIDsHBorders1, resultLength: 2, pattern: 2},
-// 		{spatialIds: []string{"35/85263/65423/26/0"}, outputHZoom: 31, outputVZoom: 10, outputMaxHeight: 500, outputMinHeight: 0.0, result: quadkeyAndVerticalIDsHBorders31, pattern: 0},
+		// // 垂直精度境界値
+		// {spatialIds: []string{"20/85263/65423/26/0"}, outputHZoom: 21, outputVZoom: 0, outputMaxHeight: 500, outputMinHeight: 0.0, result: quadkeyAndVerticalIDs, resultLength: 4, pattern: 3},
+		// {spatialIds: []string{"20/85263/65423/26/0"}, outputHZoom: 21, outputVZoom: 1, outputMaxHeight: 500, outputMinHeight: 0.0, result: quadkeyAndVerticalIDs, resultLength: 4, pattern: 3},
 
-// 		// 垂直精度境界値
-// 		{spatialIds: []string{"20/85263/65423/26/0"}, outputHZoom: 21, outputVZoom: 0, outputMaxHeight: 500, outputMinHeight: 0.0, result: quadkeyAndVerticalIDs, resultLength: 4, pattern: 3},
-// 		{spatialIds: []string{"20/85263/65423/26/0"}, outputHZoom: 21, outputVZoom: 1, outputMaxHeight: 500, outputMinHeight: 0.0, result: quadkeyAndVerticalIDs, resultLength: 4, pattern: 3},
+		// // 異常系(精度エラー)
+		// {spatialIds: []string{"20/85263/65423/26/56"}, outputHZoom: 0, outputVZoom: 10, outputMaxHeight: 0, outputMinHeight: 0.0, pattern: 1, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "")},
+		// {spatialIds: []string{"20/85263/65423/26/56"}, outputHZoom: 20, outputVZoom: -1, outputMaxHeight: 0, outputMinHeight: 0.0, pattern: 1, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "")},
+		// {spatialIds: []string{"35/85263/65423/26/56"}, outputHZoom: 32, outputVZoom: 10, outputMaxHeight: 0, outputMinHeight: 0.0, pattern: 1, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "")},
+		// {spatialIds: []string{"20/85263/65423/35/56"}, outputHZoom: 20, outputVZoom: 36, outputMaxHeight: 0, outputMinHeight: 0.0, pattern: 1, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "")},
+		// {spatialIds: []string{"36/85263/65423/26/56"}, outputHZoom: 1, outputVZoom: 10, outputMaxHeight: 500.0, outputMinHeight: 0.0, pattern: 1, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "")},
+		// {spatialIds: []string{"20/85263/65423/36/56"}, outputHZoom: 1, outputVZoom: 10, outputMaxHeight: 500.0, outputMinHeight: 0.0, pattern: 1, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "")},
 
-// 		// 異常系(精度エラー)
-// 		{spatialIds: []string{"20/85263/65423/26/56"}, outputHZoom: 0, outputVZoom: 10, outputMaxHeight: 0, outputMinHeight: 0.0, pattern: 1, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "")},
-// 		{spatialIds: []string{"20/85263/65423/26/56"}, outputHZoom: 20, outputVZoom: -1, outputMaxHeight: 0, outputMinHeight: 0.0, pattern: 1, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "")},
-// 		{spatialIds: []string{"35/85263/65423/26/56"}, outputHZoom: 32, outputVZoom: 10, outputMaxHeight: 0, outputMinHeight: 0.0, pattern: 1, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "")},
-// 		{spatialIds: []string{"20/85263/65423/35/56"}, outputHZoom: 20, outputVZoom: 36, outputMaxHeight: 0, outputMinHeight: 0.0, pattern: 1, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "")},
-// 		{spatialIds: []string{"36/85263/65423/26/56"}, outputHZoom: 1, outputVZoom: 10, outputMaxHeight: 500.0, outputMinHeight: 0.0, pattern: 1, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "")},
-// 		{spatialIds: []string{"20/85263/65423/36/56"}, outputHZoom: 1, outputVZoom: 10, outputMaxHeight: 500.0, outputMinHeight: 0.0, pattern: 1, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "")},
+		// // 異常系(高度エラー)
+		// {spatialIds: []string{"20/85263/65423/26/56"}, outputHZoom: 1, outputVZoom: 10, outputMaxHeight: -500.0, outputMinHeight: 0.0, pattern: 1, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "")},
+		// // 異常系(入力エラー)
+		// {spatialIds: []string{"20/test/65423/26/56"}, outputHZoom: 1, outputVZoom: 10, outputMaxHeight: 500.0, outputMinHeight: 0.0, pattern: 1, e: errors.NewSpatialIdError(errors.InputValueErrorCode, err.Error())},
+	}
+	for _, p := range datas {
 
-// 		// 異常系(高度エラー)
-// 		{spatialIds: []string{"20/85263/65423/26/56"}, outputHZoom: 1, outputVZoom: 10, outputMaxHeight: -500.0, outputMinHeight: 0.0, pattern: 1, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "")},
-// 		// 異常系(入力エラー)
-// 		{spatialIds: []string{"20/test/65423/26/56"}, outputHZoom: 1, outputVZoom: 10, outputMaxHeight: 500.0, outputMinHeight: 0.0, pattern: 1, e: errors.NewSpatialIdError(errors.InputValueErrorCode, err.Error())},
-// 	}
-// 	for _, p := range datas {
+		result, e := ConvertExtendedSpatialIDsToQuadkeysAndVerticalIDsV2(p.spatialIds, p.outputHZoom, p.outputVZoom, p.altitudeRangeScalar, p.verticalIndexOffset)
+		if p.pattern == 0 && !reflect.DeepEqual(result, p.expectedValue) {
+			t.Log(t.Name())
+			t.Errorf("ConvertExtendedSpatialIDsToQuadkeysAndVerticalIDs(%s,%d,%d,%v,%v) == %+v, result: %+v", p.spatialIds, p.outputHZoom, p.outputVZoom, p.altitudeRangeScalar, p.verticalIndexOffset, p.expectedValue[0], result[0])
+		}
+		if p.pattern == 1 && e != p.e {
+			t.Log(t.Name())
+			t.Errorf("ConvertExtendedSpatialIDsToQuadkeysAndVerticalIDs(%s,%d,%d,%v,%v) == %+v, result: %+v", p.spatialIds, p.outputHZoom, p.outputVZoom, p.altitudeRangeScalar, p.verticalIndexOffset, e, p.e)
+		}
+		if p.pattern == 2 && p.resultLength != len(result[0].InnerIDList()) {
+			t.Log(t.Name())
+			t.Errorf("ConvertExtendedSpatialIDsToQuadkeysAndVerticalIDs(%s,%d,%d,%v,%v) == %+v, result: %+v", p.spatialIds, p.outputHZoom, p.outputVZoom, p.altitudeRangeScalar, p.verticalIndexOffset, len(result[0].InnerIDList()), p.resultLength)
+		}
+		if p.pattern == 3 && p.resultLength != len(result[0].InnerIDList()) {
+			t.Log(t.Name())
+			t.Errorf("ConvertExtendedSpatialIDsToQuadkeysAndVerticalIDs(%s,%d,%d,%v,%v) == %+v, result: %+v", p.spatialIds, p.outputHZoom, p.outputVZoom, p.altitudeRangeScalar, p.verticalIndexOffset, len(result[0].InnerIDList()), p.resultLength)
+		}
 
-// 		result, e := ConvertExtendedSpatialIDsToQuadkeysAndVerticalIDsV2(p.spatialIds, p.outputHZoom, p.outputVZoom, p.outputMaxHeight, p.outputMinHeight)
-// 		if p.pattern == 0 && !reflect.DeepEqual(result, p.result) {
-// 			t.Log(t.Name())
-// 			t.Errorf("ConvertExtendedSpatialIDsToQuadkeysAndVerticalIDs(%s,%d,%d,%f,%f) == %+v, result: %+v", p.spatialIds, p.outputHZoom, p.outputVZoom, p.outputMaxHeight, p.outputMinHeight, p.result[0], result[0])
-// 		}
-// 		if p.pattern == 1 && e != p.e {
-// 			t.Log(t.Name())
-// 			t.Errorf("ConvertExtendedSpatialIDsToQuadkeysAndVerticalIDs(%s,%d,%d,%f,%f) == %+v, result: %+v", p.spatialIds, p.outputHZoom, p.outputVZoom, p.outputMaxHeight, p.outputMinHeight, e, p.e)
-// 		}
-// 		if p.pattern == 2 && p.resultLength != len(result[0].InnerIDList()) {
-// 			t.Log(t.Name())
-// 			t.Errorf("ConvertExtendedSpatialIDsToQuadkeysAndVerticalIDs(%s,%d,%d,%f,%f) == %+v, result: %+v", p.spatialIds, p.outputHZoom, p.outputVZoom, p.outputMaxHeight, p.outputMinHeight, len(result[0].InnerIDList()), p.resultLength)
-// 		}
-// 		if p.pattern == 3 && p.resultLength != len(result[0].InnerIDList()) {
-// 			t.Log(t.Name())
-// 			t.Errorf("ConvertExtendedSpatialIDsToQuadkeysAndVerticalIDs(%s,%d,%d,%f,%f) == %+v, result: %+v", p.spatialIds, p.outputHZoom, p.outputVZoom, p.outputMaxHeight, p.outputMinHeight, len(result[0].InnerIDList()), p.resultLength)
-// 		}
-
-// 	}
-// }
+	}
+}
 
 func TestConvertSpatialIdsToQuadkeysAndVerticalIDs(t *testing.T) {
 	quadkeyAndVerticalIDs := []*object.FromExtendedSpatialIDToQuadkeyAndVerticalID{}
@@ -698,11 +715,11 @@ func TestSpatialIDCheckZoom(t *testing.T) {
 //  4. assuming inputIndex exists, the number of integers in e_i >= 1
 func TestConvertVerticalIndex(t *testing.T) {
 	datas := []struct {
-		inputZoom   int64
-		inputIndex  int64
-		outputZoom  int64
-		indexOffset int64
-
+		inputZoom           int64
+		inputIndex          int64
+		outputZoom          int64
+		indexOffset         int64
+		altitudeRangeScalar int64
 		expectedOutputIndex []int64
 	}{
 		{inputZoom: 25, outputZoom: 27, inputIndex: 100, indexOffset: 0, expectedOutputIndex: []int64{400, 401, 402, 403}},
@@ -713,10 +730,13 @@ func TestConvertVerticalIndex(t *testing.T) {
 		{inputZoom: 25, outputZoom: 21, inputIndex: 100, indexOffset: -17, expectedOutputIndex: []int64{-11}},
 		{inputZoom: 25, outputZoom: 25, inputIndex: 100, indexOffset: -512, expectedOutputIndex: []int64{-412}},
 		{inputZoom: 25, outputZoom: 14, inputIndex: 28, indexOffset: 1000, expectedOutputIndex: []int64{1000}},
+		{inputZoom: 25, outputZoom: 24, inputIndex: 100, altitudeRangeScalar: 1, indexOffset: 0, expectedOutputIndex: []int64{100}},
+		{inputZoom: 25, outputZoom: 21, inputIndex: 100, altitudeRangeScalar: 5, indexOffset: -17, expectedOutputIndex: []int64{183, 184}},
+		{inputZoom: 25, outputZoom: 27, inputIndex: 100, altitudeRangeScalar: 1, indexOffset: 0, expectedOutputIndex: []int64{800}},
 	}
 
 	for _, p := range datas {
-		result, error := convertVerticalIndex(p.inputIndex, p.inputZoom, p.outputZoom, p.indexOffset)
+		result, error := convertVerticalIndex(p.inputIndex, p.inputZoom, p.outputZoom, p.altitudeRangeScalar, p.indexOffset)
 		if error != nil {
 			t.Log(t.Name())
 			t.Error(error)
@@ -724,51 +744,55 @@ func TestConvertVerticalIndex(t *testing.T) {
 		for i := 0; i < len(p.expectedOutputIndex); i++ {
 			if result[i] != p.expectedOutputIndex[i] {
 				t.Log(t.Name())
-				t.Errorf("convertVerticalIndex(%v, %v, %v, %v) == %v, result: %v", p.inputIndex, p.inputZoom, p.outputZoom, p.indexOffset, p.expectedOutputIndex, result)
+				t.Errorf("convertVerticalIndex(%v, %v, %v, %v, %v) == %v, result: %v", p.inputIndex, p.inputZoom, p.outputZoom, p.altitudeRangeScalar, p.indexOffset, p.expectedOutputIndex, result)
 			}
 		}
 
 	}
 }
 
-// expected output is defined as expectedOutput = inputIndex*2^(outputZoom-InputZoom) + indexOffset
+// expected output is defined as expectedOutput = inputIndex*2^(outputZoom-InputZoom+altitudeRangeScalar) + indexOffset
 func TestCalculateMinVerticalIndex(t *testing.T) {
 	data := []struct {
-		inputIndex     int64
-		inputZoom      int64
-		outputZoom     int64
-		indexOffset    int64
-		expectedOutput int64
+		inputIndex          int64
+		inputZoom           int64
+		outputZoom          int64
+		altitudeRangeScalar int64
+		indexOffset         int64
+		expectedOutput      int64
 	}{
 		{inputIndex: 0, inputZoom: 25, outputZoom: 25, indexOffset: 0, expectedOutput: 0},
 		{inputIndex: 0, inputZoom: 25, outputZoom: 25, indexOffset: 47, expectedOutput: 47},
+		{inputIndex: 1, inputZoom: 25, outputZoom: 25, indexOffset: 47, altitudeRangeScalar: 1, expectedOutput: 49},
 		{inputIndex: 0, inputZoom: 25, outputZoom: 27, indexOffset: 0, expectedOutput: 0},
 		{inputIndex: 1, inputZoom: 25, outputZoom: 27, indexOffset: 0, expectedOutput: 4},
 		{inputIndex: 100, inputZoom: 10, outputZoom: 25, indexOffset: 0, expectedOutput: 3276800},
 		{inputIndex: 100, inputZoom: 10, outputZoom: 25, indexOffset: -3276801, expectedOutput: -1},
 		{inputIndex: 47, inputZoom: 25, outputZoom: 24, indexOffset: 1, expectedOutput: 24},
 		{inputIndex: 47, inputZoom: 25, outputZoom: 20, indexOffset: 1, expectedOutput: 2},
+		{inputIndex: 47, inputZoom: 25, outputZoom: 12, indexOffset: 1, altitudeRangeScalar: 11, expectedOutput: 12},
 	}
 
 	for _, p := range data {
-		result, error := calculateMinVerticalIndex(p.inputIndex, p.inputZoom, p.outputZoom, p.indexOffset)
+		result, error := calculateMinVerticalIndex(p.inputIndex, p.inputZoom, p.outputZoom, p.altitudeRangeScalar, p.indexOffset)
 		if error != nil {
 			t.Log(t.Name())
 			t.Error(error)
 		}
 		if result != p.expectedOutput {
 			t.Log(t.Name())
-			t.Errorf("convertVerticalIndex(%v, %v, %v, %v) == %v, result: %v", p.inputIndex, p.inputZoom, p.outputZoom, p.indexOffset, p.expectedOutput, result)
+			t.Errorf("calculateMinVerticalIndex(%v, %v, %v, %v, %v) == %v, result: %v", p.inputIndex, p.inputZoom, p.outputZoom, p.altitudeRangeScalar, p.indexOffset, p.expectedOutput, result)
 		}
 	}
 }
 
 func TestReturnAltitudesOfVerticalIndex(t *testing.T) {
 	datas := []struct {
-		index          int64
-		zoom           int64
-		offset         int64
-		expectedOutput *VerticalIndexAltitudes
+		index               int64
+		zoom                int64
+		altitudeRangeScalar int64
+		offset              int64
+		expectedOutput      *VerticalIndexAltitudes
 	}{
 		{index: 1, zoom: 27, offset: 0, expectedOutput: &VerticalIndexAltitudes{MinAltitude: 0.25, MaxAltitude: 0.5}},
 		{index: 1, zoom: 25, offset: 0, expectedOutput: &VerticalIndexAltitudes{MinAltitude: 1, MaxAltitude: 2}},
@@ -777,10 +801,12 @@ func TestReturnAltitudesOfVerticalIndex(t *testing.T) {
 		{index: 1, zoom: 25, offset: 1, expectedOutput: &VerticalIndexAltitudes{MinAltitude: 2, MaxAltitude: 3}},
 		{index: 0, zoom: 25, offset: 3, expectedOutput: &VerticalIndexAltitudes{MinAltitude: 3, MaxAltitude: 4}},
 		{index: 10, zoom: 24, offset: 3, expectedOutput: &VerticalIndexAltitudes{MinAltitude: 26, MaxAltitude: 28}},
+		{index: 10, zoom: 21, offset: 3, altitudeRangeScalar: 3, expectedOutput: &VerticalIndexAltitudes{MinAltitude: 26, MaxAltitude: 28}},
+		{index: 100, zoom: 12, offset: 0, altitudeRangeScalar: 11, expectedOutput: &VerticalIndexAltitudes{MinAltitude: 400, MaxAltitude: 404}},
 	}
 
 	for _, p := range datas {
-		result := returnAltitudesOfVerticalIndex(p.index, p.zoom, p.offset)
+		result := returnAltitudesOfVerticalIndex(p.index, p.zoom, p.altitudeRangeScalar, p.offset)
 		if result.MaxAltitude != p.expectedOutput.MaxAltitude &&
 			result.MinAltitude != p.expectedOutput.MinAltitude {
 			t.Log(t.Name())
