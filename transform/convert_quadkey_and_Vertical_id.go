@@ -700,12 +700,12 @@ func convertVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, a
 		return nil, error
 	}
 
-	// Determine the vertical index/indicies to return.
+	// Determine the vertical index/indices to return.
 	// a) always return the lowerBound index. Regardless of the difference between the inputZoom and outputZoom,
 	// mathematically the altitude associated with the lower bounds will always satisfy the solution set.
-	// b) cycle through indicies from lowerBounds+1 to upperBounds with i. If the minAltitude associated
+	// b) cycle through indices from lowerBounds+1 to upperBounds with i. If the minAltitude associated
 	// with i is less than the maxAltitude of the inputIndex, then the altitude associated with i
-	// satisfies the solution set. Add this index to the list of indicies to return
+	// satisfies the solution set. Add this index to the list of indices to return
 	outputIndexes = append(outputIndexes, lowerBound)
 
 	for i := lowerBound + 1; i <= upperBound; i++ {
@@ -770,11 +770,6 @@ func returnAltitudesOfVerticalIndex(index int64, zoomLevel int64, altitudeRangeS
 func calculateVerticalResolution(zoomLevel int64) float64 {
 	verticalResolution := math.Pow(2, float64(zoomLevel))
 	return verticalResolution
-}
-
-func fIndexShift(zoomLevel int64, altitudeShift int64) (fIndexShift int64) {
-
-	return int64(math.Pow(2, float64(zoomLevel)-25) * float64(altitudeShift))
 }
 
 // returns the height of a single voxel given an altitudeRangeScalar and an output vZoom
