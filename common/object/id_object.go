@@ -1,6 +1,43 @@
 // 拡張空間IDパッケージ
 package object
 
+// FromExtendedSpatialIDToQuadkeyAndAltitudeKey 拡張空間IDから変換したquadkeyと標高のIDの組み合わせを管理する構造体
+type FromExtendedSpatialIDToQuadkeyAndAltitudeKey struct {
+	// quadkey zoom level / quadkeyの精度
+	quadkeyZoom int64
+	// a list of quadkey-altitude key sets [[quadkey,vIndex]...]
+	innerIDList [][2]int64
+	// vertical zoom level / 高さ方向の精度
+	vZoom int64
+	// altitude range scalar is s, where 2^25-s = altitude range (max altitude - min altitude)
+	altitudeRangeScalar int64
+}
+
+func NewFromExtendedSpatialIDToQuadkeyAndAltitudeKey(quadkeyZoom int64, innerIDList [][2]int64, vZoom int64, altitudeRangeScalar int64) *FromExtendedSpatialIDToQuadkeyAndAltitudeKey {
+	a := &FromExtendedSpatialIDToQuadkeyAndAltitudeKey{}
+	a.SetQuadkeyZoom(quadkeyZoom)
+	a.SetInnerIDList(innerIDList)
+	a.SetVerticalZoom(vZoom)
+	a.SetAltitudeRangeScalar(altitudeRangeScalar)
+	return a
+}
+
+func (a *FromExtendedSpatialIDToQuadkeyAndAltitudeKey) SetQuadkeyZoom(quadkeyZoom int64) {
+	a.quadkeyZoom = quadkeyZoom
+}
+
+func (a *FromExtendedSpatialIDToQuadkeyAndAltitudeKey) SetInnerIDList(innerIDList [][2]int64) {
+	a.innerIDList = innerIDList
+}
+
+func (a *FromExtendedSpatialIDToQuadkeyAndAltitudeKey) SetVerticalZoom(vZoom int64) {
+	a.vZoom = vZoom
+}
+
+func (a *FromExtendedSpatialIDToQuadkeyAndAltitudeKey) SetAltitudeRangeScalar(aScalar int64) {
+	a.altitudeRangeScalar = aScalar
+}
+
 // FromExtendedSpatialIDToQuadkeyAndVerticalID 拡張空間IDから変換したquadkeyと高さのIDの組み合わせを管理する構造体
 type FromExtendedSpatialIDToQuadkeyAndVerticalID struct {
 	// quadkeyの精度
