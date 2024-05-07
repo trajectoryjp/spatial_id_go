@@ -765,7 +765,7 @@ func returnAltitudesOfVerticalIndex(index int64, zoomLevel int64, altitudeRangeS
 	}
 }
 
-// returns the number of indexes from global min to global max altitudes
+// returns the number of indexes from global min to global max altitudes. Can be thought of as a wrapper for the power function.
 func calculateVerticalResolution(zoomLevel int64) float64 {
 	verticalResolution := math.Pow(2, float64(zoomLevel))
 	return verticalResolution
