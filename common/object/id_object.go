@@ -38,6 +38,22 @@ func (a *FromExtendedSpatialIDToQuadkeyAndAltitudeKey) SetAltitudeRangeScalar(aS
 	a.altitudeRangeScalar = aScalar
 }
 
+func (a *FromExtendedSpatialIDToQuadkeyAndAltitudeKey) QuadkeyZoom() int64 {
+	return a.quadkeyZoom
+}
+
+func (a *FromExtendedSpatialIDToQuadkeyAndAltitudeKey) InnerIDList() [][2]int64 {
+	return a.innerIDList
+}
+
+func (a *FromExtendedSpatialIDToQuadkeyAndAltitudeKey) VerticalZoom() int64 {
+	return a.vZoom
+}
+
+func (a *FromExtendedSpatialIDToQuadkeyAndAltitudeKey) AltitudeRangeScalar() int64 {
+	return a.altitudeRangeScalar
+}
+
 // FromExtendedSpatialIDToQuadkeyAndVerticalID 拡張空間IDから変換したquadkeyと高さのIDの組み合わせを管理する構造体
 type FromExtendedSpatialIDToQuadkeyAndVerticalID struct {
 	// quadkeyの精度
