@@ -248,6 +248,7 @@ func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(t *testing.T) {
 			[][2]int64{{7432012031, 56}},
 			26,
 			0,
+			0,
 		),
 	}
 	expectedValue2 := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{ // adjust horizontal zoom up
@@ -255,6 +256,7 @@ func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(t *testing.T) {
 			21,
 			[][2]int64{{29728048124, 56}, {29728048125, 56}, {29728048126, 56}, {29728048127, 56}},
 			26,
+			0,
 			0,
 		),
 	}
@@ -264,6 +266,7 @@ func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(t *testing.T) {
 			[][2]int64{{7432012031, 7}},
 			12,
 			11, // 2^14
+			0,
 		),
 	}
 	expectedValue4 := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{ // adjusts altitudeRangeScalar, output VZoom and verticalIndexOffset
@@ -272,6 +275,7 @@ func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(t *testing.T) {
 			[][2]int64{{7432012031, 54}},
 			12,
 			11,
+			47,
 			//16572, // 2^14 + 47*4
 			//188,   // 0 + 47*4
 		),
@@ -282,6 +286,7 @@ func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(t *testing.T) {
 			[][2]int64{{29728048124, 12}, {29728048124, 13}, {29728048125, 12}, {29728048125, 13}, {29728048126, 12}, {29728048126, 13}, {29728048127, 12}, {29728048127, 13}},
 			15,
 			11,
+			-100,
 			// 16334, // 2^14 + -100*0.5
 			// -50,   // 0 + -100*0.5
 		),

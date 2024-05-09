@@ -418,6 +418,7 @@ func ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(extendedSpatialIDs []str
 			idList,
 			outputVZoom,
 			altitudeRangeScalar,
+			verticalIndexOffset,
 		)
 
 		extendedSpatialIDToQuadkeyAndAltitudekey = append(extendedSpatialIDToQuadkeyAndAltitudekey, newQuadkeyAndVerticalID)

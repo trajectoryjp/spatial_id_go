@@ -8,17 +8,20 @@ type FromExtendedSpatialIDToQuadkeyAndAltitudekey struct {
 	// a list of quadkey-altitude key sets [[quadkey,vIndex]...]
 	innerIDList [][2]int64
 	// vertical zoom level / 高さ方向の精度
-	vZoom int64
+	altitudekeyZoom int64
 	// altitude range scalar is s, where 2^25-s = altitude range (max altitude - min altitude)
 	altitudeRangeScalar int64
+	// the difference in index terms of min and max altitude from the standard range (0, 2^25 meters)
+	verticalIndexOffset int64
 }
 
-func NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(quadkeyZoom int64, innerIDList [][2]int64, vZoom int64, altitudeRangeScalar int64) *FromExtendedSpatialIDToQuadkeyAndAltitudekey {
+func NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(quadkeyZoom int64, innerIDList [][2]int64, altitudekeyZoom int64, altitudeRangeScalar int64, verticalIndexOffset int64) *FromExtendedSpatialIDToQuadkeyAndAltitudekey {
 	a := &FromExtendedSpatialIDToQuadkeyAndAltitudekey{}
 	a.SetQuadkeyZoom(quadkeyZoom)
 	a.SetInnerIDList(innerIDList)
-	a.SetVerticalZoom(vZoom)
+	a.SetVerticalZoom(altitudekeyZoom)
 	a.SetAltitudeRangeScalar(altitudeRangeScalar)
+	a.SetVerticalIndexOffset(verticalIndexOffset)
 	return a
 }
 
@@ -30,12 +33,16 @@ func (a *FromExtendedSpatialIDToQuadkeyAndAltitudekey) SetInnerIDList(innerIDLis
 	a.innerIDList = innerIDList
 }
 
-func (a *FromExtendedSpatialIDToQuadkeyAndAltitudekey) SetVerticalZoom(vZoom int64) {
-	a.vZoom = vZoom
+func (a *FromExtendedSpatialIDToQuadkeyAndAltitudekey) SetVerticalZoom(altitudekeyZoom int64) {
+	a.altitudekeyZoom = altitudekeyZoom
 }
 
 func (a *FromExtendedSpatialIDToQuadkeyAndAltitudekey) SetAltitudeRangeScalar(aScalar int64) {
 	a.altitudeRangeScalar = aScalar
+}
+
+func (a *FromExtendedSpatialIDToQuadkeyAndAltitudekey) SetVerticalIndexOffset(verticalIndexOffset int64) {
+	a.verticalIndexOffset = verticalIndexOffset
 }
 
 func (a *FromExtendedSpatialIDToQuadkeyAndAltitudekey) QuadkeyZoom() int64 {
@@ -46,12 +53,16 @@ func (a *FromExtendedSpatialIDToQuadkeyAndAltitudekey) InnerIDList() [][2]int64 
 	return a.innerIDList
 }
 
-func (a *FromExtendedSpatialIDToQuadkeyAndAltitudekey) VerticalZoom() int64 {
-	return a.vZoom
+func (a *FromExtendedSpatialIDToQuadkeyAndAltitudekey) AltitudekeyZoom() int64 {
+	return a.altitudekeyZoom
 }
 
 func (a *FromExtendedSpatialIDToQuadkeyAndAltitudekey) AltitudeRangeScalar() int64 {
 	return a.altitudeRangeScalar
+}
+
+func (a *FromExtendedSpatialIDToQuadkeyAndAltitudekey) VerticalIndexOffset() int64 {
+	return a.verticalIndexOffset
 }
 
 // FromExtendedSpatialIDToQuadkeyAndVerticalID 拡張空間IDから変換したquadkeyと高さのIDの組み合わせを管理する構造体
