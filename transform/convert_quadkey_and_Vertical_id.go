@@ -669,11 +669,11 @@ func convertVerticallIDToBit(vZoom int64, vIndex int64, outputZoom int64, maxHei
 //
 //	inputZoom: the zoomLevel of the inputIndex
 //
-//	outputZoom: the zoomLevel of the outputIndex, before using zoomScalar (net outputZoom = outputZoom+zoomScalar)
+//	outputZoom: the zoomlevel of the outputIndex. Determines the number of indicies between min and max altitudes in the output.
 //
-//	zoomScalar: a scalar to add to outputZoom (net outputZoom = outputZoom+zoomScalar)
+//	altitudeRangeScalar: reduces the difference between min and max altitudes
 //
-//	offset: an integer to shift the height of the inputIndex up or down. A positive offset means the transformed index is higher in altitude than that of the input.
+//	indexOffset: an integer to shift the height of the inputIndex up or down. A positive offset means the transformed index is higher in altitude than that of the input.
 //
 // output:
 //
