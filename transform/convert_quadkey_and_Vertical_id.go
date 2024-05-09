@@ -726,12 +726,12 @@ func convertVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, a
 func calculateMinVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, altitudeRangeScalar int64, indexOffset int64) (int64, error) {
 
 	// check to make sure the input index exists in the input world
-	inputResolution := calculateVerticalResolution(inputZoom)
+	inputResolution := calculateArithmaticShift(1, inputZoom)
 
 	maxInputIndex := int64(inputResolution - 1)
 	minInputIndex := int64(0)
 
-	outputResolution := calculateVerticalResolution(outputZoom)
+	outputResolution := calculateArithmaticShift(1, outputZoom)
 	maxOutputIndex := int64(outputResolution-1) + indexOffset
 	minOutputIndex := indexOffset
 
@@ -740,7 +740,7 @@ func calculateMinVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int
 	}
 
 	// note that in the case of decimals, int64 rounds down to the nearest integer. This is desired behavior.
-	outputIndex := (indexOffset) + int64(float64(inputIndex)*calculateVerticalResolution(outputZoom-inputZoom+altitudeRangeScalar))
+	outputIndex := (indexOffset) + calculateArithmaticShift(inputIndex, (outputZoom-inputZoom+altitudeRangeScalar))
 
 	if outputIndex > maxOutputIndex || outputIndex < minOutputIndex {
 		return 0, errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, altitudeRangeScalar, and indexOffset")
@@ -765,16 +765,28 @@ func returnAltitudesOfVerticalIndex(index int64, zoomLevel int64, altitudeRangeS
 	}
 }
 
-// returns the number of indexes from global min to global max altitudes. Can be thought of as a wrapper for the power function.
-func calculateVerticalResolution(zoomLevel int64) float64 {
-	verticalResolution := math.Pow(2, float64(zoomLevel))
-	return verticalResolution
+// computes arithmatic shift of index and shift parameters
+func calculateArithmaticShift(index int64, shift int64) int64 {
+
+	// determine if shift is non-negative
+	if shift >= 0 {
+		return index << shift
+	} else {
+		return index >> -shift
+	}
+
 }
 
 // returns the height of a single voxel given an altitudeRangeScalar and an output vZoom
 // voxel height = (2^(25-altitudeRangeScalar-vZoom))
 func calculateVoxelHeight(vZoom int64, altitudeRangeScalar int64) float64 {
 	return calculateVerticalResolution(25 - altitudeRangeScalar - vZoom)
+}
+
+// returns the number of indexes from global min to global max altitudes. Can be thought of as a wrapper for the power function.
+func calculateVerticalResolution(zoomLevel int64) float64 {
+	verticalResolution := math.Pow(2, float64(zoomLevel))
+	return verticalResolution
 }
 
 // 高さのbit形式のインデックスを計算する。
