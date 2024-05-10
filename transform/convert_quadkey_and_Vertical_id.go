@@ -740,21 +740,6 @@ func calculateMinVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int
 
 }
 
-// returns the min and max altitudes of a given vertical index, zoomLevel, and indexOfset (add alpha)
-func returnAltitudesOfVerticalIndex(index int64, zoomLevel int64, altitudeRangeScalar int64, indexOffset int64) *VerticalIndexAltitudes {
-
-	netZoomLevel := 25 - zoomLevel - altitudeRangeScalar
-	netResolution := calculateVerticalResolution(netZoomLevel)
-
-	MinAltitude := float64(index+indexOffset) * netResolution
-	MaxAltitude := float64(index+indexOffset+1) * netResolution
-
-	return &VerticalIndexAltitudes{
-		MinAltitude: MinAltitude,
-		MaxAltitude: MaxAltitude,
-	}
-}
-
 // computes arithmatic shift of index and shift parameters
 func calculateArithmaticShift(index int64, shift int64) int64 {
 
@@ -765,18 +750,6 @@ func calculateArithmaticShift(index int64, shift int64) int64 {
 		return index >> -shift
 	}
 
-}
-
-// returns the height of a single voxel given an altitudeRangeScalar and an output vZoom
-// voxel height = (2^(25-altitudeRangeScalar-vZoom))
-func calculateVoxelHeight(vZoom int64, altitudeRangeScalar int64) float64 {
-	return calculateVerticalResolution(25 - altitudeRangeScalar - vZoom)
-}
-
-// returns the number of indexes from global min to global max altitudes. Can be thought of as a wrapper for the power function.
-func calculateVerticalResolution(zoomLevel int64) float64 {
-	verticalResolution := math.Pow(2, float64(zoomLevel))
-	return verticalResolution
 }
 
 // 高さのbit形式のインデックスを計算する。
