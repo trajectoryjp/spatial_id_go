@@ -17,12 +17,6 @@ var (
 	alt25 = math.Pow(2, 25)
 )
 
-// VerticalIndexAltitudes represents the lower limit (inclusive) and upper limit (exclusive) of a VerticalIndex
-type VerticalIndexAltitudes struct {
-	MinAltitude float64
-	MaxAltitude float64
-}
-
 // ConvertQuadkeysAndVerticalIDsToExtendedSpatialIDs 内部形式IDを拡張空間IDに変換する。
 //
 // 変換後の水平方向のIDはXYZ形式のタイルIDとなる。
