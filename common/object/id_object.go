@@ -5,16 +5,29 @@ package object
 type FromExtendedSpatialIDToQuadkeyAndAltitudekey struct {
 	// quadkey zoom level / quadkeyの精度
 	quadkeyZoom int64
-	// a list of quadkey-altitude key sets [[quadkey,vIndex]...]
+	// a list of quadkey-altitude key sets [[quadkey, altitudekey]...]
 	innerIDList [][2]int64
-	// vertical zoom level / 高さ方向の精度
+	// altitudekey zoom level / 高さ方向の精度
 	altitudekeyZoom int64
 	// altitude range scalar is s, where 2^25-s = altitude range (max altitude - min altitude)
 	altitudeRangeScalar int64
-	// the difference in index terms of min and max altitude from the standard range (0, 2^25 meters)
+	// shifts the altitude range up or down by n units of the resulting verticalIndex
 	verticalIndexOffset int64
 }
 
+// NewFromExtendedSpatialIDToQuadkeyAndVerticalID FromExtendedSpatialIDToQuadkeyAndVerticalID初期化関数
+//
+// input 引数：
+//
+//	quadkeyZoom： quadkey zoom level / quadkeyの精度
+//	innerIDList: [[quadkey,vIndex]...]
+//	altitudekeyZoom: // altitudekey zoom level / 高さ方向の精度
+//	altitudeRangeScalar: altitude range scalar is s, where 2^25-s = altitude range (max altitude - min altitude)
+//	verticalIndexOffset : shifts the altitude range up or down by n units of the resulting verticalIndex
+//
+// output 戻り値：
+//
+//	初期化したFromExtendedSpatialIDToQuadkeyAndAltitudekeyオブジェクト
 func NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(quadkeyZoom int64, innerIDList [][2]int64, altitudekeyZoom int64, altitudeRangeScalar int64, verticalIndexOffset int64) *FromExtendedSpatialIDToQuadkeyAndAltitudekey {
 	a := &FromExtendedSpatialIDToQuadkeyAndAltitudekey{}
 	a.SetQuadkeyZoom(quadkeyZoom)
@@ -25,42 +38,112 @@ func NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(quadkeyZoom int64, innerIDL
 	return a
 }
 
+// SetQuadkeyZoom 水平精度設定関数
+//
+// FromExtendedSpatialIDToQuadkeyAndAltitudekeyオブジェクトのquadkeyZoomを引数の入力値に設定する。
+//
+// input 引数：
+//
+//	quadkeyZoom：quadkeyの精度
 func (a *FromExtendedSpatialIDToQuadkeyAndAltitudekey) SetQuadkeyZoom(quadkeyZoom int64) {
 	a.quadkeyZoom = quadkeyZoom
 }
 
+// SetInnerIDList innerIDList設定関数
+//
+// FromExtendedSpatialIDToQuadkeyAndAltitudekeyオブジェクトのinnerIDListを引数の入力値に設定する。
+//
+// input 引数：
+//
+//	innerIDList：innerIDListのスライス
 func (a *FromExtendedSpatialIDToQuadkeyAndAltitudekey) SetInnerIDList(innerIDList [][2]int64) {
 	a.innerIDList = innerIDList
 }
 
+// SetVerticalZoom 垂直精度設定関数
+//
+// FromExtendedSpatialIDToQuadkeyAndAltitudekeyオブジェクトのVerticalZoomを引数の入力値に設定する。
+//
+// input 引数：
+//
+//	vZoom：垂直精度
 func (a *FromExtendedSpatialIDToQuadkeyAndAltitudekey) SetVerticalZoom(altitudekeyZoom int64) {
 	a.altitudekeyZoom = altitudekeyZoom
 }
 
+// SetAltitudeRangeScalar
+//
+// FromExtendedSpatialIDToQuadkeyAndAltitudekeyオブジェクトのVerticalZoomを引数の入力値に設定する。
+//
+// input 引数：
+//
+//	altitudeRangeScalar
 func (a *FromExtendedSpatialIDToQuadkeyAndAltitudekey) SetAltitudeRangeScalar(aScalar int64) {
 	a.altitudeRangeScalar = aScalar
 }
 
+// SetVerticalIndexOffset
+//
+// FromExtendedSpatialIDToQuadkeyAndAltitudekeyオブジェクトのVerticalZoomを引数の入力値に設定する。
+//
+// input 引数：
+//
+//	vZoom：垂直精度
 func (a *FromExtendedSpatialIDToQuadkeyAndAltitudekey) SetVerticalIndexOffset(verticalIndexOffset int64) {
 	a.verticalIndexOffset = verticalIndexOffset
 }
 
+// QuadkeyZoom QuadkeyZoom設定値取得関数
+//
+// FromExtendedSpatialIDToQuadkeyAndAltitudekeyオブジェクトに設定されているquadkeyZoomの値を取得する。
+//
+// output 戻り値：
+//
+//	FromExtendedSpatialIDToQuadkeyAndAltitudekeyオブジェクトに設定されているquadkeyZoomの値
 func (a *FromExtendedSpatialIDToQuadkeyAndAltitudekey) QuadkeyZoom() int64 {
 	return a.quadkeyZoom
 }
 
+// InnerIDList InnerIDList設定値取得関数
+//
+// FromExtendedSpatialIDToQuadkeyAndAltitudekeyオブジェクトに設定されているInnerIDListの値を取得する。
+//
+// output 戻り値：
+//
+//	FromExtendedSpatialIDToQuadkeyAndAltitudekeyオブジェクトに設定されているInnerIDListの値
 func (a *FromExtendedSpatialIDToQuadkeyAndAltitudekey) InnerIDList() [][2]int64 {
 	return a.innerIDList
 }
 
+// AltitudekeyZoom AltitudekeyZoom設定値取得関数
+//
+// FromExtendedSpatialIDToQuadkeyAndAltitudekeyオブジェクトに設定されているAltitudekeyZoomの値を取得する。
+//
+// output 戻り値：
+//
+//	FromExtendedSpatialIDToQuadkeyAndAltitudekeyオブジェクトに設定されているAltitudekeyZoomの値
 func (a *FromExtendedSpatialIDToQuadkeyAndAltitudekey) AltitudekeyZoom() int64 {
 	return a.altitudekeyZoom
 }
 
+// AltitudeRangeScalar AltitudeRangeScalar設定値取得関数
+//
+// FromExtendedSpatialIDToQuadkeyAndAltitudekeyオブジェクトに設定されているAltitudeRangeScalarの値を取得する。
+//
+// output 戻り値：
+//
+//	FromExtendedSpatialIDToQuadkeyAndAltitudekeyオブジェクトに設定されているAltitudeRangeScalarの値
 func (a *FromExtendedSpatialIDToQuadkeyAndAltitudekey) AltitudeRangeScalar() int64 {
 	return a.altitudeRangeScalar
 }
 
+// VerticalIndexOffset VerticalIndexOffset設定値取得関数
+//
+// FromExtendedSpatialIDToQuadkeyAndAltitudekeyオブジェクトに設定されているVerticalIndexOffsetの値を取得する。
+//
+// output 戻り値：
+//
+//	FromExtendedSpatialIDToQuadkeyAndAltitudekeyオブジェクトに設定されているVerticalIndexOffsetの値
 func (a *FromExtendedSpatialIDToQuadkeyAndAltitudekey) VerticalIndexOffset() int64 {
 	return a.verticalIndexOffset
 }
