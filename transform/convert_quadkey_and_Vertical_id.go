@@ -718,12 +718,12 @@ func convertVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, a
 func calculateMinVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, altitudeRangeScalar int64, indexOffset int64) (int64, error) {
 
 	// check to make sure the input index exists in the input world
-	inputResolution := calculateArithmaticShift(1, inputZoom)
+	inputResolution := CalculateArithmeticShift(1, inputZoom)
 
 	maxInputIndex := int64(inputResolution - 1)
 	minInputIndex := -int64(inputResolution + 1)
 
-	outputResolution := calculateArithmaticShift(1, outputZoom)
+	outputResolution := CalculateArithmeticShift(1, outputZoom)
 	maxOutputIndex := int64(outputResolution-1) + indexOffset
 	minOutputIndex := -int64(outputResolution+1) + indexOffset
 
@@ -732,7 +732,7 @@ func calculateMinVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int
 	}
 
 	// note that in the case of decimals, int64 rounds down to the nearest integer. This is desired behavior.
-	outputIndex := (indexOffset) + calculateArithmaticShift(inputIndex, (outputZoom-inputZoom+altitudeRangeScalar))
+	outputIndex := (indexOffset) + CalculateArithmeticShift(inputIndex, (outputZoom-inputZoom+altitudeRangeScalar))
 
 	if outputIndex > maxOutputIndex || outputIndex < minOutputIndex {
 		return 0, errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, altitudeRangeScalar, and indexOffset")
@@ -742,8 +742,9 @@ func calculateMinVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int
 
 }
 
-// computes arithmatic shift of index and shift parameters
-func calculateArithmaticShift(index int64, shift int64) int64 {
+// computes arithmatic shift of index and shift parameters. When index = 1, similar to returning 2^shift. When index > 1,
+// similar to returning index*2^shift.
+func CalculateArithmeticShift(index int64, shift int64) int64 {
 
 	// determine if shift is non-negative
 	if shift >= 0 {
