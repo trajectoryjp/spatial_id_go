@@ -755,6 +755,9 @@ func TestCalculateMinVerticalIndex(t *testing.T) {
 		{inputIndex: 47, inputZoom: 25, outputZoom: 24, indexOffset: 1, expectedOutput: 24},
 		{inputIndex: 47, inputZoom: 25, outputZoom: 20, indexOffset: 1, expectedOutput: 2},
 		{inputIndex: 47, inputZoom: 25, outputZoom: 12, indexOffset: 1, altitudeRangeScalar: 11, expectedOutput: 12},
+		{inputIndex: -1, inputZoom: 25, outputZoom: 25, indexOffset: 0, altitudeRangeScalar: 0, expectedOutput: -1},
+		{inputIndex: -100, inputZoom: 25, outputZoom: 26, indexOffset: 205, altitudeRangeScalar: 0, expectedOutput: 5},
+		{inputIndex: -100, inputZoom: 25, outputZoom: 26, indexOffset: 205, altitudeRangeScalar: 1, expectedOutput: -195},
 	}
 
 	for _, p := range data {
