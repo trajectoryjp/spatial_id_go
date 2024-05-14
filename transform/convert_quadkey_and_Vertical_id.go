@@ -720,12 +720,12 @@ func calculateMinVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int
 	// check to make sure the input index exists in the input world
 	inputResolution := CalculateArithmeticShift(1, inputZoom)
 
-	maxInputIndex := int64(inputResolution - 1)
-	minInputIndex := -int64(inputResolution + 1)
+	maxInputIndex := inputResolution - 1
+	minInputIndex := -inputResolution
 
 	outputResolution := CalculateArithmeticShift(1, outputZoom)
-	maxOutputIndex := int64(outputResolution-1) + indexOffset
-	minOutputIndex := -int64(outputResolution+1) + indexOffset
+	maxOutputIndex := outputResolution - 1 + indexOffset
+	minOutputIndex := -outputResolution + indexOffset
 
 	if inputIndex > maxInputIndex || inputIndex < minInputIndex {
 		return 0, errors.NewSpatialIdError(errors.InputValueErrorCode, "input index does not exist")
