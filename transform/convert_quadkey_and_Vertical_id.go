@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/trajectoryjp/spatial_id_go/v3/common"
 	"github.com/trajectoryjp/spatial_id_go/v3/common/errors"
 	"github.com/trajectoryjp/spatial_id_go/v3/common/object"
 	"github.com/trajectoryjp/spatial_id_go/v3/integrate"
@@ -718,12 +719,12 @@ func convertVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, a
 func calculateMinVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, altitudeRangeScalar int64, indexOffset int64) (int64, error) {
 
 	// check to make sure the input index exists in the input world
-	inputResolution := CalculateArithmeticShift(1, inputZoom)
+	inputResolution := common.CalculateArithmeticShift(1, inputZoom)
 
 	maxInputIndex := inputResolution - 1
 	minInputIndex := -inputResolution
 
-	outputResolution := CalculateArithmeticShift(1, outputZoom)
+	outputResolution := common.CalculateArithmeticShift(1, outputZoom)
 	maxOutputIndex := outputResolution - 1 + indexOffset
 	minOutputIndex := -outputResolution + indexOffset
 
@@ -732,26 +733,13 @@ func calculateMinVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int
 	}
 
 	// note that in the case of decimals, int64 rounds down to the nearest integer. This is desired behavior.
-	outputIndex := (indexOffset) + CalculateArithmeticShift(inputIndex, (outputZoom-inputZoom+altitudeRangeScalar))
+	outputIndex := (indexOffset) + common.CalculateArithmeticShift(inputIndex, (outputZoom-inputZoom+altitudeRangeScalar))
 
 	if outputIndex > maxOutputIndex || outputIndex < minOutputIndex {
 		return 0, errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, altitudeRangeScalar, and indexOffset")
 	}
 
 	return outputIndex, nil
-
-}
-
-// computes arithmatic shift of index and shift parameters. When index = 1, similar to returning 2^shift. When index > 1,
-// similar to returning index*2^shift.
-func CalculateArithmeticShift(index int64, shift int64) int64 {
-
-	// determine if shift is non-negative
-	if shift >= 0 {
-		return index << shift
-	} else {
-		return index >> -shift
-	}
 
 }
 
