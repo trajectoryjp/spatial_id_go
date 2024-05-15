@@ -9,6 +9,7 @@ import (
 
 	"github.com/trajectoryjp/spatial_id_go/v3/common/errors"
 	"github.com/trajectoryjp/spatial_id_go/v3/common/object"
+	"github.com/trajectoryjp/spatial_id_go/v3/shape"
 )
 
 func TestConvertQuadkeysAndVerticalIDsToExtendedSpatialIDs(t *testing.T) {
@@ -160,7 +161,7 @@ func TestConvertExtendedSpatialIdsToQuadkeysAndVerticalIDs(t *testing.T) {
 	//horizontalID: "5/4562451/2343566", result: 429},             //"12231"
 
 	quadkeyAndVerticalIDs := []*object.FromExtendedSpatialIDToQuadkeyAndVerticalID{}
-	newQuadkeyAndVerticalID := object.NewFromExtendedSpatialIDToQuadkeyAndVerticalID(21, [][2]int64{{29728048124, 58}, {29728048124, 57}, {29728048125, 58}, {29728048125, 57}, {29728048126, 58}, {29728048126, 57}, {29728048127, 58}, {29728048127, 57}}, 10, 500, 0)
+	newQuadkeyAndVerticalID := object.NewFromExtendedSpatialIDToQuadkeyAndVerticalID(21, [][2]int64{{29728048124, 57}, {29728048125, 57}, {29728048126, 57}, {29728048127, 57}}, 10, 500, 0)
 	quadkeyAndVerticalIDs = append(quadkeyAndVerticalIDs, newQuadkeyAndVerticalID)
 
 	quadkeyAndVerticalIDsSpatialIDs := []*object.FromExtendedSpatialIDToQuadkeyAndVerticalID{}
@@ -171,7 +172,7 @@ func TestConvertExtendedSpatialIdsToQuadkeysAndVerticalIDs(t *testing.T) {
 	newQuadkeyAndVerticalID = object.NewFromExtendedSpatialIDToQuadkeyAndVerticalID(1, [][2]int64{{0, 56}}, 26, 0, 0)
 	quadkeyAndVerticalIDsHBorders1 = append(quadkeyAndVerticalIDsHBorders1, newQuadkeyAndVerticalID)
 	quadkeyAndVerticalIDsHBorders31 := []*object.FromExtendedSpatialIDToQuadkeyAndVerticalID{}
-	newQuadkeyAndVerticalID = object.NewFromExtendedSpatialIDToQuadkeyAndVerticalID(31, [][2]int64{{29031296, 1}, {29031296, 0}}, 10, 500, 0)
+	newQuadkeyAndVerticalID = object.NewFromExtendedSpatialIDToQuadkeyAndVerticalID(31, [][2]int64{{29031296, 0}}, 10, 500, 0)
 	quadkeyAndVerticalIDsHBorders31 = append(quadkeyAndVerticalIDsHBorders31, newQuadkeyAndVerticalID)
 
 	// quadkeyAndVerticalIDsValueE := []*object.FromExtendedSpatialIDToQuadkeyAndVerticalID{}
@@ -195,10 +196,10 @@ func TestConvertExtendedSpatialIdsToQuadkeysAndVerticalIDs(t *testing.T) {
 		{spatialIds: []string{"20/85263/65423/26/56"}, ToHZoom: 19, ToVZoom: 26, maxHeight: 0, minHeight: 0.0, result: quadkeyAndVerticalIDsSpatialIDs, pattern: 0},
 
 		// 水平精度個数確認 低精度は1、高精度は精度差^4
-		{spatialIds: []string{"20/85263/65423/26/56"}, ToHZoom: 24, ToVZoom: 10, maxHeight: 500, minHeight: 0.0, result: quadkeyAndVerticalIDs, resultLength: 512, pattern: 2},
-		{spatialIds: []string{"20/85263/65423/26/56"}, ToHZoom: 2, ToVZoom: 10, maxHeight: 500, minHeight: 0.0, result: quadkeyAndVerticalIDs, resultLength: 2, pattern: 2},
+		{spatialIds: []string{"20/85263/65423/26/56"}, ToHZoom: 24, ToVZoom: 10, maxHeight: 500, minHeight: 0.0, result: quadkeyAndVerticalIDs, resultLength: 256, pattern: 2},
+		{spatialIds: []string{"20/85263/65423/26/56"}, ToHZoom: 2, ToVZoom: 10, maxHeight: 500, minHeight: 0.0, result: quadkeyAndVerticalIDs, resultLength: 1, pattern: 2},
 		// 水平精度境界値
-		{spatialIds: []string{"20/85263/65423/26/0"}, ToHZoom: 1, ToVZoom: 10, maxHeight: 500, minHeight: 0.0, result: quadkeyAndVerticalIDsHBorders1, resultLength: 2, pattern: 2},
+		{spatialIds: []string{"20/85263/65423/26/0"}, ToHZoom: 1, ToVZoom: 10, maxHeight: 500, minHeight: 0.0, result: quadkeyAndVerticalIDsHBorders1, resultLength: 1, pattern: 2},
 		{spatialIds: []string{"35/85263/65423/26/0"}, ToHZoom: 31, ToVZoom: 10, maxHeight: 500, minHeight: 0.0, result: quadkeyAndVerticalIDsHBorders31, pattern: 0},
 
 		// 垂直精度境界値
@@ -401,7 +402,7 @@ func TestConvertSpatialIdsToQuadkeysAndVerticalIDs(t *testing.T) {
 		{spatialIds: []string{"20/56/85263/65423"}, ToHZoom: 24, ToVZoom: 10, maxHeight: 500, minHeight: 0.0, result: quadkeyAndVerticalIDs, resultLength: 256, pattern: 2},
 		{spatialIds: []string{"20/56/85263/65423"}, ToHZoom: 2, ToVZoom: 10, maxHeight: 500, minHeight: 0.0, result: quadkeyAndVerticalIDs, resultLength: 1, pattern: 2},
 		// 水平精度境界値
-		{spatialIds: []string{"20/0/85263/65423"}, ToHZoom: 1, ToVZoom: 10, maxHeight: 500, minHeight: 0.0, result: quadkeyAndVerticalIDsHBorders1, resultLength: 66, pattern: 2},
+		{spatialIds: []string{"20/0/85263/65423"}, ToHZoom: 1, ToVZoom: 10, maxHeight: 500, minHeight: 0.0, result: quadkeyAndVerticalIDsHBorders1, resultLength: 65, pattern: 2},
 		{spatialIds: []string{"35/0/85263/65423"}, ToHZoom: 31, ToVZoom: 10, maxHeight: 500, minHeight: 0.0, result: quadkeyAndVerticalIDsHBorders31, pattern: 0},
 
 		// 垂直精度境界値
@@ -441,6 +442,81 @@ func TestConvertSpatialIdsToQuadkeysAndVerticalIDs(t *testing.T) {
 		}
 
 	}
+}
+
+func TestConvertSpatialIdsToQuadkeysAndVerticalIDs_02(t *testing.T) {
+
+	var (
+		hZoom     int64   = 23
+		vZoom     int64   = 23
+		maxHeight float64 = alt25
+		minHeight float64 = 0
+	)
+
+	startPoint, error := object.NewPoint(137.425712, 34.844234, 50)
+	if error != nil {
+		t.Fatal(error)
+	}
+
+	ExtendedSpatialIds, error := shape.GetExtendedSpatialIdsOnPoints(
+		[]*object.Point{startPoint},
+		hZoom,
+		vZoom,
+	)
+	if error != nil {
+		t.Fatal(error)
+	}
+
+	FromExtendedSpatialIdsToQuadKeysAndVerticalIds, error := ConvertExtendedSpatialIDsToQuadkeysAndVerticalIDs(
+		ExtendedSpatialIds,
+		hZoom,
+		vZoom,
+		maxHeight,
+		minHeight,
+	)
+	if error != nil {
+		t.Fatal(error)
+	}
+
+	var QuadKeysAndVerticalIds []*object.QuadkeyAndVerticalID
+
+	for _, keyset := range FromExtendedSpatialIdsToQuadKeysAndVerticalIds {
+		for _, innerId := range keyset.InnerIDList() {
+			newQuadKeyAndVerticalID := object.NewQuadkeyAndVerticalID(
+				keyset.QuadkeyZoom(),
+				innerId[0],
+				keyset.VerticalZoom(),
+				innerId[1],
+				keyset.MaxHeight(),
+				keyset.MinHeight(),
+			)
+
+			QuadKeysAndVerticalIds = append(QuadKeysAndVerticalIds, newQuadKeyAndVerticalID)
+		}
+	}
+
+	ExtendedSpatialIds2, error := ConvertQuadkeysAndVerticalIDsToExtendedSpatialIDs(
+		QuadKeysAndVerticalIds,
+		hZoom,
+		vZoom,
+	)
+	if error != nil {
+		t.Fatal(error)
+	}
+
+	// ExtendedSpatialIds should be equal to ExtendedSpatialIds2
+	map1, map2 := make(map[string]string), make(map[string]string)
+	for _, value := range ExtendedSpatialIds {
+		map1[value] = value
+	}
+	for _, value := range ExtendedSpatialIds2 {
+		map2[value] = value
+	}
+	if !reflect.DeepEqual(map1, map2) {
+		t.Errorf("空間ID - 期待値:%v, \n取得値: %v", map1, map2)
+	}
+	t.Log("テスト終了")
+
 }
 
 func SortCheck(r []*object.FromExtendedSpatialIDToQuadkeyAndVerticalID, rt []*object.FromExtendedSpatialIDToQuadkeyAndVerticalID) bool {
@@ -545,13 +621,15 @@ func TestConvertVerticallIDToBit(t *testing.T) {
 		result     []int64
 	}{
 		// 正常系 1111−0000すべて
-		{vZoom: 16, vIndex: 0, outputZoom: 4, maxHeight: 500.0, minHeight: 0.0, result: []int64{15, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14}},
+		{vZoom: 16, vIndex: 0, outputZoom: 4, maxHeight: 500.0, minHeight: 0.0, result: []int64{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14}},
 		// 正常系 bit形式の枠外(正方向)
 		{vZoom: 13, vIndex: 6, outputZoom: 5, maxHeight: 0.0, minHeight: -500.0, result: []int64{31}},
 		// 正常系 bit形式の枠外(負方向)
 		{vZoom: 13, vIndex: -6, outputZoom: 5, maxHeight: 500.0, minHeight: 0.0, result: []int64{0}},
-		{vZoom: 20, vIndex: 0, outputZoom: 8, maxHeight: 500.0, minHeight: -500.0, result: []int64{136, 128, 129, 130, 131, 132, 133, 134, 135}},
-		//{vZoom: 35, vIndex: 0, outputZoom: 35, maxHeight: 1.0, minHeight: 0.0, result: []int64{136, 128, 129, 130, 131, 132, 133, 134, 135}},
+		{vZoom: 20, vIndex: 0, outputZoom: 8, maxHeight: 500.0, minHeight: -500.0, result: []int64{128, 129, 130, 131, 132, 133, 134, 135}},
+		{vZoom: 23, vIndex: 12, outputZoom: 23, maxHeight: alt25, minHeight: 0.0, result: []int64{12}},
+		{vZoom: 23, vIndex: 12, outputZoom: 24, maxHeight: alt25, minHeight: 0.0, result: []int64{24, 25}},
+		{vZoom: 23, vIndex: 12, outputZoom: 25, maxHeight: alt25, minHeight: 0.0, result: []int64{48, 49, 50, 51}},
 	}
 	for _, p := range datas {
 		result := convertVerticallIDToBit(p.vZoom, p.vIndex, p.outputZoom, p.maxHeight, p.minHeight)
@@ -562,6 +640,8 @@ func TestConvertVerticallIDToBit(t *testing.T) {
 
 	}
 }
+
+//func TestConvertVerticallIDToBit_01
 
 func TestCalcBitIndex(t *testing.T) {
 	datas := []struct {
@@ -608,11 +688,15 @@ func TestConvertBitToVerticalID(t *testing.T) {
 	}{
 		// 正常系
 		// 01010101010101010101010101→5592405
-		{vZoom: 26, vIndex: 5592405, outputZoom: 26, maxHeight: 500, minHeight: 0, pattern: 0, result: []string{"26/83", "26/83"}},
-		{vZoom: 2, vIndex: 4, outputZoom: 25, maxHeight: 500, minHeight: 0, pattern: 1, result: []string{"126", "500", "375"}},
-		{vZoom: 26, vIndex: 5592405, outputZoom: 25, maxHeight: 0, minHeight: -500, pattern: 0, result: []string{"25/-459", "25/-459"}},
+		{vZoom: 26, vIndex: 5592405, outputZoom: 26, maxHeight: 500, minHeight: 0, pattern: 0, result: []string{"26/83"}},
+		{vZoom: 2, vIndex: 4, outputZoom: 25, maxHeight: 500, minHeight: 0, pattern: 0, result: []string{"25/500", "25/501", "25/502", "25/503", "25/504", "25/505", "25/506", "25/507", "25/508", "25/509", "25/510", "25/511", "25/512", "25/513", "25/514", "25/515", "25/516", "25/517", "25/518", "25/519", "25/520", "25/521", "25/522", "25/523", "25/524", "25/525", "25/526", "25/527", "25/528", "25/529", "25/530", "25/531", "25/532", "25/533", "25/534", "25/535", "25/536", "25/537", "25/538", "25/539", "25/540", "25/541", "25/542", "25/543", "25/544", "25/545", "25/546", "25/547", "25/548", "25/549", "25/550", "25/551", "25/552", "25/553", "25/554", "25/555", "25/556", "25/557", "25/558", "25/559", "25/560", "25/561", "25/562", "25/563", "25/564", "25/565", "25/566", "25/567", "25/568", "25/569", "25/570", "25/571", "25/572", "25/573", "25/574", "25/575", "25/576", "25/577", "25/578", "25/579", "25/580", "25/581", "25/582", "25/583", "25/584", "25/585", "25/586", "25/587", "25/588", "25/589", "25/590", "25/591", "25/592", "25/593", "25/594", "25/595", "25/596", "25/597", "25/598", "25/599", "25/600", "25/601", "25/602", "25/603", "25/604", "25/605", "25/606", "25/607", "25/608", "25/609", "25/610", "25/611", "25/612", "25/613", "25/614", "25/615", "25/616", "25/617", "25/618", "25/619", "25/620", "25/621", "25/622", "25/623", "25/624"}},
+		{vZoom: 26, vIndex: 5592405, outputZoom: 25, maxHeight: 0, minHeight: -500, pattern: 0, result: []string{"25/-459"}},
 		// インデックスの補完
-		{vZoom: 8, vIndex: 85, outputZoom: 26, maxHeight: 1000, minHeight: 0, pattern: 0, result: []string{"26/671", "26/664", "26/665", "26/666", "26/667", "26/668", "26/669", "26/670"}},
+		{vZoom: 8, vIndex: 85, outputZoom: 26, maxHeight: 1000, minHeight: 0, pattern: 0, result: []string{"26/664", "26/665", "26/666", "26/667", "26/668", "26/669", "26/670"}},
+		{vZoom: 23, vIndex: 12, outputZoom: 23, maxHeight: alt25, minHeight: 0, pattern: 0, result: []string{"23/12"}},
+		{vZoom: 23, vIndex: 12, outputZoom: 25, maxHeight: alt25, minHeight: 0, pattern: 0, result: []string{"25/48", "25/49", "25/50", "25/51"}},
+		{vZoom: 25, vIndex: 12, outputZoom: 24, maxHeight: alt25, minHeight: 0, pattern: 0, result: []string{"24/6"}},
+		{vZoom: 25, vIndex: 12, outputZoom: 23, maxHeight: alt25, minHeight: 0, pattern: 0, result: []string{"23/3"}},
 	}
 	for _, p := range datas {
 		result := convertBitToVerticalID(p.vZoom, p.vIndex, p.outputZoom, p.maxHeight, p.minHeight)
