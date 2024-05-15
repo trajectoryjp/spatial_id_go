@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/trajectoryjp/spatial_id_go/v2/shape"
+	"github.com/trajectoryjp/spatial_id_go/v3/shape"
 )
 
 func main() {

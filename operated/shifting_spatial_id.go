@@ -7,9 +7,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/trajectoryjp/spatial_id_go/v2/common"
-	"github.com/trajectoryjp/spatial_id_go/v2/common/consts"
-	"github.com/trajectoryjp/spatial_id_go/v2/common/object"
+	"github.com/trajectoryjp/spatial_id_go/v3/common"
+	"github.com/trajectoryjp/spatial_id_go/v3/common/consts"
+	"github.com/trajectoryjp/spatial_id_go/v3/common/object"
 )
 
 // Get6spatialIdsAdjacentToFaces 拡張空間IDの面6個の拡張空間ID取得関数
@@ -129,8 +129,9 @@ func Get26spatialIdsAroundVoxel(spatialID string) []string {
 //	 error: エラー
 func GetNspatialIdsAroundVoxcels(spatialIDs []string, hLayers, vLayers int64) ([]string, error) {
 
-	if hLayers < 1 || vLayers < 1 {
-		return nil, fmt.Errorf("both hLayers and vLayers parameters must be >= 1")
+	// invalid input validation (both parameters must be non-negative)
+	if hLayers < 0 || vLayers < 0 {
+		return nil, fmt.Errorf("both hLayers and vLayers parameters must be >= 0")
 	}
 
 	hExpandParam := hLayers * 2

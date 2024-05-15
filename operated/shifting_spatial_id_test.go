@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/trajectoryjp/spatial_id_go/v2/common"
+	"github.com/trajectoryjp/spatial_id_go/v3/common"
 )
 
 // TestGet6spatialIdsAdjacentToFaces01 正常系動作確認
@@ -241,6 +241,8 @@ func TestGetShiftingSpatialID07(t *testing.T) {
 	t.Log("テスト終了")
 }
 
+// TestGetNspatialIdsAroundVoxcels01 tests hLayers=1 and vLayers=1 around two spatial IDs
+// Expected value should return the same result as the combined, unique result of Get26spatialIdsAroundVoxel() for each of the two "ids"
 func TestGetNspatialIdsAroundVoxcels01(t *testing.T) {
 
 	ids := []string{"10/10/10/10/10", "10/11/11/10/10"}
@@ -271,6 +273,8 @@ func TestGetNspatialIdsAroundVoxcels01(t *testing.T) {
 
 }
 
+// TestGetNspatialIdsAroundVoxcels02 tests hLayers=1 and vLayers=1
+// Expected value should be the same result as Get26spatialIdsAroundVoxel()
 func TestGetNspatialIdsAroundVoxcels02(t *testing.T) {
 
 	ids := []string{"10/10/10/10/10"}
@@ -279,6 +283,67 @@ func TestGetNspatialIdsAroundVoxcels02(t *testing.T) {
 	nLayer := 1
 
 	resultVal, error := GetNspatialIdsAroundVoxcels(ids, int64(nLayer), int64(nLayer))
+	if error != nil {
+		t.Error(error)
+	}
+
+	// using maps will allow comparison with deepEqual if order is different
+	map1, map2 := make(map[string]string), make(map[string]string)
+	for _, value := range expectVal {
+		map1[value] = value
+	}
+	for _, value := range resultVal {
+		map2[value] = value
+	}
+	if !reflect.DeepEqual(map1, map2) {
+		// 戻り値の空間IDが期待値と異なる場合Errorをログに出力
+		t.Errorf("空間ID - 期待値:%v, \n取得値: %v", map1, map2)
+	}
+	t.Log("テスト終了")
+
+}
+
+// TestGetNspatialIdsAroundVoxcels03 tests hLayers=0 and vLayers=0
+// Expected value should be 0 Extended Spatial IDs, or an empty string []string{}
+func TestGetNspatialIdsAroundVoxcels03(t *testing.T) {
+
+	ids := []string{"10/10/10/10/10"}
+	expectVal := []string{}
+
+	nLayer := 0
+
+	resultVal, error := GetNspatialIdsAroundVoxcels(ids, int64(nLayer), int64(nLayer))
+	if error != nil {
+		t.Error(error)
+	}
+
+	// using maps will allow comparison with deepEqual if order is different
+	map1, map2 := make(map[string]string), make(map[string]string)
+	for _, value := range expectVal {
+		map1[value] = value
+	}
+	for _, value := range resultVal {
+		map2[value] = value
+	}
+	if !reflect.DeepEqual(map1, map2) {
+		// 戻り値の空間IDが期待値と異なる場合Errorをログに出力
+		t.Errorf("空間ID - 期待値:%v, \n取得値: %v", map1, map2)
+	}
+	t.Log("テスト終了")
+
+}
+
+// TestGetNspatialIdsAroundVoxcels04 tests hLayers=0 and vLayers=1
+// Expected value should be 1 Extended Spatial ID above and 1 Extended Spatial ID below "id"
+func TestGetNspatialIdsAroundVoxcels04(t *testing.T) {
+
+	ids := []string{"10/10/10/10/10"}
+	expectVal := []string{"10/10/10/10/9", "10/10/10/10/11"}
+
+	resultVal, error := GetNspatialIdsAroundVoxcels(
+		ids,
+		0,
+		1)
 	if error != nil {
 		t.Error(error)
 	}

@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/trajectoryjp/spatial_id_go/v2/common"
-	"github.com/trajectoryjp/spatial_id_go/v2/common/consts"
-	"github.com/trajectoryjp/spatial_id_go/v2/common/enum"
-	"github.com/trajectoryjp/spatial_id_go/v2/common/object"
-	"github.com/trajectoryjp/spatial_id_go/v2/operated"
-	"github.com/trajectoryjp/spatial_id_go/v2/shape"
+	"github.com/trajectoryjp/spatial_id_go/v3/common"
+	"github.com/trajectoryjp/spatial_id_go/v3/common/consts"
+	"github.com/trajectoryjp/spatial_id_go/v3/common/enum"
+	"github.com/trajectoryjp/spatial_id_go/v3/common/object"
+	"github.com/trajectoryjp/spatial_id_go/v3/operated"
+	"github.com/trajectoryjp/spatial_id_go/v3/shape"
 
 	"github.com/go-gl/mathgl/mgl64"
 
@@ -17,7 +17,7 @@ import (
 	geodesy "github.com/trajectoryjp/geodesy_go/coordinates"
 )
 
-// GetSpatialIdsWithinRadiusOfLine
+// GetExtendedSpatialIdsWithinRadiusOfLine
 // 直線と線からradiusの距離以内の拡張空間IDを取得する
 //
 // 引数：
@@ -27,13 +27,14 @@ import (
 //	radius: 半径。拡張空間IDはradius以内だと、戻り値のスライスを追加される。
 //  hZoom: 垂直方向の精度レベル
 //  vZoom: 水平方向の精度レベル
+//  skipsMeasurement: 始点と終点の線と収取された空間IDの距離を計る処理を飛ばすかどうか
 //
 // 戻り値：
 //
 //	拡張空間IDスライス： []string
 //  error: エラー
 
-func GetSpatialIdsWithinRadiusOfLine(startPoint *object.Point, endPoint *object.Point, radius float64, hZoom int64, vZoom int64, skipsMeasurement bool) ([]string, error) {
+func GetExtendedSpatialIdsWithinRadiusOfLine(startPoint *object.Point, endPoint *object.Point, radius float64, hZoom int64, vZoom int64, skipsMeasurement bool) ([]string, error) {
 
 	// 1. Return the Extended Spatial Ids on the line determined by startPoint and endPoint
 
@@ -41,22 +42,17 @@ func GetSpatialIdsWithinRadiusOfLine(startPoint *object.Point, endPoint *object.
 	if error != nil {
 		return nil, error
 	}
-
 	// 2. Find the Spatial Ids that are not on the line but within the radius distance of the line
 
 	// Variable Setup
 
 	// the closest.measure object to determine IDs not on the path line but within the criterion distance
 	var measure1 = closest.Measure{}
-	// the distances from each SpatialID in uniqueMegaBoxIDs to the route path line
-	var measureDistances1 []float64
-	// the slice of Spatial IDs created by combining the result of all adjacent 26 SpatialIDs from all spatialIDs on the route line
-	var megaBoxIds []string
-	// the slice of unique Spatial IDs (non-duplicates) from megaBoxIDs
-	var uniqueMegaBoxIds []string
-	// the Spatial IDs in uniqueMegaBoxIds with the IDs on the route path line removed
-	var noLinePathMegaBoxIds []string
-	// the slice of Spatial Ids from noLinePathMegaBoxIds found within the radius but not on the route line
+	// the slice of ExtendedSpatialIDs around the Ids on the route line. (returned result already cleaned for duplicates).
+	var idsAroundVoxcels []string
+	// the Extended Spatial IDs with the IDs on the route path line removed
+	var idsAroundLine []string // fix this
+	// the slice of Extended Spatial Ids from noLinePathIdsAroundLine found within the radius but not on the route line
 	var idsToAdd []string
 	// points is the [2]slice / list of startPoint and endPoint in geodesic format (lat/lon)
 	var points = []*object.Point{startPoint, endPoint}
@@ -96,20 +92,18 @@ func GetSpatialIdsWithinRadiusOfLine(startPoint *object.Point, endPoint *object.
 	}
 
 	// Return the SpatialIDs within the box created by hLayers and vLayers
-	megaBoxIds, error = operated.GetNspatialIdsAroundVoxcels(idsOnLine, hLayers, vLayers)
+	idsAroundVoxcels, error = operated.GetNspatialIdsAroundVoxcels(idsOnLine, hLayers, vLayers)
 	if error != nil {
 		return nil, error
 	}
 
-	// Make unique list of spatial ids
-	uniqueMegaBoxIds = common.Unique(megaBoxIds)
+	// Remove the spatial ids in the line from the ids around the line so that only the ids around the line remain
+	idsAroundLine = common.Difference(idsAroundVoxcels, idsOnLine)
 
-	// Subtract the spatial ids in the line
-	noLinePathMegaBoxIds = common.Difference(uniqueMegaBoxIds, idsOnLine)
-
+	// if skipsMeasurement=true, measure the distance between the route line and each id in idsAroundLine
 	if !skipsMeasurement {
 
-		for _, id := range noLinePathMegaBoxIds {
+		for _, id := range idsAroundLine {
 
 			// Get 8 vertexes of the SpatialID
 			IdVertexes, error := shape.GetPointOnExtendedSpatialId(id, enum.Vertex)
@@ -143,8 +137,6 @@ func GetSpatialIdsWithinRadiusOfLine(startPoint *object.Point, endPoint *object.
 			// dist is the closest distance between the line (ConvexHull[0]) and the vertexes of Spatial ID[i]
 			var dist = measure1.Distance
 
-			measureDistances1 = append(measureDistances1, dist)
-
 			// Since MeasureNonnegativeDistance() was used the distance value in dist
 			// will always be non-zero. If dist < radius, add the spatialID to idsToAdd
 			if dist < (radius) {
@@ -157,7 +149,8 @@ func GetSpatialIdsWithinRadiusOfLine(startPoint *object.Point, endPoint *object.
 		idsWithinCriterion = common.Unique(common.Union(idsToAdd, idsOnLine))
 
 	} else {
-		idsWithinCriterion = megaBoxIds
+		// if skipsMeasurement=false, return all ids in noLinePathIdsAroundLine and combine with idsOnLine
+		idsWithinCriterion = common.Unique(common.Union(idsAroundLine, idsOnLine))
 	}
 
 	return idsWithinCriterion, nil
@@ -179,7 +172,10 @@ func GetSpatialIdsWithinRadiusOfLine(startPoint *object.Point, endPoint *object.
 //	 error: エラー
 func FitClearanceAroundExtendedSpatialID(spatialID string, clearance float64) (horizontalLayer int64, verticalLayer int64, error error) {
 
-	// validate clearance
+	// validate clearance: There are two special cases:
+	// 1. The clearance must be non-negative (clearance must be >= 0)
+	// 2. If the clearance is exactly 0, return 0 for both the horizontalLayer and verticalLayer. This is because
+	// if clearance is 0, the only Spatial IDs that are on the route line should be used -- no surrounding Spatial IDs
 	if clearance < 0 {
 		return 0, 0, fmt.Errorf("\ninvalid clearance value. Clearance must be >= 0")
 	}
@@ -199,8 +195,8 @@ func FitClearanceAroundExtendedSpatialID(spatialID string, clearance float64) (h
 	// vLayyer is the number of vertical spatialID distances required to fit the clearance
 	var vLayer int64
 
-	var hUnits int64 = 2
-	var vUnits int64 = 2
+	var hUnits int64 = 1
+	var vUnits int64 = 1
 
 	// Begin horizonal fitting loop (determine hLayer)
 	for {

@@ -4,7 +4,7 @@ package common
 import (
 	"math"
 
-	"github.com/trajectoryjp/spatial_id_go/v2/common/errors"
+	"github.com/trajectoryjp/spatial_id_go/v3/common/errors"
 )
 
 // AlmostEqual 同値確認関数
@@ -321,4 +321,17 @@ func Combinations(n, k int64, f func([]int64)) {
 			pattern[pos] = pattern[pos-1] + 1
 		}
 	}
+}
+
+// computes arithmatic shift of index and shift parameters. When index = 1, similar to returning 2^shift. When index > 1,
+// similar to returning index*2^shift.
+func CalculateArithmeticShift(index int64, shift int64) int64 {
+
+	// determine if shift is non-negative
+	if shift >= 0 {
+		return index << shift
+	} else {
+		return index >> -shift
+	}
+
 }
