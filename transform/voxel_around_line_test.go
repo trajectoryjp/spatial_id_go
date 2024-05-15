@@ -152,7 +152,7 @@ func TestFitClearanceAroundExtendedSpatialID01(t *testing.T) {
 	if error != nil {
 		t.Error(error)
 	}
-	hLayer, vLayer, error := testFitClearanceAroundSpatialID(t, point, clearance, 25, 25)
+	hLayer, vLayer, error := testFitClearanceAroundSpatialID(point, clearance, 25, 25)
 	if error != nil {
 		t.Error(error)
 	}
@@ -176,7 +176,7 @@ func TestFitClearanceAroundExtendedSpatialID02(t *testing.T) {
 	if error != nil {
 		t.Error(error)
 	}
-	hLayer, vLayer, error := testFitClearanceAroundSpatialID(t, point, clearance, 25, 25)
+	hLayer, vLayer, error := testFitClearanceAroundSpatialID(point, clearance, 25, 25)
 	if error != nil {
 		t.Error(error)
 	}
@@ -200,7 +200,7 @@ func TestFitClearanceAroundExtendedSpatialID03(t *testing.T) {
 	if error != nil {
 		t.Error(error)
 	}
-	hLayer, vLayer, error := testFitClearanceAroundSpatialID(t, point, clearance, 23, 23)
+	hLayer, vLayer, error := testFitClearanceAroundSpatialID(point, clearance, 23, 23)
 	if error != nil {
 		t.Error(error)
 	}
@@ -224,7 +224,7 @@ func TestFitClearanceAroundExtendedSpatialID04(t *testing.T) {
 	if error != nil {
 		t.Error(error)
 	}
-	hLayer, vLayer, error := testFitClearanceAroundSpatialID(t, point, clearance, 21, 21)
+	hLayer, vLayer, error := testFitClearanceAroundSpatialID(point, clearance, 21, 21)
 	if error != nil {
 		t.Error(error)
 	}
@@ -248,7 +248,7 @@ func TestFitClearanceAroundExtendedSpatialID05(t *testing.T) {
 	if error != nil {
 		t.Error(error)
 	}
-	hLayer, vLayer, error := testFitClearanceAroundSpatialID(t, point, clearance, 21, 21)
+	hLayer, vLayer, error := testFitClearanceAroundSpatialID(point, clearance, 21, 21)
 	if error != nil {
 		t.Error(error)
 	}
@@ -262,7 +262,7 @@ func TestFitClearanceAroundExtendedSpatialID05(t *testing.T) {
 
 }
 
-func testFitClearanceAroundSpatialID(t *testing.T, point *object.Point, clearance float64, hZoom int64, vZoom int64) (hLayer int64, vlayer int64, error error) {
+func testFitClearanceAroundSpatialID(point *object.Point, clearance float64, hZoom int64, vZoom int64) (hLayer int64, vlayer int64, error error) {
 
 	points := []*object.Point{point}
 	// 25, 25 is just over 1m box
