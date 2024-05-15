@@ -373,7 +373,7 @@ func ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(extendedSpatialIDs []str
 	duplicate := map[[2]int64]interface{}{}
 
 	for _, idString := range extendedSpatialIDs {
-		altitudeKeys := []int64{}
+		var altitudeKeys []int64
 		quadkeys := []int64{}
 
 		currentID, error := object.NewExtendedSpatialID(idString)
