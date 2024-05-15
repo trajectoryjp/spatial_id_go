@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/trajectoryjp/spatial_id_go/v3/common"
 	"github.com/trajectoryjp/spatial_id_go/v3/common/errors"
 	"github.com/trajectoryjp/spatial_id_go/v3/common/object"
 	"github.com/trajectoryjp/spatial_id_go/v3/integrate"
@@ -268,7 +269,7 @@ func ConvertExtendedSpatialIDsToQuadkeysAndVerticalIDs(extendedSpatialIDs []stri
 	if !quadkeyCheckZoom(outputHZoom, outputVZoom) {
 		return []*object.FromExtendedSpatialIDToQuadkeyAndVerticalID{}, errors.NewSpatialIdError(errors.InputValueErrorCode, "")
 	}
-	// outputのZoomレベルが指定されている前提のため、QuadkeyとAltitudeKeyのみを比較
+	// outputのZoomレベルが指定されている前提のため、QuadkeyとAltitudekeyのみを比較
 	deduplication := map[[2]int64]interface{}{}
 
 	for _, spatialID := range extendedSpatialIDs {
@@ -340,6 +341,94 @@ func ConvertExtendedSpatialIDsToQuadkeysAndVerticalIDs(extendedSpatialIDs []stri
 
 	// 構造体のスライスを返却する。
 	return extendedSpatialIDToQuadkeyAndVerticalID, nil
+}
+
+// ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys
+//
+//	Converts ExtendedSpatialIDs to []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey given zoom, scalar and offset parameters
+//
+// input:
+//
+// extendedSpatialIDs: slice of string-encoded ExtendedSpatialIDs
+//
+// outputQuadkeyZoom: the horizontal resolution of the output
+//
+// outputAltitudeKeyZoom: the vertical resolution of the output
+//
+// altitudeRangeScalar: altitude range scalar is s, where 2^25-s = altitude range (max altitude - min altitude)
+//
+// verticalIndexOffset : shifts the altitude range up or down by n units of the resulting verticalIndex
+//
+// output:
+//
+// []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey, error
+func ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(extendedSpatialIDs []string, outputQuadkeyZoom int64, outputAltitudekeyZoom int64, altitudeRangeScalar int64, verticalIndexOffset int64) ([]*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey, error) {
+	extendedSpatialIDToQuadkeyAndAltitudekey := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{}
+
+	// validate zoom levels
+	if !quadkeyCheckZoom(outputQuadkeyZoom, outputAltitudekeyZoom) {
+		return []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{}, errors.NewSpatialIdError(errors.InputValueErrorCode, "")
+	}
+	// outputのZoomレベルが指定されている前提のため、QuadkeyとAltitudekeyのみを比較
+	duplicate := map[[2]int64]interface{}{}
+
+	for _, idString := range extendedSpatialIDs {
+		altitudeKeys := []int64{}
+		quadkeys := []int64{}
+
+		currentID, error := object.NewExtendedSpatialID(idString)
+		if error != nil {
+			return nil, error
+		}
+
+		// check zoom of currentID
+		if !extendedSpatialIDCheckZoom(currentID.HZoom(), currentID.VZoom()) {
+			return []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{}, errors.NewSpatialIdError(errors.InputValueErrorCode, "")
+		}
+		// A. convert horizontal IDs to quadkeys to fit output Horizontal Zoom Level
+		horizontalIDs := integrate.HorizontalZoom(currentID.HZoom(), currentID.X(), currentID.Y(), outputQuadkeyZoom)
+
+		for _, horizontalID := range horizontalIDs {
+			quadkey := convertHorizontalIDToQuadkey(horizontalID)
+			quadkeys = append(quadkeys, quadkey)
+		}
+
+		// B. convert vertical IDs to fit Output Vertical Zoom Level
+		altitudeKeys, error = convertVerticalIndex(currentID.Z(), currentID.VZoom(), outputAltitudekeyZoom, altitudeRangeScalar, verticalIndexOffset)
+		if error != nil {
+			return nil, error
+		}
+
+		// 水平方向と垂直方向の組み合わせを作成する
+		idList := [][2]int64{}
+		for _, quadkey := range quadkeys {
+			for _, altitudeKey := range altitudeKeys {
+				newID := [2]int64{quadkey, altitudeKey}
+				if _, ok := duplicate[newID]; ok {
+					continue
+				} else {
+					duplicate[newID] = new(interface{})
+				}
+				idList = append(idList, [2]int64{quadkey, altitudeKey})
+			}
+		}
+		if len(idList) == 0 {
+			continue
+		}
+
+		newQuadkeyAndVerticalID := object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(
+			outputQuadkeyZoom,
+			idList,
+			outputAltitudekeyZoom,
+			altitudeRangeScalar,
+			verticalIndexOffset,
+		)
+
+		extendedSpatialIDToQuadkeyAndAltitudekey = append(extendedSpatialIDToQuadkeyAndAltitudekey, newQuadkeyAndVerticalID)
+	}
+
+	// 構造体のスライスを返却する。
+	return extendedSpatialIDToQuadkeyAndAltitudekey, nil
 }
 
 // ConvertSpatialIDsToQuadkeysAndVerticalIDs 空間IDを内部形式IDに変換する。
@@ -576,6 +665,84 @@ func convertVerticallIDToBit(vZoom int64, vIndex int64, outputZoom int64, maxHei
 
 }
 
+// transforms the vertical index with a given index-ZoomLevel pair and returns the vertical index(es) that occupy the same vertical space with a new zoomLevel, zoomScalar, and vertical offset.
+//
+// input:
+//
+//	inputIndex: the index to transform
+//
+//	inputZoom: the zoomLevel of the inputIndex
+//
+//	outputZoom: the zoomlevel of the outputIndex. Determines the number of indicies between min and max altitudes in the output.
+//
+//	altitudeRangeScalar: reduces the difference between min and max altitudes
+//
+//	indexOffset: an integer to shift the height of the inputIndex up or down. A positive offset means the transformed index is higher in altitude than that of the input.
+//
+// output:
+//
+//	[]int64 list of vertical index(es), error
+func convertVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, altitudeRangeScalar int64, indexOffset int64) ([]int64, error) {
+
+	var (
+		outputIndexes []int64
+		error         error
+	)
+
+	// determine the upper and lower index bounds to search for matches in height solution space
+	lowerBound, error := calculateMinVerticalIndex(inputIndex, inputZoom, outputZoom, altitudeRangeScalar, indexOffset)
+	if error != nil {
+		return nil, error
+	}
+	upperBound, error := calculateMinVerticalIndex(inputIndex+1, inputZoom, outputZoom, altitudeRangeScalar, indexOffset)
+	if error != nil {
+		return nil, error
+	}
+
+	// Determine the vertical index/indices to return.
+	// a) always return the lowerBound index. Regardless of the difference between the inputZoom and outputZoom,
+	// mathematically the altitude associated with the lower bounds will always satisfy the solution set.
+	// b) cycle through indices from lowerBounds+1 to upperBounds with i to find any possible additional indexes
+	// that satisfy the solution set.
+	outputIndexes = append(outputIndexes, lowerBound)
+
+	for i := lowerBound + 1; i < upperBound; i++ {
+
+		outputIndexes = append(outputIndexes, int64(i))
+	}
+
+	return outputIndexes, nil
+
+}
+
+// converts a vertical index from one set of zoom parameters to another disregarding the floor() cacluation. This creates a simplier system of equations where the solu	tion set for height is a single variable. However, this does not describe the full solution set of height since we have excluded the floor calculation; it describes the condition where m = x, given m = floor(x) if and only if m <= x < m +1;
+func calculateMinVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, altitudeRangeScalar int64, indexOffset int64) (int64, error) {
+
+	// check to make sure the input index exists in the input world
+	inputResolution := common.CalculateArithmeticShift(1, inputZoom)
+
+	maxInputIndex := inputResolution - 1
+	minInputIndex := -inputResolution
+
+	outputResolution := common.CalculateArithmeticShift(1, outputZoom)
+	maxOutputIndex := outputResolution - 1 + indexOffset
+	minOutputIndex := -outputResolution + indexOffset
+
+	if inputIndex > maxInputIndex || inputIndex < minInputIndex {
+		return 0, errors.NewSpatialIdError(errors.InputValueErrorCode, "input index does not exist")
+	}
+
+	// note that in the case of decimals, int64 rounds down to the nearest integer. This is desired behavior.
+	outputIndex := (indexOffset) + common.CalculateArithmeticShift(inputIndex, (outputZoom-inputZoom+altitudeRangeScalar))
+
+	if outputIndex > maxOutputIndex || outputIndex < minOutputIndex {
+		return 0, errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, altitudeRangeScalar, and indexOffset")
+	}
+
+	return outputIndex, nil
+
+}
+
 // 高さのbit形式のインデックスを計算する。
 //
 // 引数 :
@@ -596,7 +763,7 @@ func calcBitIndex(altitude float64, outputZoom int64, maxHeight float64, minHeig
 	var i int64
 	// 出力の精度の回数ループする。
 	for i = 0; i < outputZoom; i++ {
-		bit := bitIndex << 1
+		bit := bitIndex << 1 // bit=0, same type as bitIndex
 		// 境界の高さを計算する
 		borderHeight := (maxHeight-minHeight)/2 + minHeight
 		if altitude >= borderHeight {
