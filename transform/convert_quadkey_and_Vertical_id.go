@@ -355,14 +355,14 @@ func ConvertExtendedSpatialIDsToQuadkeysAndVerticalIDs(extendedSpatialIDs []stri
 //
 // outputAltitudeKeyZoom: the vertical resolution of the output
 //
-// altitudeRangeScalar: altitude range scalar is s, where 2^25-s = altitude range (max altitude - min altitude)
+// zBaseExponent: zBaseExponent is b, where 2^b = altitude range (max altitude - min altitude)
 //
 // verticalIndexOffset : shifts the altitude range up or down by n units of the resulting verticalIndex
 //
 // output:
 //
 // []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey, error
-func ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(extendedSpatialIDs []string, outputQuadkeyZoom int64, outputAltitudekeyZoom int64, altitudeRangeScalar int64, verticalIndexOffset int64) ([]*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey, error) {
+func ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(extendedSpatialIDs []string, outputQuadkeyZoom int64, outputAltitudekeyZoom int64, zBaseExponent int64, verticalIndexOffset int64) ([]*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey, error) {
 	extendedSpatialIDToQuadkeyAndAltitudekey := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{}
 
 	// validate zoom levels
@@ -394,7 +394,7 @@ func ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(extendedSpatialIDs []str
 		}
 
 		// B. convert vertical IDs to fit Output Vertical Zoom Level
-		altitudeKeys, error = convertVerticalIndex(currentID.Z(), currentID.VZoom(), outputAltitudekeyZoom, altitudeRangeScalar, verticalIndexOffset)
+		altitudeKeys, error = convertVerticalIndex(currentID.Z(), currentID.VZoom(), outputAltitudekeyZoom, zBaseExponent, verticalIndexOffset)
 		if error != nil {
 			return nil, error
 		}
@@ -420,7 +420,7 @@ func ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(extendedSpatialIDs []str
 			outputQuadkeyZoom,
 			idList,
 			outputAltitudekeyZoom,
-			altitudeRangeScalar,
+			zBaseExponent,
 			verticalIndexOffset,
 		)
 
@@ -675,14 +675,14 @@ func convertVerticallIDToBit(vZoom int64, vIndex int64, outputZoom int64, maxHei
 //
 //	outputZoom: the zoomlevel of the outputIndex. Determines the number of indicies between min and max altitudes in the output.
 //
-//	altitudeRangeScalar: reduces the difference between min and max altitudes
+//	zBaseExponent: sets the exponent, b, in 2^b that determines the difference between min and max altitudes of output system.
 //
-//	indexOffset: an integer to shift the height of the inputIndex up or down. A positive offset means the transformed index is higher in altitude than that of the input.
+//	zBaseOffset: an integer to shift inputIndex up or down by zBaseOffset indicies; one zBaseOffset index is defined in zOriginZoom terms, where one index is equivalent to a 1 meter height distance. A positive offset means the transformed index is higher in altitude than that of the input.
 //
 // output:
 //
 //	[]int64 list of vertical index(es), error
-func convertVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, altitudeRangeScalar int64, indexOffset int64) ([]int64, error) {
+func convertVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, zBaseExponent int64, indexOffset int64) ([]int64, error) {
 
 	var (
 		outputIndexes []int64
@@ -690,11 +690,11 @@ func convertVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, a
 	)
 
 	// determine the upper and lower index bounds to search for matches in height solution space
-	lowerBound, error := calculateMinVerticalIndex(inputIndex, inputZoom, outputZoom, altitudeRangeScalar, indexOffset)
+	lowerBound, error := calculateMinVerticalIndex(inputIndex, inputZoom, outputZoom, zBaseExponent, indexOffset)
 	if error != nil {
 		return nil, error
 	}
-	upperBound, error := calculateMinVerticalIndex(inputIndex+1, inputZoom, outputZoom, altitudeRangeScalar, indexOffset)
+	upperBound, error := calculateMinVerticalIndex(inputIndex+1, inputZoom, outputZoom, zBaseExponent, indexOffset)
 	if error != nil {
 		return nil, error
 	}
@@ -715,28 +715,28 @@ func convertVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, a
 
 }
 
-// converts a vertical index from one set of zoom parameters to another disregarding the floor() cacluation. This creates a simplier system of equations where the solu	tion set for height is a single variable. However, this does not describe the full solution set of height since we have excluded the floor calculation; it describes the condition where m = x, given m = floor(x) if and only if m <= x < m +1;
-func calculateMinVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, altitudeRangeScalar int64, indexOffset int64) (int64, error) {
+// converts a vertical index from one set of zoom parameters to another disregarding the floor() cacluation. This creates a simplier system of equations where the solution set for height is a single variable. However, this does not describe the full solution set of height since we have excluded the floor calculation; it describes the condition where m = x, given m = floor(x) if and only if m <= x < m +1;
+func calculateMinVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, zBaseExponent int64, indexOffset int64) (int64, error) {
 
-	// check to make sure the input index exists in the input world
+	// check to make sure the input index exists in the input system
 	inputResolution := common.CalculateArithmeticShift(1, inputZoom)
 
 	maxInputIndex := inputResolution - 1
 	minInputIndex := -inputResolution
 
-	outputResolution := common.CalculateArithmeticShift(1, outputZoom)
-	maxOutputIndex := outputResolution - 1 + indexOffset
-	minOutputIndex := -outputResolution + indexOffset
-
 	if inputIndex > maxInputIndex || inputIndex < minInputIndex {
 		return 0, errors.NewSpatialIdError(errors.InputValueErrorCode, "input index does not exist")
 	}
 
-	// note that in the case of decimals, int64 rounds down to the nearest integer. This is desired behavior.
-	outputIndex := (indexOffset) + common.CalculateArithmeticShift(inputIndex, (outputZoom-inputZoom+altitudeRangeScalar))
+	// calculate outputIndex and check to make sure it exists in output system
+	outputResolution := common.CalculateArithmeticShift(1, outputZoom)
+	maxOutputIndex := outputResolution - 1 + indexOffset
+	minOutputIndex := -outputResolution + indexOffset
+
+	outputIndex := (indexOffset) + common.CalculateArithmeticShift(inputIndex, (outputZoom-inputZoom+25-zBaseExponent))
 
 	if outputIndex > maxOutputIndex || outputIndex < minOutputIndex {
-		return 0, errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, altitudeRangeScalar, and indexOffset")
+		return 0, errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, zBaseExponent, and indexOffset")
 	}
 
 	return outputIndex, nil
