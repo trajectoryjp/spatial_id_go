@@ -254,10 +254,10 @@ func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(t *testing.T) {
 	expectedValue2 := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{ // adjust horizontal zoom up
 		object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(
 			21,
-			[][2]int64{{29728048124, 56}, {29728048125, 56}, {29728048126, 56}, {29728048127, 56}},
+			[][2]int64{{29728048124, 54}, {29728048125, 54}, {29728048126, 54}, {29728048127, 54}},
 			26,
-			0,
-			0,
+			25,
+			-1,
 		),
 	}
 	expectedValue3 := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{ // adjusts zBaseExponent and output VZoom
@@ -266,14 +266,14 @@ func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(t *testing.T) {
 			[][2]int64{{7432012031, 7}},
 			12,
 			14, // 2^14
-			0,
+			-3,
 		),
 	}
 	expectedValue4 := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{ // adjusts zBaseExponent, output VZoom and zBaseOffset
 		object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(
 			20,
-			[][2]int64{{7432012031, 54}},
-			12,
+			[][2]int64{{7432012031, 3}},
+			10,
 			14,
 			47,
 			//16572, // 2^14 + 47*4
@@ -283,7 +283,7 @@ func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(t *testing.T) {
 	expectedValue5 := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{ // adjusts zBaseExponent, output VZoom, outputHZoom, and zBaseOffset
 		object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(
 			21,
-			[][2]int64{{29728048124, 12}, {29728048124, 13}, {29728048125, 12}, {29728048125, 13}, {29728048126, 12}, {29728048126, 13}, {29728048127, 12}, {29728048127, 13}},
+			[][2]int64{{29728048124, -88}, {29728048124, -87}, {29728048125, -88}, {29728048125, -87}, {29728048126, -88}, {29728048126, -87}, {29728048127, -88}, {29728048127, -87}},
 			15,
 			14,
 			-100,
@@ -305,9 +305,9 @@ func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(t *testing.T) {
 	}{
 		// 正常
 		{spatialIds: []string{"20/85263/65423/26/56"}, outputHZoom: 20, outputVZoom: 26, zBaseExponent: 25, zBaseOffset: 0, expectedValue: expectedValue1, pattern: 0},
-		{spatialIds: []string{"20/85263/65423/26/56"}, outputHZoom: 21, outputVZoom: 26, zBaseExponent: 25, zBaseOffset: 0, expectedValue: expectedValue2, pattern: 0},
-		{spatialIds: []string{"20/85263/65423/26/56"}, outputHZoom: 20, outputVZoom: 12, zBaseExponent: 14, expectedValue: expectedValue3, pattern: 0},
-		{spatialIds: []string{"20/85263/65423/26/56"}, outputHZoom: 20, outputVZoom: 12, zBaseExponent: 14, zBaseOffset: 47, expectedValue: expectedValue4, pattern: 0},
+		{spatialIds: []string{"20/85263/65423/26/56"}, outputHZoom: 21, outputVZoom: 26, zBaseExponent: 25, zBaseOffset: -1, expectedValue: expectedValue2, pattern: 0},
+		{spatialIds: []string{"20/85263/65423/26/57"}, outputHZoom: 20, outputVZoom: 12, zBaseExponent: 14, zBaseOffset: -3, expectedValue: expectedValue3, pattern: 0},
+		{spatialIds: []string{"20/85263/65423/26/56"}, outputHZoom: 20, outputVZoom: 10, zBaseExponent: 14, zBaseOffset: 47, expectedValue: expectedValue4, pattern: 0},
 		{spatialIds: []string{"20/85263/65423/25/56"}, outputHZoom: 21, outputVZoom: 15, zBaseExponent: 14, zBaseOffset: -100, expectedValue: expectedValue5, pattern: 0},
 	}
 	for _, p := range datas {
