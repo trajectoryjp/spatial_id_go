@@ -731,16 +731,31 @@ func calculateMinVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int
 	}
 
 	// Calculate outputIndex and check to make sure it exists in output system.
-	// note: zBaseOffset is always determined in terms of zOrigin, (zBaseExponent=25, outputZoom=25),
-	// so the following math compensates for the difference in zBaseExponent and outputZoom between those of zBaseOffset
-	// and zOrigin
+
+	// note: zBaseOffset is always determined in terms of zOrigin: (zBaseExponent=25, outputZoom=25),
 	outputResolution := common.CalculateArithmeticShift(1, outputZoom)
-	convertedZBaseOffset := convertZBaseOffset(zBaseOffset, outputZoom, zBaseExponent)
 
-	maxOutputIndex := outputResolution - 1 + convertedZBaseOffset
-	minOutputIndex := -outputResolution + convertedZBaseOffset
+	// Create the alpha term, which is is a special case of the arithmatic shift: it should always "round" towards 0.
+	zed := zBaseOffset
+	var unitScalar int64 = 1
 
-	outputIndex := (convertedZBaseOffset) + common.CalculateArithmeticShift(inputIndex, (outputZoom-inputZoom+zOriginValue-zBaseExponent))
+	// take the absolute value of zed (note: math.Abs() requires use of float numbers)
+	if zBaseOffset < 0 {
+		// if zBaseOffset is negative, change the unitScalar to -1 and take the "absolute value" of zed
+		unitScalar = -1
+		zed = unitScalar * zed
+	}
+
+	// the alpha term takes the appropriate positive or negative sign
+	alphaTerm := common.CalculateArithmeticShift(zed, (outputZoom-zBaseExponent)) * unitScalar
+
+	maxOutputIndex := outputResolution - 1 + alphaTerm
+	minOutputIndex := -outputResolution + alphaTerm
+
+	indexTerm := common.CalculateArithmeticShift(inputIndex, (outputZoom - inputZoom + zOriginValue - zBaseExponent))
+
+	outputIndex := indexTerm + // index term
+		alphaTerm // alpha term
 
 	if outputIndex > maxOutputIndex || outputIndex < minOutputIndex {
 		return 0, errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset")
@@ -764,31 +779,31 @@ func calculateMinVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int
 //
 //	int64: converted zBaseOffset
 
-func convertZBaseOffset(zBaseOffset int64, outputZoom int64, zBaseExponent int64) int64 {
+// func convertZBaseOffset(zBaseOffset int64, outputZoom int64, zBaseExponent int64) int64 {
 
-	// // note: the
-	// //math.rou
+// 	// // note: the
+// 	// //math.rou
 
-	// // var offset = zBaseOffset
+// 	// // var offset = zBaseOffset
 
-	// // // "Absolute Value" function: the math.Abs() takes a float, so use the below method to avoid using floats.
-	// // if zBaseOffset < 0 {
-	// // 	offset = zBaseOffset * -1
-	// // }
-	// math.RoundToEven()
+// 	// // // "Absolute Value" function: the math.Abs() takes a float, so use the below method to avoid using floats.
+// 	// // if zBaseOffset < 0 {
+// 	// // 	offset = zBaseOffset * -1
+// 	// // }
+// 	// math.RoundToEven()
 
-	// convertedOffset := common.CalculateArithmeticShift(int64(math.Abs(float64(zBaseOffset))), outputZoom-zBaseExponent)
+// 	// convertedOffset := common.CalculateArithmeticShift(int64(math.Abs(float64(zBaseOffset))), outputZoom-zBaseExponent)
 
-	// // if zBaseOffset < 0 {
-	// // 	convertedOffset = convertedOffset * -1
-	// // }
+// 	// // if zBaseOffset < 0 {
+// 	// // 	convertedOffset = convertedOffset * -1
+// 	// // }
 
-	// if zBaseOffset < 0 {
-	// 	convertedOffset = -convertedOffset
-	// }
+// 	// if zBaseOffset < 0 {
+// 	// 	convertedOffset = -convertedOffset
+// 	// }
 
-	return convertedOffset
-}
+// 	return convertedOffset
+// }
 
 // 高さのbit形式のインデックスを計算する。
 //

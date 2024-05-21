@@ -2,7 +2,6 @@
 package transform
 
 import (
-	"fmt"
 	"reflect"
 	"sort"
 	"strconv"
@@ -707,22 +706,24 @@ func TestConvertVerticalIndex(t *testing.T) {
 		zBaseExponent       int64
 		expectedOutputIndex []int64
 	}{
-		// {inputZoom: 25, outputZoom: 27, inputIndex: 100, zBaseExponent: 25, zBaseOffset: 0, expectedOutputIndex: []int64{400, 401, 402, 403}},
-		// {inputZoom: 25, outputZoom: 24, inputIndex: 100, zBaseExponent: 25, zBaseOffset: 0, expectedOutputIndex: []int64{50}},
-		// {inputZoom: 25, outputZoom: 25, inputIndex: 100, zBaseExponent: 25, zBaseOffset: 0, expectedOutputIndex: []int64{100}},
-		// {inputZoom: 25, outputZoom: 25, inputIndex: 100, zBaseExponent: 25, zBaseOffset: -47, expectedOutputIndex: []int64{53}},
-		// {inputZoom: 25, outputZoom: 26, inputIndex: 0, zBaseExponent: 25, zBaseOffset: 3, expectedOutputIndex: []int64{6, 7}},
-		// {inputZoom: 25, outputZoom: 21, inputIndex: 100, zBaseExponent: 25, zBaseOffset: -17, expectedOutputIndex: []int64{5}},
-		// {inputZoom: 25, outputZoom: 21, inputIndex: 100, zBaseExponent: 25, zBaseOffset: -18, expectedOutputIndex: []int64{5}},
-		// {inputZoom: 25, outputZoom: 21, inputIndex: 100, zBaseExponent: 25, zBaseOffset: -19, expectedOutputIndex: []int64{5}},
-		// {inputZoom: 25, outputZoom: 21, inputIndex: 100, zBaseExponent: 25, zBaseOffset: -20, expectedOutputIndex: []int64{5}},
-		{inputZoom: 25, outputZoom: 21, inputIndex: 100, zBaseExponent: 25, zBaseOffset: -1, expectedOutputIndex: []int64{4}},
+		{inputZoom: 25, outputZoom: 27, inputIndex: 100, zBaseExponent: 25, zBaseOffset: 0, expectedOutputIndex: []int64{400, 401, 402, 403}},
+		{inputZoom: 25, outputZoom: 24, inputIndex: 100, zBaseExponent: 25, zBaseOffset: 0, expectedOutputIndex: []int64{50}},
+		{inputZoom: 25, outputZoom: 25, inputIndex: 100, zBaseExponent: 25, zBaseOffset: 0, expectedOutputIndex: []int64{100}},
+		{inputZoom: 25, outputZoom: 25, inputIndex: 100, zBaseExponent: 25, zBaseOffset: -47, expectedOutputIndex: []int64{53}},
+		{inputZoom: 25, outputZoom: 26, inputIndex: 0, zBaseExponent: 25, zBaseOffset: 3, expectedOutputIndex: []int64{6, 7}},
+		{inputZoom: 25, outputZoom: 21, inputIndex: 100, zBaseExponent: 25, zBaseOffset: -17, expectedOutputIndex: []int64{5}},
+		{inputZoom: 25, outputZoom: 21, inputIndex: 100, zBaseExponent: 25, zBaseOffset: -18, expectedOutputIndex: []int64{5}},
+		{inputZoom: 25, outputZoom: 21, inputIndex: 100, zBaseExponent: 25, zBaseOffset: -19, expectedOutputIndex: []int64{5}},
+		{inputZoom: 25, outputZoom: 21, inputIndex: 100, zBaseExponent: 25, zBaseOffset: -20, expectedOutputIndex: []int64{5}},
+		{inputZoom: 25, outputZoom: 21, inputIndex: 100, zBaseExponent: 25, zBaseOffset: -1, expectedOutputIndex: []int64{6}},
 
-		// {inputZoom: 25, outputZoom: 25, inputIndex: 100, zBaseExponent: 25, zBaseOffset: -512, expectedOutputIndex: []int64{-412}},
-		// {inputZoom: 25, outputZoom: 14, inputIndex: 28, zBaseExponent: 25, zBaseOffset: 1000, expectedOutputIndex: []int64{1000}},
-		// {inputZoom: 25, outputZoom: 24, inputIndex: 100, zBaseExponent: 24, zBaseOffset: 0, expectedOutputIndex: []int64{100}},
-		// {inputZoom: 25, outputZoom: 21, inputIndex: 100, zBaseExponent: 20, zBaseOffset: -17, expectedOutputIndex: []int64{183, 184}},
-		{inputZoom: 25, outputZoom: 27, inputIndex: 100, zBaseExponent: 24, zBaseOffset: 0, expectedOutputIndex: []int64{800}},
+		{inputZoom: 25, outputZoom: 25, inputIndex: 100, zBaseExponent: 25, zBaseOffset: -512, expectedOutputIndex: []int64{-412}},
+		{inputZoom: 25, outputZoom: 14, inputIndex: 28, zBaseExponent: 25, zBaseOffset: 1000, expectedOutputIndex: []int64{0}},
+		{inputZoom: 25, outputZoom: 24, inputIndex: 100, zBaseExponent: 24, zBaseOffset: 0, expectedOutputIndex: []int64{100}},
+		{inputZoom: 25, outputZoom: 21, inputIndex: 100, zBaseExponent: 20, zBaseOffset: -17, expectedOutputIndex: []int64{166, 167}},
+		{inputZoom: 25, outputZoom: 27, inputIndex: 100, zBaseExponent: 24, zBaseOffset: -17, expectedOutputIndex: []int64{664, 665, 666, 667, 668, 669, 670, 671}},
+		{inputZoom: 25, outputZoom: 27, inputIndex: -100, zBaseExponent: 24, zBaseOffset: -17, expectedOutputIndex: []int64{-936, -935, -934, -933, -932, -931, -930, -929}},
+		{inputZoom: 25, outputZoom: 24, inputIndex: -99, zBaseExponent: 25, zBaseOffset: -17, expectedOutputIndex: []int64{-58}},
 	}
 
 	for _, p := range datas {
@@ -736,48 +737,6 @@ func TestConvertVerticalIndex(t *testing.T) {
 				t.Log(t.Name())
 				t.Errorf("convertVerticalIndex(%v, %v, %v, %v, %v) == %v, result: %v", p.inputIndex, p.inputZoom, p.outputZoom, p.zBaseExponent, p.zBaseOffset, p.expectedOutputIndex, result)
 			}
-		}
-
-	}
-}
-
-func TestConvertVerticalIndex2(t *testing.T) {
-	datas := []struct {
-		inputZoom           int64
-		inputIndex          int64
-		outputZoom          int64
-		zBaseOffset         int64
-		zBaseExponent       int64
-		expectedOutputIndex []int64
-	}{
-		// {inputZoom: 25, outputZoom: 27, inputIndex: 100, zBaseExponent: 25, zBaseOffset: 0, expectedOutputIndex: []int64{400, 401, 402, 403}},
-		// {inputZoom: 25, outputZoom: 24, inputIndex: 100, zBaseExponent: 25, zBaseOffset: 0, expectedOutputIndex: []int64{50}},
-		// {inputZoom: 25, outputZoom: 25, inputIndex: 100, zBaseExponent: 25, zBaseOffset: 0, expectedOutputIndex: []int64{100}},
-		// {inputZoom: 25, outputZoom: 25, inputIndex: 100, zBaseExponent: 25, zBaseOffset: -47, expectedOutputIndex: []int64{53}},
-		// {inputZoom: 25, outputZoom: 26, inputIndex: 0, zBaseExponent: 25, zBaseOffset: 3, expectedOutputIndex: []int64{6, 7}},
-		// {inputZoom: 25, outputZoom: 21, inputIndex: 100, zBaseExponent: 25, zBaseOffset: -17, expectedOutputIndex: []int64{5}},
-		// {inputZoom: 25, outputZoom: 21, inputIndex: 100, zBaseExponent: 25, zBaseOffset: -18, expectedOutputIndex: []int64{5}},
-		// {inputZoom: 25, outputZoom: 21, inputIndex: 100, zBaseExponent: 25, zBaseOffset: -19, expectedOutputIndex: []int64{5}},
-		// {inputZoom: 25, outputZoom: 21, inputIndex: 100, zBaseExponent: 25, zBaseOffset: -20, expectedOutputIndex: []int64{5}},
-		{inputZoom: 25, outputZoom: 21, inputIndex: 100, zBaseExponent: 25, zBaseOffset: -1, expectedOutputIndex: []int64{4}},
-
-		// {inputZoom: 25, outputZoom: 25, inputIndex: 100, zBaseExponent: 25, zBaseOffset: -512, expectedOutputIndex: []int64{-412}},
-		// {inputZoom: 25, outputZoom: 14, inputIndex: 28, zBaseExponent: 25, zBaseOffset: 1000, expectedOutputIndex: []int64{1000}},
-		// {inputZoom: 25, outputZoom: 24, inputIndex: 100, zBaseExponent: 24, zBaseOffset: 0, expectedOutputIndex: []int64{100}},
-		// {inputZoom: 25, outputZoom: 21, inputIndex: 100, zBaseExponent: 20, zBaseOffset: -17, expectedOutputIndex: []int64{183, 184}},
-		{inputZoom: 25, outputZoom: 27, inputIndex: 100, zBaseExponent: 24, zBaseOffset: 0, expectedOutputIndex: []int64{800}},
-	}
-
-	for _, p := range datas {
-		result, error := convertVerticalIndex(p.inputIndex, p.inputZoom, p.outputZoom, p.zBaseExponent, p.zBaseOffset)
-		if error != nil {
-			t.Log(t.Name())
-			t.Error(error)
-		}
-		for i := 0; i < len(p.expectedOutputIndex); i++ {
-
-			fmt.Printf("convertVerticalIndex(%v, %v, %v, %v, %v) == %v, resultIndex: %v", p.inputIndex, p.inputZoom, p.outputZoom, p.zBaseExponent, p.zBaseOffset, p.expectedOutputIndex, result)
-
 		}
 
 	}
@@ -809,6 +768,10 @@ func TestCalculateMinVerticalIndex(t *testing.T) {
 		{inputIndex: -100, inputZoom: 25, outputZoom: 26, zBaseOffset: 205, zBaseExponent: 24, expectedOutput: 420},
 		{inputIndex: 47, inputZoom: 25, outputZoom: 2, zBaseOffset: 0, zBaseExponent: 3, expectedOutput: 0, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset")}, // should return error since input index doesn't exist in output altitude range
 		{inputIndex: 1, inputZoom: 25, outputZoom: 2, zBaseOffset: 47, zBaseExponent: 3, expectedOutput: 23},
+		{inputIndex: 10, inputZoom: 24, outputZoom: 10, zBaseOffset: 17, zBaseExponent: 14, expectedOutput: 2},
+		{inputIndex: 10, inputZoom: 24, outputZoom: 10, zBaseOffset: 54, zBaseExponent: 14, expectedOutput: 4},
+		{inputIndex: 10, inputZoom: 24, outputZoom: 10, zBaseOffset: -512, zBaseExponent: 14, expectedOutput: -31},
+		{inputIndex: 12, inputZoom: 23, outputZoom: 12, zBaseOffset: -512, zBaseExponent: 14, expectedOutput: -116},
 	}
 
 	for _, p := range data {
@@ -825,59 +788,59 @@ func TestCalculateMinVerticalIndex(t *testing.T) {
 }
 
 // expected output is defined as expectedOutput = floor(zBaseOffset * 2^(outputZoom-zBaseExponent))
-func TestConvertZBaseOffset(t *testing.T) {
-	data := []struct {
-		outputZoom     int64
-		zBaseExponent  int64
-		zBaseOffset    int64
-		expectedOutput int64
-	}{
-		{zBaseExponent: 25, outputZoom: 25, zBaseOffset: 0, expectedOutput: 0},
-		{zBaseExponent: 25, outputZoom: 25, zBaseOffset: 47, expectedOutput: 47},
-		{zBaseExponent: 25, outputZoom: 27, zBaseOffset: 0, expectedOutput: 0},
-		{zBaseExponent: 25, outputZoom: 23, zBaseOffset: 47, expectedOutput: 11},
-		{zBaseExponent: 3, outputZoom: 2, zBaseOffset: 47, expectedOutput: 23}, // should not return error here.
-		{zBaseExponent: 3, outputZoom: 2, zBaseOffset: 1, expectedOutput: 0},
-		{zBaseExponent: 3, outputZoom: 3, zBaseOffset: 2, expectedOutput: 2},
-	}
+// func TestConvertZBaseOffset(t *testing.T) {
+// 	data := []struct {
+// 		outputZoom     int64
+// 		zBaseExponent  int64
+// 		zBaseOffset    int64
+// 		expectedOutput int64
+// 	}{
+// 		{zBaseExponent: 25, outputZoom: 25, zBaseOffset: 0, expectedOutput: 0},
+// 		{zBaseExponent: 25, outputZoom: 25, zBaseOffset: 47, expectedOutput: 47},
+// 		{zBaseExponent: 25, outputZoom: 27, zBaseOffset: 0, expectedOutput: 0},
+// 		{zBaseExponent: 25, outputZoom: 23, zBaseOffset: 47, expectedOutput: 11},
+// 		{zBaseExponent: 3, outputZoom: 2, zBaseOffset: 47, expectedOutput: 23}, // should not return error here.
+// 		{zBaseExponent: 3, outputZoom: 2, zBaseOffset: 1, expectedOutput: 0},
+// 		{zBaseExponent: 3, outputZoom: 3, zBaseOffset: 2, expectedOutput: 2},
+// 	}
 
-	for _, p := range data {
-		result := convertZBaseOffset(p.zBaseOffset, p.outputZoom, p.zBaseExponent)
-		if result != p.expectedOutput {
-			t.Log(t.Name())
-			t.Errorf("calculateMinVerticalIndex(%v, %v, %v) == %v, result: %v", p.outputZoom, p.zBaseExponent, p.zBaseOffset, p.expectedOutput, result)
-		}
-	}
-}
+// 	for _, p := range data {
+// 		result := convertZBaseOffset(p.zBaseOffset, p.outputZoom, p.zBaseExponent)
+// 		if result != p.expectedOutput {
+// 			t.Log(t.Name())
+// 			t.Errorf("calculateMinVerticalIndex(%v, %v, %v) == %v, result: %v", p.outputZoom, p.zBaseExponent, p.zBaseOffset, p.expectedOutput, result)
+// 		}
+// 	}
+// }
 
-func TestConvertZBaseOffset2(t *testing.T) {
-	data := []struct {
-		outputZoom     int64
-		zBaseExponent  int64
-		zBaseOffset    int64
-		expectedOutput int64
-	}{
-		// {zBaseExponent: 25, outputZoom: 25, zBaseOffset: 0, expectedOutput: 0},
-		// {zBaseExponent: 25, outputZoom: 25, zBaseOffset: 47, expectedOutput: 47},
-		// {zBaseExponent: 25, outputZoom: 27, zBaseOffset: 0, expectedOutput: 0},
-		// {zBaseExponent: 25, outputZoom: 23, zBaseOffset: 47, expectedOutput: 11},
-		// {zBaseExponent: 3, outputZoom: 2, zBaseOffset: 47, expectedOutput: 23}, // should not return error here.
-		// {zBaseExponent: 3, outputZoom: 2, zBaseOffset: 1, expectedOutput: 0},
-		// {zBaseExponent: 3, outputZoom: 3, zBaseOffset: 2, expectedOutput: 2},
+// func TestConvertZBaseOffset2(t *testing.T) {
+// 	data := []struct {
+// 		outputZoom     int64
+// 		zBaseExponent  int64
+// 		zBaseOffset    int64
+// 		expectedOutput int64
+// 	}{
+// 		// {zBaseExponent: 25, outputZoom: 25, zBaseOffset: 0, expectedOutput: 0},
+// 		// {zBaseExponent: 25, outputZoom: 25, zBaseOffset: 47, expectedOutput: 47},
+// 		// {zBaseExponent: 25, outputZoom: 27, zBaseOffset: 0, expectedOutput: 0},
+// 		// {zBaseExponent: 25, outputZoom: 23, zBaseOffset: 47, expectedOutput: 11},
+// 		// {zBaseExponent: 3, outputZoom: 2, zBaseOffset: 47, expectedOutput: 23}, // should not return error here.
+// 		// {zBaseExponent: 3, outputZoom: 2, zBaseOffset: 1, expectedOutput: 0},
+// 		// {zBaseExponent: 3, outputZoom: 3, zBaseOffset: 2, expectedOutput: 2},
 
-		{zBaseExponent: 25, outputZoom: 21, zBaseOffset: -1, expectedOutput: 0},
-		{zBaseExponent: 25, outputZoom: 21, zBaseOffset: -4, expectedOutput: 0},
-		{zBaseExponent: 25, outputZoom: 21, zBaseOffset: -5, expectedOutput: -1},
-		{zBaseExponent: 25, outputZoom: 21, zBaseOffset: -6, expectedOutput: -1},
-		{zBaseExponent: 25, outputZoom: 21, zBaseOffset: -17, expectedOutput: -1},
-		{zBaseExponent: 25, outputZoom: 21, zBaseOffset: -37, expectedOutput: -3},
-		//		{inputZoom: 25, outputZoom: 21, inputIndex: 100, zBaseExponent: 25, zBaseOffset: -1, expectedOutputIndex: []int64{4}},
+// 		{zBaseExponent: 25, outputZoom: 21, zBaseOffset: -1, expectedOutput: 0},
+// 		{zBaseExponent: 25, outputZoom: 21, zBaseOffset: -4, expectedOutput: 0},
+// 		{zBaseExponent: 25, outputZoom: 21, zBaseOffset: -5, expectedOutput: -1},
+// 		{zBaseExponent: 25, outputZoom: 21, zBaseOffset: -6, expectedOutput: -1},
+// 		{zBaseExponent: 25, outputZoom: 21, zBaseOffset: -17, expectedOutput: -1},
+// 		{zBaseExponent: 25, outputZoom: 21, zBaseOffset: -37, expectedOutput: -3},
+// 		//		{inputZoom: 25, outputZoom: 21, inputIndex: 100, zBaseExponent: 25, zBaseOffset: -1, expectedOutputIndex: []int64{4}},
 
-	}
+// 	}
 
-	for _, p := range data {
-		result := convertZBaseOffset(p.zBaseOffset, p.outputZoom, p.zBaseExponent)
-		fmt.Printf("calculateMinVerticalIndex(outputZoom: %v, zBaseExponent: %v, zBaseOffset: %v) == %v, ConvertedOffset: %v\n", p.outputZoom, p.zBaseExponent, p.zBaseOffset, p.expectedOutput, result)
+// 	for _, p := range data {
+// 		result := convertZBaseOffset(p.zBaseOffset, p.outputZoom, p.zBaseExponent)
+// 		fmt.Printf("calculateMinVerticalIndex(outputZoom: %v, zBaseExponent: %v, zBaseOffset: %v) == %v, ConvertedOffset: %v\n", p.outputZoom, p.zBaseExponent, p.zBaseOffset, p.expectedOutput, result)
 
-	}
-}
+// 	}
+// }
