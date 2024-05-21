@@ -720,7 +720,7 @@ func convertVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, z
 // converts a vertical index from one set of zoom parameters to another disregarding the floor() cacluation. This creates a simplier system of equations where the solution set for height is a single variable. However, this does not describe the full solution set of height since we have excluded the floor calculation; it describes the condition where m = x, given m = floor(x) if and only if m <= x < m +1;
 func calculateMinVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, zBaseExponent int64, zBaseOffset int64) (int64, error) {
 
-	// check that the input index exists in the input system
+	// 1. check that the input index exists in the input system
 	inputResolution := common.CalculateArithmeticShift(1, inputZoom)
 
 	maxInputIndex := inputResolution - 1
@@ -730,32 +730,41 @@ func calculateMinVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int
 		return 0, errors.NewSpatialIdError(errors.InputValueErrorCode, "input index does not exist")
 	}
 
-	// Calculate outputIndex and check to make sure it exists in output system.
+	// 2. Calculate outputIndex
+	// note: outputIndex = alphaTerm + indexTerm
 
-	// note: zBaseOffset is always determined in terms of zOrigin: (zBaseExponent=25, outputZoom=25),
-	outputResolution := common.CalculateArithmeticShift(1, outputZoom)
+	// 2.1: Create the alpha term, which is is a special case of the arithmatic shift: it should always "round" towards 0.
 
-	// Create the alpha term, which is is a special case of the arithmatic shift: it should always "round" towards 0.
-	zed := zBaseOffset
+	// zed is the zBaseOffset with the appropriate positive or negative unit scalar to complete the Arithmetic shift towards 0.
+	// Conceptually, zed is the absolute value of zBaseOffset, but to avoid using floating point numbers this method is implemented instead.
+	var zed = zBaseOffset
+	// unitScalar determines the appropriate positive or negative sign on zed. unitScalar is 1 if zBaseOffset is positive (>=0)
+	// and unitScalar is negative if zBaseOffset is negative (<0)
 	var unitScalar int64 = 1
 
-	// take the absolute value of zed (note: math.Abs() requires use of float numbers)
+	// take the "absolute value of zed"
 	if zBaseOffset < 0 {
+
 		// if zBaseOffset is negative, change the unitScalar to -1 and take the "absolute value" of zed
 		unitScalar = -1
 		zed = unitScalar * zed
 	}
 
-	// the alpha term takes the appropriate positive or negative sign
-	alphaTerm := common.CalculateArithmeticShift(zed, (outputZoom-zBaseExponent)) * unitScalar
+	// the alphaTerm is a transformed version of zBaseOffset in the output system. The alphaTerm takes
+	// the appropriate positive or negative sign based on unitScalar
+	var alphaTerm = common.CalculateArithmeticShift(zed, (outputZoom-zBaseExponent)) * unitScalar
+
+	// 2.2: the indexTerm is the transformed version of inputIndex in the output system.
+	var indexTerm = common.CalculateArithmeticShift(inputIndex, (outputZoom - inputZoom + zOriginValue - zBaseExponent))
+
+	// outputIndex is the resulting transformed index, which is the sum of alphaTerm and indexTerm
+	var outputIndex = indexTerm + alphaTerm
+
+	// 3. Check to make sure outputIndex exists in the output system
+	outputResolution := common.CalculateArithmeticShift(1, outputZoom)
 
 	maxOutputIndex := outputResolution - 1 + alphaTerm
 	minOutputIndex := -outputResolution + alphaTerm
-
-	indexTerm := common.CalculateArithmeticShift(inputIndex, (outputZoom - inputZoom + zOriginValue - zBaseExponent))
-
-	outputIndex := indexTerm + // index term
-		alphaTerm // alpha term
 
 	if outputIndex > maxOutputIndex || outputIndex < minOutputIndex {
 		return 0, errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset")
