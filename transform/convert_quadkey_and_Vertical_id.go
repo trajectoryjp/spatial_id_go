@@ -735,24 +735,23 @@ func calculateMinVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int
 
 	// 2.1: Create the alpha term, which is is a special case of the arithmatic shift: it should always "round" towards 0.
 
-	// zed is the zBaseOffset with the appropriate positive or negative unit scalar to complete the Arithmetic shift towards 0.
-	// Conceptually, zed is the absolute value of zBaseOffset, but to avoid using floating point numbers this method is implemented instead.
-	var zed = zBaseOffset
 	// unitScalar determines the appropriate positive or negative sign on zed. unitScalar is 1 if zBaseOffset is positive (>=0)
-	// and unitScalar is negative if zBaseOffset is negative (<0)
+	// and unitScalar is negative if zBaseOffset is negative (<0). This is necessary for using CalculateArithmeticShift() on
+	// zBaseOffset that results in the desired behavior. CalculateArithmeticShift always rounds down to the next lowest integer,
+	// even when the input is negative. However, in the case of the alpha term, we should always "round towards 0".
+	// The following code results in this behavior.
 	var unitScalar int64 = 1
 
-	// take the "absolute value of zed"
+	// if zBaseOffset is negative, change the unitScalar to -1 and take the "absolute value" of zed
 	if zBaseOffset < 0 {
-
-		// if zBaseOffset is negative, change the unitScalar to -1 and take the "absolute value" of zed
 		unitScalar = -1
-		zed = unitScalar * zed
 	}
+
+	zBaseOffset = zBaseOffset * unitScalar
 
 	// the alphaTerm is a transformed version of zBaseOffset in the output system. The alphaTerm takes
 	// the appropriate positive or negative sign based on unitScalar
-	var alphaTerm = common.CalculateArithmeticShift(zed, (outputZoom-zBaseExponent)) * unitScalar
+	var alphaTerm = common.CalculateArithmeticShift(zBaseOffset, (outputZoom-zBaseExponent)) * unitScalar
 
 	// 2.2: the indexTerm is the transformed version of inputIndex in the output system.
 	var indexTerm = common.CalculateArithmeticShift(inputIndex, (outputZoom - inputZoom + zOriginValue - zBaseExponent))
