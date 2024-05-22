@@ -774,46 +774,6 @@ func calculateMinVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int
 
 }
 
-// converts a given zBaseOffset (in terms of zOrigin, where zBaseExponent=25, zoomLevel=25) to a new set of outputZoom and zBaseExponent parameters
-//
-// input:
-//
-//	outputZoom: the zoomlevel of the outputIndex. Determines the number of indicies between min and max altitudes in the output.
-//
-//	zBaseExponent: sets the exponent, b, in 2^b that determines the difference between min and max altitudes of output system.
-//
-//	zBaseOffset: an integer to shift inputIndex up or down by zBaseOffset indicies; one zBaseOffset index is defined in zOriginZoom terms (zoomLevel=25, zBaseExponent=25), where one index is equivalent to a 1 meter height distance. A positive offset means the transformed index is higher in altitude than that of the input.
-//
-// output:
-//
-//	int64: converted zBaseOffset
-
-// func convertZBaseOffset(zBaseOffset int64, outputZoom int64, zBaseExponent int64) int64 {
-
-// 	// // note: the
-// 	// //math.rou
-
-// 	// // var offset = zBaseOffset
-
-// 	// // // "Absolute Value" function: the math.Abs() takes a float, so use the below method to avoid using floats.
-// 	// // if zBaseOffset < 0 {
-// 	// // 	offset = zBaseOffset * -1
-// 	// // }
-// 	// math.RoundToEven()
-
-// 	// convertedOffset := common.CalculateArithmeticShift(int64(math.Abs(float64(zBaseOffset))), outputZoom-zBaseExponent)
-
-// 	// // if zBaseOffset < 0 {
-// 	// // 	convertedOffset = convertedOffset * -1
-// 	// // }
-
-// 	// if zBaseOffset < 0 {
-// 	// 	convertedOffset = -convertedOffset
-// 	// }
-
-// 	return convertedOffset
-// }
-
 // 高さのbit形式のインデックスを計算する。
 //
 // 引数 :
