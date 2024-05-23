@@ -71,7 +71,7 @@ func (a *FromExtendedSpatialIDToQuadkeyAndAltitudekey) SetVerticalZoom(altitudek
 	a.altitudekeyZoom = altitudekeyZoom
 }
 
-// SetzBaseExponent
+// SetZBaseExponent
 //
 // FromExtendedSpatialIDToQuadkeyAndAltitudekeyオブジェクトのVerticalZoomを引数の入力値に設定する。
 //
