@@ -11,7 +11,7 @@ type FromExtendedSpatialIDToQuadkeyAndAltitudekey struct {
 	altitudekeyZoom int64
 	// zBaseExponent is b, where 2^b = altitude range (max altitude - min altitude)
 	zBaseExponent int64
-	// an integer to shift inputIndex up or down by zBaseOffset indicies; one zBaseOffset index is defined in zOriginZoom terms (zoomLevel=25, zBaseExponent=25), where one index is equivalent to a 1 meter height distance. A positive offset means the transformed index is higher in altitude than that of the input.
+	// an integer to shift inputIndex up or down by -zBaseOffset indicies; one zBaseOffset index is defined in zOriginZoom terms (zoomLevel=25, zBaseExponent=25), where one index is equivalent to a 1 meter height distance. The resulting index shift is the inverse of the sign on zBaseOffset: a positive offset means the transformed index is lower in altitude than that of the input.
 	zBaseOffset int64
 }
 
@@ -23,7 +23,7 @@ type FromExtendedSpatialIDToQuadkeyAndAltitudekey struct {
 //	innerIDList: [[quadkey,vIndex]...]
 //	altitudekeyZoom: // altitudekey zoom level / 高さ方向の精度
 //	zBaseExponent: zBaseExponent is s, where 2^25-s = altitude range (max altitude - min altitude)
-//	zBaseOffset : an integer to shift inputIndex up or down by zBaseOffset indicies; one zBaseOffset index is defined in zOriginZoom terms (zoomLevel=25, zBaseExponent=25), where one index is equivalent to a 1 meter height distance. A positive offset means the transformed index is higher in altitude than that of the input.
+//	zBaseOffset : an integer to shift inputIndex up or down by -zBaseOffset indicies; one zBaseOffset index is defined in zOriginZoom terms (zoomLevel=25, zBaseExponent=25), where one index is equivalent to a 1 meter height distance. The resulting index shift is the inverse of the sign on zBaseOffset: a positive offset means the transformed index is lower in altitude than that of the input.
 //
 // output 戻り値：
 //
