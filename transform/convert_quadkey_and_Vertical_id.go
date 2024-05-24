@@ -763,7 +763,7 @@ func calculateMinVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int
 	outputResolution := common.CalculateArithmeticShift(1, outputZoom)
 
 	maxOutputIndex := outputResolution - 1 + alphaTerm
-	minOutputIndex := -outputResolution + alphaTerm
+	minOutputIndex := int64(0)
 
 	if outputIndex > maxOutputIndex || outputIndex < minOutputIndex {
 		return 0, errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset")

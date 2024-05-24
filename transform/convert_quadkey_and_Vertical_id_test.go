@@ -283,10 +283,10 @@ func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(t *testing.T) {
 	expectedValue5 := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{ // adjusts zBaseExponent, output VZoom, outputHZoom, and zBaseOffset
 		object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(
 			21,
-			[][2]int64{{29728048124, -88}, {29728048124, -87}, {29728048125, -88}, {29728048125, -87}, {29728048126, -88}, {29728048126, -87}, {29728048127, -88}, {29728048127, -87}},
+			[][2]int64{{29728048124, 92}, {29728048124, 93}, {29728048125, 92}, {29728048125, 93}, {29728048126, 92}, {29728048126, 93}, {29728048127, 92}, {29728048127, 93}},
 			15,
 			14,
-			-100,
+			-10,
 			// 16334, // 2^14 + -100*0.5
 			// -50,   // 0 + -100*0.5
 		),
@@ -308,7 +308,7 @@ func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(t *testing.T) {
 		{spatialIds: []string{"20/85263/65423/26/56"}, outputHZoom: 21, outputVZoom: 26, zBaseExponent: 25, zBaseOffset: -1, expectedValue: expectedValue2, pattern: 0},
 		{spatialIds: []string{"20/85263/65423/26/57"}, outputHZoom: 20, outputVZoom: 12, zBaseExponent: 14, zBaseOffset: -3, expectedValue: expectedValue3, pattern: 0},
 		{spatialIds: []string{"20/85263/65423/26/56"}, outputHZoom: 20, outputVZoom: 10, zBaseExponent: 14, zBaseOffset: 47, expectedValue: expectedValue4, pattern: 0},
-		{spatialIds: []string{"20/85263/65423/25/56"}, outputHZoom: 21, outputVZoom: 15, zBaseExponent: 14, zBaseOffset: -100, expectedValue: expectedValue5, pattern: 0},
+		{spatialIds: []string{"20/85263/65423/25/56"}, outputHZoom: 21, outputVZoom: 15, zBaseExponent: 14, zBaseOffset: -10, expectedValue: expectedValue5, pattern: 0},
 	}
 	for _, p := range datas {
 
@@ -705,6 +705,7 @@ func TestConvertVerticalIndex(t *testing.T) {
 		zBaseOffset         int64
 		zBaseExponent       int64
 		expectedOutputIndex []int64
+		e                   error
 	}{
 		{inputZoom: 25, outputZoom: 27, inputIndex: 100, zBaseExponent: 25, zBaseOffset: 0, expectedOutputIndex: []int64{400, 401, 402, 403}},
 		{inputZoom: 25, outputZoom: 24, inputIndex: 100, zBaseExponent: 25, zBaseOffset: 0, expectedOutputIndex: []int64{50}},
@@ -717,18 +718,19 @@ func TestConvertVerticalIndex(t *testing.T) {
 		{inputZoom: 25, outputZoom: 21, inputIndex: 100, zBaseExponent: 25, zBaseOffset: -20, expectedOutputIndex: []int64{5}},
 		{inputZoom: 25, outputZoom: 21, inputIndex: 100, zBaseExponent: 25, zBaseOffset: -1, expectedOutputIndex: []int64{6}},
 
-		{inputZoom: 25, outputZoom: 25, inputIndex: 100, zBaseExponent: 25, zBaseOffset: -512, expectedOutputIndex: []int64{-412}},
+		{inputZoom: 25, outputZoom: 25, inputIndex: 100, zBaseExponent: 25, zBaseOffset: -512, expectedOutputIndex: nil, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset")}, // would result in []int64{-412}, but should return error because minIndex=0
+
 		{inputZoom: 25, outputZoom: 14, inputIndex: 28, zBaseExponent: 25, zBaseOffset: 1000, expectedOutputIndex: []int64{0}},
 		{inputZoom: 25, outputZoom: 24, inputIndex: 100, zBaseExponent: 24, zBaseOffset: 0, expectedOutputIndex: []int64{100}},
 		{inputZoom: 25, outputZoom: 21, inputIndex: 100, zBaseExponent: 20, zBaseOffset: -17, expectedOutputIndex: []int64{166, 167}},
 		{inputZoom: 25, outputZoom: 27, inputIndex: 100, zBaseExponent: 24, zBaseOffset: -17, expectedOutputIndex: []int64{664, 665, 666, 667, 668, 669, 670, 671}},
-		{inputZoom: 25, outputZoom: 27, inputIndex: -100, zBaseExponent: 24, zBaseOffset: -17, expectedOutputIndex: []int64{-936, -935, -934, -933, -932, -931, -930, -929}},
-		{inputZoom: 25, outputZoom: 24, inputIndex: -99, zBaseExponent: 25, zBaseOffset: -17, expectedOutputIndex: []int64{-58}},
+		{inputZoom: 25, outputZoom: 27, inputIndex: -100, zBaseExponent: 24, zBaseOffset: -17, expectedOutputIndex: nil, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset")}, // would result in []int64{-936, -935, -934, -933, -932, -931, -930, -929}, but should return error because minIndex=0
+		{inputZoom: 25, outputZoom: 24, inputIndex: -99, zBaseExponent: 25, zBaseOffset: -17, expectedOutputIndex: nil, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset")},  // would result in []int64{-58}, but should return error because minIndex=0
 	}
 
 	for _, p := range datas {
 		result, error := convertVerticalIndex(p.inputIndex, p.inputZoom, p.outputZoom, p.zBaseExponent, p.zBaseOffset)
-		if error != nil {
+		if error != nil && p.e != error {
 			t.Log(t.Name())
 			t.Error(error)
 		}
@@ -742,7 +744,7 @@ func TestConvertVerticalIndex(t *testing.T) {
 	}
 }
 
-// expected output is defined as expectedOutput = inputIndex*2^(outputZoom-InputZoom+25-zBaseExponent) + floor(zBaseOffset * 2^(outputZoom-zBaseExponent))
+// expected output is defined as expectedOutput = inputIndex*2^(outputZoom-InputZoom+25-zBaseExponent) + roundToClosestIntegerTowards0(zBaseOffset * 2^(outputZoom-zBaseExponent))
 func TestCalculateMinVerticalIndex(t *testing.T) {
 	data := []struct {
 		inputIndex     int64
@@ -759,19 +761,19 @@ func TestCalculateMinVerticalIndex(t *testing.T) {
 		{inputIndex: 0, inputZoom: 25, outputZoom: 27, zBaseOffset: 0, zBaseExponent: zOriginValue, expectedOutput: 0},
 		{inputIndex: 1, inputZoom: 25, outputZoom: 27, zBaseOffset: 0, zBaseExponent: zOriginValue, expectedOutput: 4},
 		{inputIndex: 100, inputZoom: 10, outputZoom: 25, zBaseOffset: 0, zBaseExponent: zOriginValue, expectedOutput: 3276800},
-		{inputIndex: 100, inputZoom: 10, outputZoom: 25, zBaseOffset: -3276801, zBaseExponent: zOriginValue, expectedOutput: -1},
+		{inputIndex: 100, inputZoom: 10, outputZoom: 25, zBaseOffset: -3276801, zBaseExponent: zOriginValue, expectedOutput: 0, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset")}, // results in -1, but should return error because -1 does not exist in the output since minIndex=0
 		{inputIndex: 47, inputZoom: 25, outputZoom: 24, zBaseOffset: 1, zBaseExponent: zOriginValue, expectedOutput: 23},
 		{inputIndex: 47, inputZoom: 25, outputZoom: 20, zBaseOffset: 1, zBaseExponent: zOriginValue, expectedOutput: 1},
 		{inputIndex: 47, inputZoom: 25, outputZoom: 12, zBaseOffset: 1, zBaseExponent: 14, expectedOutput: 11},
-		{inputIndex: -1, inputZoom: 25, outputZoom: 25, zBaseOffset: 0, zBaseExponent: zOriginValue, expectedOutput: -1},
+		{inputIndex: -1, inputZoom: 25, outputZoom: 25, zBaseOffset: 0, zBaseExponent: zOriginValue, expectedOutput: 0, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset")}, // results in -1, but but should return error because -1 does not exist in the output since minIndex=0
 		{inputIndex: -100, inputZoom: 25, outputZoom: 26, zBaseOffset: 205, zBaseExponent: zOriginValue, expectedOutput: 210},
 		{inputIndex: -100, inputZoom: 25, outputZoom: 26, zBaseOffset: 205, zBaseExponent: 24, expectedOutput: 420},
 		{inputIndex: 47, inputZoom: 25, outputZoom: 2, zBaseOffset: 0, zBaseExponent: 3, expectedOutput: 0, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset")}, // should return error since input index doesn't exist in output altitude range
 		{inputIndex: 1, inputZoom: 25, outputZoom: 2, zBaseOffset: 47, zBaseExponent: 3, expectedOutput: 23},
 		{inputIndex: 10, inputZoom: 24, outputZoom: 10, zBaseOffset: 17, zBaseExponent: 14, expectedOutput: 2},
 		{inputIndex: 10, inputZoom: 24, outputZoom: 10, zBaseOffset: 54, zBaseExponent: 14, expectedOutput: 4},
-		{inputIndex: 10, inputZoom: 24, outputZoom: 10, zBaseOffset: -512, zBaseExponent: 14, expectedOutput: -31},
-		{inputIndex: 12, inputZoom: 23, outputZoom: 12, zBaseOffset: -512, zBaseExponent: 14, expectedOutput: -116},
+		{inputIndex: 10, inputZoom: 24, outputZoom: 10, zBaseOffset: -512, zBaseExponent: 14, expectedOutput: 0, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset")}, // results in -31, but but should return error because -1 does not exist in the output since minIndex=0
+		{inputIndex: 12, inputZoom: 23, outputZoom: 12, zBaseOffset: -512, zBaseExponent: 14, expectedOutput: 0, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset")}, // results in -116, but but should return error because -1 does not exist in the output since minIndex=0
 	}
 
 	for _, p := range data {
