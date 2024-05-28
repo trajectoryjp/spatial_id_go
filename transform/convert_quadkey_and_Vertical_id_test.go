@@ -241,6 +241,31 @@ func TestConvertExtendedSpatialIdsToQuadkeysAndVerticalIDs(t *testing.T) {
 	}
 }
 
+// Given an Extended Spatial ID in string format "hZoom/x/y/vZoom/f",
+// and the following input parameters to ConvertExtendedSpatialIdsToQuadkeysAndAltitudeKeys
+
+// extendedSpatialIDs: slice of string-encoded ExtendedSpatialIDs
+
+// outputQuadkeyZoom: the horizontal resolution of the output
+
+// outputAltitudeKeyZoom: the vertical resolution of the output
+
+// zBaseExponent: zBaseExponent is b, where 2^b = altitude range (max altitude - min altitude)
+
+// zBaseOffset : an integer to shift inputIndex up or down by -zBaseOffset indicies; one zBaseOffset index is defined in zOriginZoom terms (zoomLevel=25, zBaseExponent=25), where one index is equivalent to a 1 meter height distance. The resulting index shift is the inverse of the sign on zBaseOffset: a positive offset means the transformed index is lower in altitude than that of the input.
+//
+// the expected values can be determined as follows:
+// type FromExtendedSpatialIDToQuadkeyAndAltitudekey struct {
+//
+//		    quadkeyZoom: the input value for outputQuadkeyZoom
+//		    innerIDList: a map of [expectedValue for Quadkey, expectedValue for Altitudekey]
+//			where the expected value for AltitudeKey is all of the indexes f_2 that satisfy the following condition:
+//	         floor(f*2^(outputAltitudeKeyZoom-hZoom+25-zBaseExponent) -
+//					roundTowardsZero(zBaseOffset*2^(outputAltitudeKeyZoom-zBaseExponent))
+//		    altitudekeyZoom: the input value for outputQuadkeyZoom
+//		    zBaseExponent: the input value for zBaseExponent
+//		    zBaseOffset: the input value for zBaseOffset
+//		}
 func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(t *testing.T) {
 	expectedValue1 := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{ // returns same as input
 		object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(
@@ -276,8 +301,6 @@ func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(t *testing.T) {
 			10,
 			14,
 			47,
-			//16572, // 2^14 + 47*4
-			//188,   // 0 + 47*4
 		),
 	}
 	expectedValue5 := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{ // adjusts zBaseExponent, output VZoom, outputHZoom, and zBaseOffset
@@ -287,8 +310,6 @@ func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(t *testing.T) {
 			15,
 			14,
 			-10,
-			// 16334, // 2^14 + -100*0.5
-			// -50,   // 0 + -100*0.5
 		),
 	}
 
@@ -303,7 +324,7 @@ func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(t *testing.T) {
 		pattern       int64 // 0:正常 1:異常 2:個数(水平) 3:個数(垂直)
 		e             error
 	}{
-		// 正常
+		// 正常 (includes input values)
 		{spatialIds: []string{"20/85263/65423/26/56"}, outputHZoom: 20, outputVZoom: 26, zBaseExponent: 25, zBaseOffset: 0, expectedValue: expectedValue1, pattern: 0},
 		{spatialIds: []string{"20/85263/65423/26/56"}, outputHZoom: 21, outputVZoom: 26, zBaseExponent: 25, zBaseOffset: -1, expectedValue: expectedValue2, pattern: 0},
 		{spatialIds: []string{"20/85263/65423/26/57"}, outputHZoom: 20, outputVZoom: 12, zBaseExponent: 14, zBaseOffset: -3, expectedValue: expectedValue3, pattern: 0},
