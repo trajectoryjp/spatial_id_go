@@ -330,6 +330,27 @@ func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(t *testing.T) {
 		{spatialIds: []string{"20/85263/65423/26/57"}, outputHZoom: 20, outputVZoom: 12, zBaseExponent: 14, zBaseOffset: -3, expectedValue: expectedValue3, pattern: 0},
 		{spatialIds: []string{"20/85263/65423/26/56"}, outputHZoom: 20, outputVZoom: 10, zBaseExponent: 14, zBaseOffset: 47, expectedValue: expectedValue4, pattern: 0},
 		{spatialIds: []string{"20/85263/65423/25/56"}, outputHZoom: 21, outputVZoom: 15, zBaseExponent: 14, zBaseOffset: -10, expectedValue: expectedValue5, pattern: 0},
+		{spatialIds: []string{"20/85263/65423/25/1"}, outputHZoom: 20, outputVZoom: 25, zBaseExponent: 23, zBaseOffset: -1, expectedValue: []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(
+			20,
+			[][2]int64{{7432012031, 0}, {7432012031, 1}, {7432012031, 2}, {7432012031, 3}},
+			25,
+			23,
+			-1,
+		)}, pattern: 0}, // 例4
+		{spatialIds: []string{"20/85263/65423/25/1"}, outputHZoom: 20, outputVZoom: 23, zBaseExponent: 25, zBaseOffset: -1, expectedValue: []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(
+			20,
+			[][2]int64{{7432012031, 0}},
+			23,
+			25,
+			-1,
+		)}, pattern: 0}, // 例5
+		{spatialIds: []string{"20/85263/65423/25/4"}, outputHZoom: 20, outputVZoom: 23, zBaseExponent: 25, zBaseOffset: -1, expectedValue: []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(
+			20,
+			[][2]int64{{7432012031, 0}},
+			23,
+			25,
+			-1,
+		)}, pattern: 0}, // 反例
 	}
 	for _, p := range datas {
 
