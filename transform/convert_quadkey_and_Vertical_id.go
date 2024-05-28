@@ -731,18 +731,9 @@ func calculateMinVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int
 	}
 
 	// 2. Calculate outputIndex
-	// note: outputIndex = alphaTerm + indexTerm
-
-	// 2.1: Create the alpha term
-
-	// the alphaTerm is a transformed version of zBaseOffset in the output system.
-	var alphaTerm = common.CalculateArithmeticShift(zBaseOffset, (outputZoom - zBaseExponent))
-
-	// 2.2: the indexTerm is the transformed version of inputIndex in the output system.
-	var indexTerm = common.CalculateArithmeticShift(inputIndex, (outputZoom - inputZoom + zOriginValue - zBaseExponent))
-
-	// outputIndex is the resulting transformed index, which is the sum of alphaTerm and indexTerm
-	var outputIndex = indexTerm + alphaTerm
+	outputIndex := common.CalculateArithmeticShift(inputIndex, -(inputZoom - zOriginValue))
+	outputIndex += zBaseOffset
+	outputIndex = common.CalculateArithmeticShift(outputIndex, (outputZoom - zBaseExponent))
 
 	// 3. Check to make sure outputIndex exists in the output system
 	outputResolution := common.CalculateArithmeticShift(1, outputZoom)
