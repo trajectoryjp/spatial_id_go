@@ -762,7 +762,7 @@ func calculateMinVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int
 	// 3. Check to make sure outputIndex exists in the output system
 	outputResolution := common.CalculateArithmeticShift(1, outputZoom)
 
-	maxOutputIndex := outputResolution - 1 + alphaTerm
+	maxOutputIndex := outputResolution - 1
 	minOutputIndex := int64(0)
 
 	if outputIndex > maxOutputIndex || outputIndex < minOutputIndex {

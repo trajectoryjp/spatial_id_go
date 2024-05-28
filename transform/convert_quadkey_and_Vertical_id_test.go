@@ -769,7 +769,7 @@ func TestCalculateMinVerticalIndex(t *testing.T) {
 		{inputIndex: -100, inputZoom: 25, outputZoom: 26, zBaseOffset: 205, zBaseExponent: zOriginValue, expectedOutput: 210},
 		{inputIndex: -100, inputZoom: 25, outputZoom: 26, zBaseOffset: 205, zBaseExponent: 24, expectedOutput: 420},
 		{inputIndex: 47, inputZoom: 25, outputZoom: 2, zBaseOffset: 0, zBaseExponent: 3, expectedOutput: 0, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset")}, // should return error since input index doesn't exist in output altitude range
-		{inputIndex: 1, inputZoom: 25, outputZoom: 2, zBaseOffset: 47, zBaseExponent: 3, expectedOutput: 23},
+		{inputIndex: 1, inputZoom: 25, outputZoom: 2, zBaseOffset: 47, zBaseExponent: 3, expectedOutput: 0, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset")}, // result would be 23, but should return error since output index doesn't exist in output altitude range
 		{inputIndex: 10, inputZoom: 24, outputZoom: 10, zBaseOffset: 17, zBaseExponent: 14, expectedOutput: 2},
 		{inputIndex: 10, inputZoom: 24, outputZoom: 10, zBaseOffset: 54, zBaseExponent: 14, expectedOutput: 4},
 		{inputIndex: 10, inputZoom: 24, outputZoom: 10, zBaseOffset: -512, zBaseExponent: 14, expectedOutput: 0, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset")}, // results in -31, but but should return error because -1 does not exist in the output since minIndex=0
