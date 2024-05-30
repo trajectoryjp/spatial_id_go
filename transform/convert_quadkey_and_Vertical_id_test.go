@@ -355,13 +355,20 @@ func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(t *testing.T) {
 	for _, p := range datas {
 
 		result, e := ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(p.spatialIds, p.outputHZoom, p.outputVZoom, p.zBaseExponent, p.zBaseOffset)
+		if e != nil {
+			if p.pattern == 1 && e != p.e {
+				t.Log(t.Name())
+				t.Errorf("ConvertExtendedSpatialIDsToQuadkeysAndVerticalIDs(%s,%d,%d,%v,%v) == %+v, result: %+v", p.spatialIds, p.outputHZoom, p.outputVZoom, p.zBaseExponent, p.zBaseOffset, e, p.e)
+				continue
+			}
+
+			t.Log(t.Name())
+			t.Errorf("ConvertExtendedSpatialIDsToQuadkeysAndVerticalIDs(%s,%d,%d,%v,%v) == %+v, result: %+v", p.spatialIds, p.outputHZoom, p.outputVZoom, p.zBaseExponent, p.zBaseOffset, p.expectedValue[0], e)
+			continue
+		}
 		if p.pattern == 0 && !reflect.DeepEqual(result, p.expectedValue) {
 			t.Log(t.Name())
 			t.Errorf("ConvertExtendedSpatialIDsToQuadkeysAndVerticalIDs(%s,%d,%d,%v,%v) == %+v, result: %+v", p.spatialIds, p.outputHZoom, p.outputVZoom, p.zBaseExponent, p.zBaseOffset, p.expectedValue[0], result[0])
-		}
-		if p.pattern == 1 && e != p.e {
-			t.Log(t.Name())
-			t.Errorf("ConvertExtendedSpatialIDsToQuadkeysAndVerticalIDs(%s,%d,%d,%v,%v) == %+v, result: %+v", p.spatialIds, p.outputHZoom, p.outputVZoom, p.zBaseExponent, p.zBaseOffset, e, p.e)
 		}
 		if p.pattern == 2 && p.resultLength != len(result[0].InnerIDList()) {
 			t.Log(t.Name())
