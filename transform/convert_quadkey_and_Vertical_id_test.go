@@ -344,7 +344,7 @@ func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(t *testing.T) {
 			25,
 			-1,
 		)}, pattern: 0}, // 例5
-		{spatialIds: []string{"20/85263/65423/25/4"}, outputHZoom: 20, outputVZoom: 23, zBaseExponent: 25, zBaseOffset: -1, expectedValue: []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(
+		{spatialIds: []string{"20/85263/65423/25/1"}, outputHZoom: 20, outputVZoom: 23, zBaseExponent: 25, zBaseOffset: -1, expectedValue: []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(
 			20,
 			[][2]int64{{7432012031, 0}},
 			23,
