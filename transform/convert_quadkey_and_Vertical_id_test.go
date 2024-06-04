@@ -261,7 +261,7 @@ func TestConvertExtendedSpatialIdsToQuadkeysAndVerticalIDs(t *testing.T) {
 //		    innerIDList: a map of [expectedValue for Quadkey, expectedValue for Altitudekey]
 //			where the expected value for AltitudeKey is all of the indexes f_2 that satisfy the following condition:
 //	         floor(f*2^(outputAltitudeKeyZoom-hZoom+25-zBaseExponent) -
-//					floor(zBaseOffset*2^(outputAltitudeKeyZoom-zBaseExponent))
+//					roundTowardsZero(zBaseOffset*2^(outputAltitudeKeyZoom-zBaseExponent))
 //		    altitudekeyZoom: the input value for outputQuadkeyZoom
 //		    zBaseExponent: the input value for zBaseExponent
 //		    zBaseOffset: the input value for zBaseOffset
@@ -288,7 +288,7 @@ func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(t *testing.T) {
 	expectedValue3 := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{ // adjusts zBaseExponent and output VZoom
 		object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(
 			20,
-			[][2]int64{{7432012031, 6}},
+			[][2]int64{{7432012031, 7}},
 			12,
 			14, // 2^14
 			-3,
@@ -754,11 +754,11 @@ func TestConvertVerticalIndex(t *testing.T) {
 		{inputZoom: 25, outputZoom: 25, inputIndex: 100, zBaseExponent: 25, zBaseOffset: 0, expectedOutputIndex: []int64{100}},
 		{inputZoom: 25, outputZoom: 25, inputIndex: 100, zBaseExponent: 25, zBaseOffset: -47, expectedOutputIndex: []int64{53}},
 		{inputZoom: 25, outputZoom: 26, inputIndex: 0, zBaseExponent: 25, zBaseOffset: 3, expectedOutputIndex: []int64{6, 7}},
-		{inputZoom: 25, outputZoom: 21, inputIndex: 100, zBaseExponent: 25, zBaseOffset: -17, expectedOutputIndex: []int64{4}},
-		{inputZoom: 25, outputZoom: 21, inputIndex: 100, zBaseExponent: 25, zBaseOffset: -18, expectedOutputIndex: []int64{4}},
-		{inputZoom: 25, outputZoom: 21, inputIndex: 100, zBaseExponent: 25, zBaseOffset: -19, expectedOutputIndex: []int64{4}},
-		{inputZoom: 25, outputZoom: 21, inputIndex: 100, zBaseExponent: 25, zBaseOffset: -20, expectedOutputIndex: []int64{4}},
-		{inputZoom: 25, outputZoom: 21, inputIndex: 100, zBaseExponent: 25, zBaseOffset: -1, expectedOutputIndex: []int64{5}},
+		{inputZoom: 25, outputZoom: 21, inputIndex: 100, zBaseExponent: 25, zBaseOffset: -17, expectedOutputIndex: []int64{5}},
+		{inputZoom: 25, outputZoom: 21, inputIndex: 100, zBaseExponent: 25, zBaseOffset: -18, expectedOutputIndex: []int64{5}},
+		{inputZoom: 25, outputZoom: 21, inputIndex: 100, zBaseExponent: 25, zBaseOffset: -19, expectedOutputIndex: []int64{5}},
+		{inputZoom: 25, outputZoom: 21, inputIndex: 100, zBaseExponent: 25, zBaseOffset: -20, expectedOutputIndex: []int64{5}},
+		{inputZoom: 25, outputZoom: 21, inputIndex: 100, zBaseExponent: 25, zBaseOffset: -1, expectedOutputIndex: []int64{6}},
 
 		{inputZoom: 25, outputZoom: 25, inputIndex: 100, zBaseExponent: 25, zBaseOffset: -512, expectedOutputIndex: nil, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset")}, // would result in []int64{-412}, but should return error because minIndex=0
 
