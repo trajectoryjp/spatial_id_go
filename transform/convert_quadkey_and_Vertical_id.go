@@ -731,9 +731,11 @@ func calculateMinVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int
 	}
 
 	// 2. Calculate outputIndex
-	outputIndex := common.CalculateArithmeticShift(inputIndex, -(inputZoom - zOriginValue))
-	outputIndex += zBaseOffset
-	outputIndex = common.CalculateArithmeticShift(outputIndex, (outputZoom - zBaseExponent))
+
+	outputIndex := int64(math.Floor(
+		float64(inputIndex)*
+			math.Pow(2, float64(outputZoom-inputZoom+zOriginValue-zBaseExponent)) +
+			float64(zBaseOffset)*math.Pow(2, float64(outputZoom-zBaseExponent))))
 
 	// 3. Check to make sure outputIndex exists in the output system
 	outputResolution := common.CalculateArithmeticShift(1, outputZoom)
