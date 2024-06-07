@@ -241,33 +241,8 @@ func TestConvertExtendedSpatialIdsToQuadkeysAndVerticalIDs(t *testing.T) {
 	}
 }
 
-// Given an Extended Spatial ID in string format "hZoom/x/y/vZoom/f",
-// and the following input parameters to ConvertExtendedSpatialIdsToQuadkeysAndAltitudeKeys
-
-// extendedSpatialIDs: slice of string-encoded ExtendedSpatialIDs
-
-// outputQuadkeyZoom: the horizontal resolution of the output
-
-// outputAltitudeKeyZoom: the vertical resolution of the output
-
-// zBaseExponent: zBaseExponent is b, where 2^b = altitude range (max altitude - min altitude)
-
-// zBaseOffset : an integer to shift inputIndex up or down by -zBaseOffset indicies; one zBaseOffset index is defined in zOriginZoom terms (zoomLevel=25, zBaseExponent=25), where one index is equivalent to a 1 meter height distance. The resulting index shift is the inverse of the sign on zBaseOffset: a positive offset means the transformed index is lower in altitude than that of the input.
-//
-// the expected values can be determined as follows:
-// type FromExtendedSpatialIDToQuadkeyAndAltitudekey struct {
-//
-//		    quadkeyZoom: the input value for outputQuadkeyZoom
-//		    innerIDList: a map of [expectedValue for Quadkey, expectedValue for Altitudekey]
-//			where the expected value for AltitudeKey is all of the indexes f_2 that satisfy the following condition:
-//	         floor(f*2^(outputAltitudeKeyZoom-hZoom+25-zBaseExponent) -
-//					roundTowardsZero(zBaseOffset*2^(outputAltitudeKeyZoom-zBaseExponent))
-//		    altitudekeyZoom: the input value for outputQuadkeyZoom
-//		    zBaseExponent: the input value for zBaseExponent
-//		    zBaseOffset: the input value for zBaseOffset
-//		}
 func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(t *testing.T) {
-	expectedValue1 := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{ // returns same as input
+	expectedValue1 := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{
 		object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(
 			20,
 			[][2]int64{{7432012031, 56}},
@@ -276,7 +251,7 @@ func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(t *testing.T) {
 			0,
 		),
 	}
-	expectedValue2 := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{ // adjust horizontal zoom up
+	expectedValue2 := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{
 		object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(
 			21,
 			[][2]int64{{29728048124, 56}, {29728048125, 56}, {29728048126, 56}, {29728048127, 56}},
@@ -285,7 +260,7 @@ func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(t *testing.T) {
 			0,
 		),
 	}
-	expectedValue3 := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{ // adjusts zBaseExponent and output VZoom
+	expectedValue3 := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{
 		object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(
 			20,
 			[][2]int64{{7432012031, 7}},
@@ -294,7 +269,7 @@ func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(t *testing.T) {
 			0,
 		),
 	}
-	expectedValue4 := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{ // adjusts zBaseExponent, output VZoom and zBaseOffset
+	expectedValue4 := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{
 		object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(
 			20,
 			[][2]int64{{7432012031, 54}},
@@ -303,7 +278,7 @@ func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(t *testing.T) {
 			188,
 		),
 	}
-	expectedValue5 := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{ // adjusts zBaseExponent, output VZoom, outputHZoom, and zBaseOffset
+	expectedValue5 := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{
 		object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(
 			21,
 			[][2]int64{{29728048124, 12}, {29728048124, 13}, {29728048125, 12}, {29728048125, 13}, {29728048126, 12}, {29728048126, 13}, {29728048127, 12}, {29728048127, 13}},
@@ -764,14 +739,7 @@ func TestSpatialIDCheckZoom(t *testing.T) {
 
 }
 
-// expected output is defined as outputIndex, e_i, where e_i is the set of integers that satisfy the solution set conditions:
-//  1. the altitudes of the input index is:
-//     (inputIndex)*(2^25-inputZoom) <= altitude < (inputIndex +1)*(2^25-inputZoom)
-//  2. given alpha=zBaseOffset*2^(outputZoom-zBaseExponent)   the altitudes associated with index i is:
-//     (index_i + alpha)*(2^zBaseExponent-outputZoom) <= altitude < (index_i + alpha +1)*(2^zBaseExponent-outputZoom)
-//  3. the minimum altitude of index i is less than the maximum altitude of the inputIndex
-//  4. assuming inputIndex exists, the number of integers in e_i >= 1
-func TestConvertVerticalIndex(t *testing.T) {
+func TestConvertVerticalIDToAltitudekey(t *testing.T) {
 	datas := []struct {
 		inputZoom           int64
 		inputIndex          int64
@@ -795,7 +763,7 @@ func TestConvertVerticalIndex(t *testing.T) {
 	}
 
 	for _, p := range datas {
-		result, error := convertVerticalIndex(p.inputIndex, p.inputZoom, p.outputZoom, p.zBaseExponent, p.zBaseOffset)
+		result, error := convertVerticalIDToAltitudekey(p.inputIndex, p.inputZoom, p.outputZoom, p.zBaseExponent, p.zBaseOffset)
 		if error != nil && p.e != error {
 			t.Log(t.Name())
 			t.Error(error)
@@ -803,7 +771,7 @@ func TestConvertVerticalIndex(t *testing.T) {
 		for i := 0; i < len(p.expectedOutputIndex); i++ {
 			if result[i] != p.expectedOutputIndex[i] {
 				t.Log(t.Name())
-				t.Errorf("convertVerticalIndex(%v, %v, %v, %v, %v) == %v, result: %v", p.inputIndex, p.inputZoom, p.outputZoom, p.zBaseExponent, p.zBaseOffset, p.expectedOutputIndex, result)
+				t.Errorf("convertVerticalIDToAltitudekey(%v, %v, %v, %v, %v) == %v, result: %v", p.inputIndex, p.inputZoom, p.outputZoom, p.zBaseExponent, p.zBaseOffset, p.expectedOutputIndex, result)
 				break
 			}
 		}
@@ -811,11 +779,7 @@ func TestConvertVerticalIndex(t *testing.T) {
 	}
 }
 
-// expected output is defined as expectedOutput = int64(math.Floor(
-// inputIndex*
-// math.Pow(2, (outputZoom-inputZoom+zOriginValue-zBaseExponent)) +
-// (zBaseOffset)*math.Pow(2, (outputZoom-zBaseExponent))))
-func TestCalculateMinVerticalIndex(t *testing.T) {
+func TestConvertVerticalIDToMinAltitudekey(t *testing.T) {
 	data := []struct {
 		inputIndex     int64
 		inputZoom      int64
@@ -841,15 +805,15 @@ func TestCalculateMinVerticalIndex(t *testing.T) {
 	}
 
 	for _, p := range data {
-		result, error := calculateMinVerticalIndex(p.inputIndex, p.inputZoom, p.outputZoom, p.zBaseExponent, p.zBaseOffset)
+		result, error := convertVerticalIDToMinAltitudekey(p.inputIndex, p.inputZoom, p.outputZoom, p.zBaseExponent, p.zBaseOffset)
 		if error != nil && p.e != error {
 			t.Log(t.Name())
-			t.Errorf("calculateMinVerticalIndex(%v, %v, %v, %v, %v) == %v, result: %v", p.inputIndex, p.inputZoom, p.outputZoom, p.zBaseExponent, p.zBaseOffset, p.expectedOutput, result)
+			t.Errorf("convertVerticalIDToMinAltitudekey(%v, %v, %v, %v, %v) == %v, result: %v", p.inputIndex, p.inputZoom, p.outputZoom, p.zBaseExponent, p.zBaseOffset, p.expectedOutput, result)
 			continue
 		}
 		if result != p.expectedOutput {
 			t.Log(t.Name())
-			t.Errorf("calculateMinVerticalIndex(%v, %v, %v, %v, %v) == %v, result: %v", p.inputIndex, p.inputZoom, p.outputZoom, p.zBaseExponent, p.zBaseOffset, p.expectedOutput, result)
+			t.Errorf("convertVerticalIDToMinAltitudekey(%v, %v, %v, %v, %v) == %v, result: %v", p.inputIndex, p.inputZoom, p.outputZoom, p.zBaseExponent, p.zBaseOffset, p.expectedOutput, result)
 			continue
 		}
 	}

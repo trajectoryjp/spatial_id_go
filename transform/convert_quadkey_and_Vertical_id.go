@@ -15,8 +15,7 @@ import (
 
 // 宣言
 var (
-	alt25 = math.Pow(2, 25)
-	// zOriginValue is the standard zoomLevel when zBaseExponent = 25. The resulting voxel height is 1 meter.
+	alt25              = math.Pow(2, 25)
 	zOriginValue int64 = 25
 )
 
@@ -345,25 +344,31 @@ func ConvertExtendedSpatialIDsToQuadkeysAndVerticalIDs(extendedSpatialIDs []stri
 	return extendedSpatialIDToQuadkeyAndVerticalID, nil
 }
 
-// ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys
+// ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys 拡張空間IDをquadkeyとaltitudekeyに変換する。
 //
-//	Converts ExtendedSpatialIDs to []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey given zoom, scalar and offset parameters
+// 変換前と変換後の精度差によって出力される内部形式IDの個数は増減する。
 //
-// input:
+// 引数 :
 //
-// extendedSpatialIDs: slice of string-encoded ExtendedSpatialIDs
+//		extendedSpatialIDs : 変換対象の拡張空間IDのスライス
 //
-// outputQuadkeyZoom: the horizontal resolution of the output
+//	 outputQuadkeyZoom : 入力値が変換後のquadkeyの精度となる。quadkeyの精度の閾値である 1 ～ 31 の整数値を指定可能。
 //
-// outputAltitudeKeyZoom: the vertical resolution of the output
+//	 outputAltitudekeyZoom : 入力値が変換後のaltitudekeyの精度となる。
 //
-// zBaseExponent: zBaseExponent is b, where 2^b = altitude range (max altitude - min altitude)
+//	 zBaseExponent : altitudekeyの高さが1mとなるズームレベル
 //
-// zBaseOffset : an integer to shift inputIndex up or down by -zBaseOffset indicies; one zBaseOffset index is defined in zOriginZoom terms (zoomLevel=25, zBaseExponent=25), where one index is equivalent to a 1 meter height distance. The resulting index shift is the inverse of the sign on zBaseOffset: a positive offset means the transformed index is lower in altitude than that of the input.
+//	 zBaseOffset : ズームレベルがzBaseExponentで高度0mにおけるaltitudekey
 //
-// output:
+// 戻り値 :
 //
-// []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey, error
+//	quadkeyの精度、[quadkey,altitudekey]のスライス、altitudekeyの精度、altitudekeyの高さが1mとなるズームレベル、ズームレベルがzBaseExponentで高度0mにおけるaltitudekeyの要素を持った構造体のスライス
+//
+// 戻り値(エラー) :
+//
+//	以下の条件に当てはまる場合、エラーインスタンスが返却される。
+//	 精度閾値超過          ：水平方向精度に 1 ～ 31の整数値以外が入力されていた場合。
+//	 拡張空間IDフォーマット不正：拡張空間IDのフォーマットに違反する値が"変換対象の拡張空間ID"に入力されていた場合。
 func ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(extendedSpatialIDs []string, outputQuadkeyZoom int64, outputAltitudekeyZoom int64, zBaseExponent int64, zBaseOffset int64) ([]*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey, error) {
 	extendedSpatialIDToQuadkeyAndAltitudekey := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{}
 
@@ -396,7 +401,7 @@ func ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(extendedSpatialIDs []str
 		}
 
 		// B. convert vertical IDs to fit Output Vertical Zoom Level
-		altitudeKeys, error = convertVerticalIndex(currentID.Z(), currentID.VZoom(), outputAltitudekeyZoom, zBaseExponent, zBaseOffset)
+		altitudeKeys, error = convertVerticalIDToAltitudekey(currentID.Z(), currentID.VZoom(), outputAltitudekeyZoom, zBaseExponent, zBaseOffset)
 		if error != nil {
 			return nil, error
 		}
@@ -667,24 +672,7 @@ func convertVerticallIDToBit(vZoom int64, vIndex int64, outputZoom int64, maxHei
 
 }
 
-// transforms the vertical index with a given index-ZoomLevel pair and returns the vertical index(es) that occupy the same vertical space with a new zoomLevel, zoomScalar, and vertical offset.
-//
-// input:
-//
-//	inputIndex: the index to transform
-//
-//	inputZoom: the zoomLevel of the inputIndex
-//
-//	outputZoom: the zoomlevel of the outputIndex. Determines the number of indicies between min and max altitudes in the output.
-//
-//	zBaseExponent: sets the exponent, b, in 2^b that determines the difference between min and max altitudes of output system.
-//
-//	zBaseOffset: an integer to shift inputIndex up or down by zBaseOffset indicies; one zBaseOffset index is defined in zOriginZoom terms (zoomLevel=25, zBaseExponent=25), where one index is equivalent to a 1 meter height distance. A positive offset means the transformed index is lower in altitude than that of the input.
-//
-// output:
-//
-//	[]int64 list of vertical index(es), error
-func convertVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, zBaseExponent int64, zBaseOffset int64) ([]int64, error) {
+func convertVerticalIDToAltitudekey(inputIndex int64, inputZoom int64, outputZoom int64, zBaseExponent int64, zBaseOffset int64) ([]int64, error) {
 
 	var (
 		outputIndexes []int64
@@ -692,11 +680,11 @@ func convertVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, z
 	)
 
 	// determine the upper and lower index bounds to search for matches in height solution space
-	lowerBound, error := calculateMinVerticalIndex(inputIndex, inputZoom, outputZoom, zBaseExponent, zBaseOffset)
+	lowerBound, error := convertVerticalIDToMinAltitudekey(inputIndex, inputZoom, outputZoom, zBaseExponent, zBaseOffset)
 	if error != nil {
 		return nil, error
 	}
-	upperBound, error := calculateMinVerticalIndex(inputIndex+1, inputZoom, outputZoom, zBaseExponent, zBaseOffset)
+	upperBound, error := convertVerticalIDToMinAltitudekey(inputIndex+1, inputZoom, outputZoom, zBaseExponent, zBaseOffset)
 	if error != nil {
 		return nil, error
 	}
@@ -717,8 +705,7 @@ func convertVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, z
 
 }
 
-// converts a vertical index from one set of zoom parameters to another disregarding the floor() cacluation. This creates a simplier system of equations where the solution set for height is a single variable. However, this does not describe the full solution set of height since we have excluded the floor calculation; it describes the condition where m = x, given m = floor(x) if and only if m <= x < m +1;
-func calculateMinVerticalIndex(inputIndex int64, inputZoom int64, outputZoom int64, zBaseExponent int64, zBaseOffset int64) (int64, error) {
+func convertVerticalIDToMinAltitudekey(inputIndex int64, inputZoom int64, outputZoom int64, zBaseExponent int64, zBaseOffset int64) (int64, error) {
 
 	// 1. check that the input index exists in the input system
 	inputResolution := common.CalculateArithmeticShift(1, inputZoom)
