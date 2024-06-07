@@ -759,7 +759,7 @@ func TestConvertVerticalIDToAltitudekey(t *testing.T) {
 		{inputZoom: 25, outputZoom: 14, inputIndex: 28, zBaseExponent: 25, zBaseOffset: 2048000, expectedOutputIndex: []int64{1000}},
 		{inputZoom: 25, outputZoom: 24, inputIndex: 100, zBaseExponent: 24, zBaseOffset: 0, expectedOutputIndex: []int64{100}},
 		// {inputZoom: 25, outputZoom: 21, inputIndex: 100, zBaseExponent: 20, zBaseOffset: -9, expectedOutputIndex: []int64{183, 184}}, // Impossible
-		{inputZoom: 25, outputZoom: 27, inputIndex: 100, zBaseExponent: 24, zBaseOffset: 0, expectedOutputIndex: []int64{800}},
+		{inputZoom: 25, outputZoom: 27, inputIndex: 100, zBaseExponent: 24, zBaseOffset: 0, expectedOutputIndex: []int64{800}}, // TODO: This test does not check full output!
 	}
 
 	for _, p := range datas {
