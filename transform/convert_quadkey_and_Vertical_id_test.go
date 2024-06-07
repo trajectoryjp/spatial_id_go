@@ -979,7 +979,7 @@ func TestConvertVerticalIDToAltitudekey_5 (t *testing.T) {
 		25,
 		21,
 		25,
-		-2,
+		-272,
 	)
 	if error != expectedError {
 		t.Fatal(result, error)
