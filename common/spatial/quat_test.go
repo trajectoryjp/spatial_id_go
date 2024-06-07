@@ -3,8 +3,8 @@ package spatial
 import (
 	"testing"
 
-	"github.com/trajectoryjp/spatial_id_go/v3/common"
-	"github.com/trajectoryjp/spatial_id_go/v3/common/consts"
+	"github.com/trajectoryjp/spatial_id_go/v4/common"
+	"github.com/trajectoryjp/spatial_id_go/v4/common/consts"
 )
 
 // TestQuat 四元数の構造体(試験用)

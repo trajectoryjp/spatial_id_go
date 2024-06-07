@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/trajectoryjp/spatial_id_go/v3/common/object"
+	"github.com/trajectoryjp/spatial_id_go/v4/common/object"
 )
 
 // TestNewUnitDividedSpatialID01 単位分割拡張空間ID構造体のコンストラクタ 正常系動作確認

@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/trajectoryjp/spatial_id_go/v3/common/consts"
+	"github.com/trajectoryjp/spatial_id_go/v4/common/consts"
 )
 
 // GetVoxelIDfromSpatialID ボクセル成分ID取得
