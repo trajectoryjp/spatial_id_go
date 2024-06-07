@@ -4,7 +4,7 @@ package spatial
 import (
 	"math"
 
-	"github.com/trajectoryjp/spatial_id_go/v3/common/consts"
+	"github.com/trajectoryjp/spatial_id_go/v4/common/consts"
 )
 
 // Quat 四元数の構造体

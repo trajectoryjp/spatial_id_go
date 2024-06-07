@@ -5,11 +5,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/trajectoryjp/spatial_id_go/v3/common"
-	"github.com/trajectoryjp/spatial_id_go/v3/common/consts"
-	"github.com/trajectoryjp/spatial_id_go/v3/common/errors"
-	"github.com/trajectoryjp/spatial_id_go/v3/common/object"
-	"github.com/trajectoryjp/spatial_id_go/v3/shape"
+	"github.com/trajectoryjp/spatial_id_go/v4/common"
+	"github.com/trajectoryjp/spatial_id_go/v4/common/consts"
+	"github.com/trajectoryjp/spatial_id_go/v4/common/errors"
+	"github.com/trajectoryjp/spatial_id_go/v4/common/object"
+	"github.com/trajectoryjp/spatial_id_go/v4/shape"
 )
 
 // UnitDividedSpatialID 単位分割拡張空間ID構造体
