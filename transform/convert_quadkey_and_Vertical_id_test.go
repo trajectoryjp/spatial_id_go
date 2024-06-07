@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/trajectoryjp/spatial_id_go/v3/common/errors"
-	"github.com/trajectoryjp/spatial_id_go/v3/common/object"
+	"github.com/trajectoryjp/spatial_id_go/v4/common/errors"
+	"github.com/trajectoryjp/spatial_id_go/v4/common/object"
 )
 
 func TestConvertQuadkeysAndVerticalIDsToExtendedSpatialIDs(t *testing.T) {
@@ -241,95 +241,300 @@ func TestConvertExtendedSpatialIdsToQuadkeysAndVerticalIDs(t *testing.T) {
 	}
 }
 
-func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(t *testing.T) {
-	expectedValue1 := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{ // returns same as input
+func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys_1(t *testing.T) {
+	expected := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{
 		object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(
 			20,
 			[][2]int64{{7432012031, 56}},
 			26,
-			0,
+			25,
 			0,
 		),
 	}
-	expectedValue2 := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{ // adjust horizontal zoom up
+
+	result, error := ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(
+		[]string{"20/85263/65423/26/56"},
+		20,
+		26,
+		25,
+		0,
+	)
+	if error != nil {
+		t.Fatal(error)
+	}
+
+	if !reflect.DeepEqual(result, expected) {
+		t.Fatal(result)
+	}
+}
+
+func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys_2(t *testing.T) {
+	expected := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{
 		object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(
 			21,
 			[][2]int64{{29728048124, 56}, {29728048125, 56}, {29728048126, 56}, {29728048127, 56}},
 			26,
-			0,
+			25,
 			0,
 		),
 	}
-	expectedValue3 := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{ // adjusts altitudeRangeScalar and output VZoom
+
+	result, error := ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(
+		[]string{"20/85263/65423/26/56"},
+		21,
+		26,
+		25,
+		0,
+	)
+	if error != nil {
+		t.Fatal(error)
+	}
+
+	if !reflect.DeepEqual(result, expected) {
+		t.Fatal(result)
+	}
+}
+
+func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys_3(t *testing.T) {
+	expected := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{
 		object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(
 			20,
 			[][2]int64{{7432012031, 7}},
 			12,
-			11, // 2^14
+			14, // 2^14
 			0,
 		),
 	}
-	expectedValue4 := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{ // adjusts altitudeRangeScalar, output VZoom and verticalIndexOffset
+
+	result, error := ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(
+		[]string{"20/85263/65423/26/56"},
+		20,
+		12,
+		14,
+		0,
+	)
+	if error != nil {
+		t.Fatal(error)
+	}
+
+	if !reflect.DeepEqual(result, expected) {
+		t.Fatal(result)
+	}
+}
+
+func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys_4(t *testing.T) {
+	expected := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{
 		object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(
 			20,
 			[][2]int64{{7432012031, 54}},
 			12,
-			11,
-			47,
-			//16572, // 2^14 + 47*4
-			//188,   // 0 + 47*4
+			14,
+			188,
 		),
 	}
-	expectedValue5 := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{ // adjusts altitudeRangeScalar, output VZoom, outputHZoom, and verticalIndexOffset
+
+	result, error := ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(
+		[]string{"20/85263/65423/26/56"},
+		20,
+		12,
+		14,
+		188,
+	)
+	if error != nil {
+		t.Fatal(error)
+	}
+
+	if !reflect.DeepEqual(result, expected) {
+		t.Fatal(result)
+	}
+}
+
+func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys_5(t *testing.T) {
+	expected := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{
 		object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(
 			21,
 			[][2]int64{{29728048124, 12}, {29728048124, 13}, {29728048125, 12}, {29728048125, 13}, {29728048126, 12}, {29728048126, 13}, {29728048127, 12}, {29728048127, 13}},
 			15,
-			11,
-			-100,
-			// 16334, // 2^14 + -100*0.5
-			// -50,   // 0 + -100*0.5
+			14,
+			-50,
 		),
 	}
 
-	datas := []struct {
-		spatialIds          []string
-		outputHZoom         int64
-		outputVZoom         int64
-		altitudeRangeScalar int64
-		verticalIndexOffset int64
-		expectedValue       []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey
-		resultLength        int
-		pattern             int64 // 0:正常 1:異常 2:個数(水平) 3:個数(垂直)
-		e                   error
-	}{
-		// 正常
-		{spatialIds: []string{"20/85263/65423/26/56"}, outputHZoom: 20, outputVZoom: 26, altitudeRangeScalar: 0, verticalIndexOffset: 0, expectedValue: expectedValue1, pattern: 0},
-		{spatialIds: []string{"20/85263/65423/26/56"}, outputHZoom: 21, outputVZoom: 26, altitudeRangeScalar: 0, verticalIndexOffset: 0, expectedValue: expectedValue2, pattern: 0},
-		{spatialIds: []string{"20/85263/65423/26/56"}, outputHZoom: 20, outputVZoom: 12, altitudeRangeScalar: 11, expectedValue: expectedValue3, pattern: 0},
-		{spatialIds: []string{"20/85263/65423/26/56"}, outputHZoom: 20, outputVZoom: 12, altitudeRangeScalar: 11, verticalIndexOffset: 47, expectedValue: expectedValue4, pattern: 0},
-		{spatialIds: []string{"20/85263/65423/25/56"}, outputHZoom: 21, outputVZoom: 15, altitudeRangeScalar: 11, verticalIndexOffset: -100, expectedValue: expectedValue5, pattern: 0},
+	result, error := ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(
+		[]string{"20/85263/65423/25/56"},
+		21,
+		15,
+		14,
+		-50,
+	)
+	if error != nil {
+		t.Fatal(error)
 	}
-	for _, p := range datas {
 
-		result, e := ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(p.spatialIds, p.outputHZoom, p.outputVZoom, p.altitudeRangeScalar, p.verticalIndexOffset)
-		if p.pattern == 0 && !reflect.DeepEqual(result, p.expectedValue) {
-			t.Log(t.Name())
-			t.Errorf("ConvertExtendedSpatialIDsToQuadkeysAndVerticalIDs(%s,%d,%d,%v,%v) == %+v, result: %+v", p.spatialIds, p.outputHZoom, p.outputVZoom, p.altitudeRangeScalar, p.verticalIndexOffset, p.expectedValue[0], result[0])
-		}
-		if p.pattern == 1 && e != p.e {
-			t.Log(t.Name())
-			t.Errorf("ConvertExtendedSpatialIDsToQuadkeysAndVerticalIDs(%s,%d,%d,%v,%v) == %+v, result: %+v", p.spatialIds, p.outputHZoom, p.outputVZoom, p.altitudeRangeScalar, p.verticalIndexOffset, e, p.e)
-		}
-		if p.pattern == 2 && p.resultLength != len(result[0].InnerIDList()) {
-			t.Log(t.Name())
-			t.Errorf("ConvertExtendedSpatialIDsToQuadkeysAndVerticalIDs(%s,%d,%d,%v,%v) == %+v, result: %+v", p.spatialIds, p.outputHZoom, p.outputVZoom, p.altitudeRangeScalar, p.verticalIndexOffset, len(result[0].InnerIDList()), p.resultLength)
-		}
-		if p.pattern == 3 && p.resultLength != len(result[0].InnerIDList()) {
-			t.Log(t.Name())
-			t.Errorf("ConvertExtendedSpatialIDsToQuadkeysAndVerticalIDs(%s,%d,%d,%v,%v) == %+v, result: %+v", p.spatialIds, p.outputHZoom, p.outputVZoom, p.altitudeRangeScalar, p.verticalIndexOffset, len(result[0].InnerIDList()), p.resultLength)
-		}
+	if !reflect.DeepEqual(result, expected) {
+		t.Fatal(result)
+	}
+}
 
+func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys_Example1(t *testing.T) {
+	expected := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{
+		object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(
+			20,
+			[][2]int64{{7432012031, 3}},
+			3,
+			3,
+			2,
+		),
+	}
+
+	result, error := ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(
+		[]string{"20/85263/65423/25/1"},
+		20,
+		3,
+		3,
+		2,
+	)
+	if error != nil {
+		t.Fatal(error)
+	}
+
+	if !reflect.DeepEqual(result, expected) {
+		t.Fatal(result)
+	}
+}
+
+func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys_Example2(t *testing.T) {
+	expected := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{
+		object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(
+			20,
+			[][2]int64{{7432012031, 2}},
+			2,
+			3,
+			2,
+		),
+	}
+
+	result, error := ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(
+		[]string{"20/85263/65423/25/3"},
+		20,
+		2,
+		3,
+		2,
+	)
+	if error != nil {
+		t.Fatal(error)
+	}
+
+	if !reflect.DeepEqual(result, expected) {
+		t.Fatal(result)
+	}
+}
+
+func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys_Example3(t *testing.T) {
+	expected := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{
+		object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(
+			20,
+			[][2]int64{{7432012031, 2}, {7432012031, 3}},
+			3,
+			3,
+			2,
+		),
+	}
+
+	result, error := ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(
+		[]string{"20/85263/65423/24/0"},
+		20,
+		3,
+		3,
+		2,
+	)
+	if error != nil {
+		t.Fatal(error)
+	}
+
+	if !reflect.DeepEqual(result, expected) {
+		t.Fatal(result)
+	}
+}
+
+func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys_Example4(t *testing.T) {
+	expected := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{
+		object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(
+			20,
+			[][2]int64{{7432012031, 0}, {7432012031, 1}, {7432012031, 2}, {7432012031, 3}},
+			25,
+			23,
+			-1,
+		),
+	}
+
+	result, error := ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(
+		[]string{"20/85263/65423/25/1"},
+		20,
+		25,
+		23,
+		-1,
+	)
+	if error != nil {
+		t.Fatal(error)
+	}
+
+	if !reflect.DeepEqual(result, expected) {
+		t.Fatal(result)
+	}
+}
+
+func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys_Example5(t *testing.T) {
+	expected := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{
+		object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(
+			20,
+			[][2]int64{{7432012031, 0}},
+			23,
+			25,
+			-1,
+		),
+	}
+
+	result, error := ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(
+		[]string{"20/85263/65423/25/1"},
+		20,
+		23,
+		25,
+		-1,
+	)
+	if error != nil {
+		t.Fatal(error)
+	}
+
+	if !reflect.DeepEqual(result, expected) {
+		t.Fatal(result)
+	}
+}
+
+func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys_Example6(t *testing.T) {
+	expected := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{
+		object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey( // 例6
+			20,
+			[][2]int64{{7432012031, 0}},
+			23,
+			25,
+			-1,
+		),
+	}
+
+	result, error := ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(
+		[]string{"20/85263/65423/25/4"},
+		20,
+		23,
+		25,
+		-1,
+	)
+	if error != nil {
+		t.Fatal(error)
+	}
+
+	if !reflect.DeepEqual(result, expected) {
+		t.Fatal(result)
 	}
 }
 
@@ -690,85 +895,362 @@ func TestSpatialIDCheckZoom(t *testing.T) {
 
 }
 
-// expected output is defined as outputIndex, e_i, where e_i is the set of integers that satisfy the solution set conditions:
-//  1. the altitudes of the input index is:
-//     (inputIndex)*(2^25-inputZoom) <= altitude < (inputIndex +1)*(2^25-inputZoom)
-//  2. the altitudes associated with index i is:
-//     (index_i + indexOffset)*(2^25-outputZoom) <= altitude < (index_i + indexOffset +1)*(2^25-outputZoom)
-//  3. the minimum altitude of index i is less than the maximum altitude of the inputIndex
-//  4. assuming inputIndex exists, the number of integers in e_i >= 1
-func TestConvertVerticalIndex(t *testing.T) {
-	datas := []struct {
-		inputZoom           int64
-		inputIndex          int64
-		outputZoom          int64
-		indexOffset         int64
-		altitudeRangeScalar int64
-		expectedOutputIndex []int64
-	}{
-		{inputZoom: 25, outputZoom: 27, inputIndex: 100, indexOffset: 0, expectedOutputIndex: []int64{400, 401, 402, 403}},
-		{inputZoom: 25, outputZoom: 24, inputIndex: 100, indexOffset: 0, expectedOutputIndex: []int64{50}},
-		{inputZoom: 25, outputZoom: 25, inputIndex: 100, indexOffset: 0, expectedOutputIndex: []int64{100}},
-		{inputZoom: 25, outputZoom: 25, inputIndex: 100, indexOffset: -47, expectedOutputIndex: []int64{53}},
-		{inputZoom: 25, outputZoom: 26, inputIndex: 0, indexOffset: 3, expectedOutputIndex: []int64{3, 4}},
-		{inputZoom: 25, outputZoom: 21, inputIndex: 100, indexOffset: -17, expectedOutputIndex: []int64{-11}},
-		{inputZoom: 25, outputZoom: 25, inputIndex: 100, indexOffset: -512, expectedOutputIndex: []int64{-412}},
-		{inputZoom: 25, outputZoom: 14, inputIndex: 28, indexOffset: 1000, expectedOutputIndex: []int64{1000}},
-		{inputZoom: 25, outputZoom: 24, inputIndex: 100, altitudeRangeScalar: 1, indexOffset: 0, expectedOutputIndex: []int64{100}},
-		{inputZoom: 25, outputZoom: 21, inputIndex: 100, altitudeRangeScalar: 5, indexOffset: -17, expectedOutputIndex: []int64{183, 184}},
-		{inputZoom: 25, outputZoom: 27, inputIndex: 100, altitudeRangeScalar: 1, indexOffset: 0, expectedOutputIndex: []int64{800}},
+func TestConvertZToAltitudekey_1(t *testing.T) {
+	expected := []int64{400, 401, 402, 403}
+
+	result, error := convertZToAltitudekey(
+		100,
+		25,
+		27,
+		25,
+		0,
+	)
+	if error != nil {
+		t.Fatal(error)
 	}
 
-	for _, p := range datas {
-		result, error := convertVerticalIndex(p.inputIndex, p.inputZoom, p.outputZoom, p.altitudeRangeScalar, p.indexOffset)
-		if error != nil {
-			t.Log(t.Name())
-			t.Error(error)
-		}
-		for i := 0; i < len(p.expectedOutputIndex); i++ {
-			if result[i] != p.expectedOutputIndex[i] {
-				t.Log(t.Name())
-				t.Errorf("convertVerticalIndex(%v, %v, %v, %v, %v) == %v, result: %v", p.inputIndex, p.inputZoom, p.outputZoom, p.altitudeRangeScalar, p.indexOffset, p.expectedOutputIndex, result)
-			}
-		}
-
+	if !reflect.DeepEqual(result, expected) {
+		t.Fatal(result)
 	}
 }
 
-// expected output is defined as expectedOutput = inputIndex*2^(outputZoom-InputZoom+altitudeRangeScalar) + indexOffset
-func TestCalculateMinVerticalIndex(t *testing.T) {
-	data := []struct {
-		inputIndex          int64
-		inputZoom           int64
-		outputZoom          int64
-		altitudeRangeScalar int64
-		indexOffset         int64
-		expectedOutput      int64
-	}{
-		{inputIndex: 0, inputZoom: 25, outputZoom: 25, indexOffset: 0, expectedOutput: 0},
-		{inputIndex: 0, inputZoom: 25, outputZoom: 25, indexOffset: 47, expectedOutput: 47},
-		{inputIndex: 1, inputZoom: 25, outputZoom: 25, indexOffset: 47, altitudeRangeScalar: 1, expectedOutput: 49},
-		{inputIndex: 0, inputZoom: 25, outputZoom: 27, indexOffset: 0, expectedOutput: 0},
-		{inputIndex: 1, inputZoom: 25, outputZoom: 27, indexOffset: 0, expectedOutput: 4},
-		{inputIndex: 100, inputZoom: 10, outputZoom: 25, indexOffset: 0, expectedOutput: 3276800},
-		{inputIndex: 100, inputZoom: 10, outputZoom: 25, indexOffset: -3276801, expectedOutput: -1},
-		{inputIndex: 47, inputZoom: 25, outputZoom: 24, indexOffset: 1, expectedOutput: 24},
-		{inputIndex: 47, inputZoom: 25, outputZoom: 20, indexOffset: 1, expectedOutput: 2},
-		{inputIndex: 47, inputZoom: 25, outputZoom: 12, indexOffset: 1, altitudeRangeScalar: 11, expectedOutput: 12},
-		{inputIndex: -1, inputZoom: 25, outputZoom: 25, indexOffset: 0, altitudeRangeScalar: 0, expectedOutput: -1},
-		{inputIndex: -100, inputZoom: 25, outputZoom: 26, indexOffset: 205, altitudeRangeScalar: 0, expectedOutput: 5},
-		{inputIndex: -100, inputZoom: 25, outputZoom: 26, indexOffset: 205, altitudeRangeScalar: 1, expectedOutput: -195},
+func TestConvertZToAltitudekey_2(t *testing.T) {
+	expected := []int64{50}
+
+	result, error := convertZToAltitudekey(
+		100,
+		25,
+		24,
+		25,
+		0,
+	)
+	if error != nil {
+		t.Fatal(error)
 	}
 
-	for _, p := range data {
-		result, error := calculateMinVerticalIndex(p.inputIndex, p.inputZoom, p.outputZoom, p.altitudeRangeScalar, p.indexOffset)
-		if error != nil {
-			t.Log(t.Name())
-			t.Error(error)
-		}
-		if result != p.expectedOutput {
-			t.Log(t.Name())
-			t.Errorf("calculateMinVerticalIndex(%v, %v, %v, %v, %v) == %v, result: %v", p.inputIndex, p.inputZoom, p.outputZoom, p.altitudeRangeScalar, p.indexOffset, p.expectedOutput, result)
-		}
+	if !reflect.DeepEqual(result, expected) {
+		t.Fatal(result)
+	}
+}
+
+func TestConvertZToAltitudekey_3(t *testing.T) {
+	expected := []int64{100}
+
+	result, error := convertZToAltitudekey(
+		100,
+		25,
+		25,
+		25,
+		0,
+	)
+	if error != nil {
+		t.Fatal(error)
+	}
+
+	if !reflect.DeepEqual(result, expected) {
+		t.Fatal(result)
+	}
+}
+
+func TestConvertZToAltitudekey_4(t *testing.T) {
+	expected := []int64{53}
+
+	result, error := convertZToAltitudekey(
+		100,
+		25,
+		25,
+		25,
+		-47,
+	)
+	if error != nil {
+		t.Fatal(error)
+	}
+
+	if !reflect.DeepEqual(result, expected) {
+		t.Fatal(result)
+	}
+}
+
+func TestConvertZToAltitudekey_5(t *testing.T) {
+	expectedError := errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset")
+
+	result, error := convertZToAltitudekey(
+		100,
+		25,
+		21,
+		25,
+		-272,
+	)
+	if error != expectedError {
+		t.Fatal(result, error)
+	}
+}
+
+func TestConvertZToAltitudekey_6(t *testing.T) {
+	expectedError := errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset")
+
+	result, error := convertZToAltitudekey(
+		100,
+		25,
+		25,
+		25,
+		-512,
+	)
+	if error != expectedError {
+		t.Fatal(result, error)
+	}
+}
+
+func TestConvertZToAltitudekey_7(t *testing.T) {
+	expected := []int64{1000}
+
+	result, error := convertZToAltitudekey(
+		28,
+		25,
+		14,
+		25,
+		2048000,
+	)
+	if error != nil {
+		t.Fatal(error)
+	}
+
+	if !reflect.DeepEqual(result, expected) {
+		t.Fatal(result)
+	}
+}
+
+func TestConvertZToAltitudekey_8(t *testing.T) {
+	expected := []int64{100}
+
+	result, error := convertZToAltitudekey(
+		100,
+		25,
+		24,
+		24,
+		0,
+	)
+	if error != nil {
+		t.Fatal(error)
+	}
+
+	if !reflect.DeepEqual(result, expected) {
+		t.Fatal(result)
+	}
+}
+
+func TestConvertZToAltitudekey_9(t *testing.T) {
+	expected := []int64{800, 801, 802, 803, 804, 805, 806, 807}
+
+	result, error := convertZToAltitudekey(
+		100,
+		25,
+		27,
+		24,
+		0,
+	)
+	if error != nil {
+		t.Fatal(error)
+	}
+
+	if !reflect.DeepEqual(result, expected) {
+		t.Fatal(result)
+	}
+}
+
+func TestConvertZToMinAltitudekey_1(t *testing.T) {
+	expected := int64(47)
+
+	result, error := convertZToMinAltitudekey(
+		0,
+		25,
+		25,
+		25,
+		47,
+	)
+	if error != nil {
+		t.Fatal(error)
+	}
+
+	if result != expected {
+		t.Fatal(result)
+	}
+}
+
+func TestConvertZToMinAltitudekey_2(t *testing.T) {
+	expected := int64(0)
+
+	result, error := convertZToMinAltitudekey(
+		0,
+		25,
+		25,
+		25,
+		0,
+	)
+	if error != nil {
+		t.Fatal(error)
+	}
+
+	if result != expected {
+		t.Fatal(result)
+	}
+}
+
+func TestConvertZToMinAltitudekey_3(t *testing.T) {
+	expected := int64(0)
+
+	result, error := convertZToMinAltitudekey(
+		0,
+		25,
+		27,
+		25,
+		0,
+	)
+	if error != nil {
+		t.Fatal(error)
+	}
+
+	if result != expected {
+		t.Fatal(result)
+	}
+}
+
+func TestConvertZToMinAltitudekey_4(t *testing.T) {
+	expected := int64(4)
+
+	result, error := convertZToMinAltitudekey(
+		1,
+		25,
+		27,
+		25,
+		0,
+	)
+	if error != nil {
+		t.Fatal(error)
+	}
+
+	if result != expected {
+		t.Fatal(result)
+	}
+}
+
+func TestConvertZToMinAltitudekey_5(t *testing.T) {
+	expected := int64(3276800)
+
+	result, error := convertZToMinAltitudekey(
+		100,
+		10,
+		25,
+		25,
+		0,
+	)
+	if error != nil {
+		t.Fatal(error)
+	}
+
+	if result != expected {
+		t.Fatal(result)
+	}
+}
+
+func TestConvertZToMinAltitudekey_6(t *testing.T) {
+	expectedError := errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset")
+
+	result, error := convertZToMinAltitudekey(
+		100,
+		10,
+		25,
+		25,
+		-3276801,
+	)
+	if error != expectedError {
+		t.Fatal(result, error)
+	}
+}
+
+func TestConvertZToMinAltitudekey_7(t *testing.T) {
+	expected := int64(24)
+
+	result, error := convertZToMinAltitudekey(
+		47,
+		25,
+		24,
+		25,
+		2,
+	)
+	if error != nil {
+		t.Fatal(error)
+	}
+
+	if result != expected {
+		t.Fatal(result)
+	}
+}
+
+func TestConvertZToMinAltitudekey_8(t *testing.T) {
+	expected := int64(2)
+
+	result, error := convertZToMinAltitudekey(
+		47,
+		25,
+		20,
+		25,
+		32,
+	)
+	if error != nil {
+		t.Fatal(error)
+	}
+
+	if result != expected {
+		t.Fatal(result)
+	}
+}
+
+func TestConvertZToMinAltitudekey_9(t *testing.T) {
+	expected := int64(12)
+
+	result, error := convertZToMinAltitudekey(
+		47,
+		25,
+		12,
+		14,
+		4,
+	)
+	if error != nil {
+		t.Fatal(error)
+	}
+
+	if result != expected {
+		t.Fatal(result)
+	}
+}
+
+func TestConvertZToMinAltitudekey_10(t *testing.T) {
+	expectedError := errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset")
+
+	result, error := convertZToMinAltitudekey(
+		-1,
+		25,
+		25,
+		25,
+		0,
+	)
+	if error != expectedError {
+		t.Fatal(result, error)
+	}
+}
+
+func TestConvertZToMinAltitudekey_11(t *testing.T) {
+	expectedError := errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset")
+
+	result, error := convertZToMinAltitudekey(
+		-100,
+		25,
+		26,
+		24,
+		51,
+	)
+	if error != expectedError {
+		t.Fatal(result, error)
 	}
 }

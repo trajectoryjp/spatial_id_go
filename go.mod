@@ -1,4 +1,4 @@
-module github.com/trajectoryjp/spatial_id_go/v3
+module github.com/trajectoryjp/spatial_id_go/v4
 
 go 1.19
 

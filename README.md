@@ -12,7 +12,7 @@
   * 任意の空間IDの周辺の空間IDを取得する機能
   * 任意の形状から空間IDを取得する機能
   * 空間IDをquadkeyと2分木におけるbit形式のIDに変換する機能
-* 空間ID仕様については[Digital Architecture Design Center 3次元空間情報基盤アーキテクチャ検討会 会議資料](https://www.ipa.go.jp/dadc/architecture/pdf/pj_report_3dspatialinfo_doc-appendix_202212_1.pdf)を参照して下さい。
+* 空間ID仕様については[Digital Architecture Design Center 3次元空間情報基盤アーキテクチャ検討会 会議資料](https://www.ipa.go.jp/digital/architecture/Individual-link/ps6vr7000000qmcv-att/pj_report_3dspatialinfo_doc-appendix_202212_1.pdf)を参照して下さい。
 
 
 ## 注意事項

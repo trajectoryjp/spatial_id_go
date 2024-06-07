@@ -4,7 +4,7 @@ package object
 import (
 	"math"
 
-	"github.com/trajectoryjp/spatial_id_go/v3/common/errors"
+	"github.com/trajectoryjp/spatial_id_go/v4/common/errors"
 )
 
 // Point 地理座標用の構造体
