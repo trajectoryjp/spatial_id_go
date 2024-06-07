@@ -895,10 +895,10 @@ func TestSpatialIDCheckZoom(t *testing.T) {
 
 }
 
-func TestConvertVerticalIDToAltitudekey_1 (t *testing.T) {
+func TestConvertZToAltitudekey_1(t *testing.T) {
 	expected := []int64{400, 401, 402, 403}
 
-	result, error := convertVerticalIDToAltitudekey(
+	result, error := convertZToAltitudekey(
 		100,
 		25,
 		27,
@@ -914,10 +914,10 @@ func TestConvertVerticalIDToAltitudekey_1 (t *testing.T) {
 	}
 }
 
-func TestConvertVerticalIDToAltitudekey_2 (t *testing.T) {
+func TestConvertZToAltitudekey_2(t *testing.T) {
 	expected := []int64{50}
 
-	result, error := convertVerticalIDToAltitudekey(
+	result, error := convertZToAltitudekey(
 		100,
 		25,
 		24,
@@ -933,10 +933,10 @@ func TestConvertVerticalIDToAltitudekey_2 (t *testing.T) {
 	}
 }
 
-func TestConvertVerticalIDToAltitudekey_3 (t *testing.T) {
+func TestConvertZToAltitudekey_3(t *testing.T) {
 	expected := []int64{100}
 
-	result, error := convertVerticalIDToAltitudekey(
+	result, error := convertZToAltitudekey(
 		100,
 		25,
 		25,
@@ -952,10 +952,10 @@ func TestConvertVerticalIDToAltitudekey_3 (t *testing.T) {
 	}
 }
 
-func TestConvertVerticalIDToAltitudekey_4 (t *testing.T) {
+func TestConvertZToAltitudekey_4(t *testing.T) {
 	expected := []int64{53}
 
-	result, error := convertVerticalIDToAltitudekey(
+	result, error := convertZToAltitudekey(
 		100,
 		25,
 		25,
@@ -971,10 +971,10 @@ func TestConvertVerticalIDToAltitudekey_4 (t *testing.T) {
 	}
 }
 
-func TestConvertVerticalIDToAltitudekey_5 (t *testing.T) {
+func TestConvertZToAltitudekey_5(t *testing.T) {
 	expectedError := errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset")
 
-	result, error := convertVerticalIDToAltitudekey(
+	result, error := convertZToAltitudekey(
 		100,
 		25,
 		21,
@@ -986,10 +986,10 @@ func TestConvertVerticalIDToAltitudekey_5 (t *testing.T) {
 	}
 }
 
-func TestConvertVerticalIDToAltitudekey_6 (t *testing.T) {
+func TestConvertZToAltitudekey_6(t *testing.T) {
 	expectedError := errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset")
 
-	result, error := convertVerticalIDToAltitudekey(
+	result, error := convertZToAltitudekey(
 		100,
 		25,
 		25,
@@ -1001,10 +1001,10 @@ func TestConvertVerticalIDToAltitudekey_6 (t *testing.T) {
 	}
 }
 
-func TestConvertVerticalIDToAltitudekey_7 (t *testing.T) {
+func TestConvertZToAltitudekey_7(t *testing.T) {
 	expected := []int64{1000}
 
-	result, error := convertVerticalIDToAltitudekey(
+	result, error := convertZToAltitudekey(
 		28,
 		25,
 		14,
@@ -1020,10 +1020,10 @@ func TestConvertVerticalIDToAltitudekey_7 (t *testing.T) {
 	}
 }
 
-func TestConvertVerticalIDToAltitudekey_8 (t *testing.T) {
+func TestConvertZToAltitudekey_8(t *testing.T) {
 	expected := []int64{100}
 
-	result, error := convertVerticalIDToAltitudekey(
+	result, error := convertZToAltitudekey(
 		100,
 		25,
 		24,
@@ -1039,10 +1039,10 @@ func TestConvertVerticalIDToAltitudekey_8 (t *testing.T) {
 	}
 }
 
-func TestConvertVerticalIDToAltitudekey_9 (t *testing.T) {
+func TestConvertZToAltitudekey_9(t *testing.T) {
 	expected := []int64{800, 801, 802, 803, 804, 805, 806, 807}
 
-	result, error := convertVerticalIDToAltitudekey(
+	result, error := convertZToAltitudekey(
 		100,
 		25,
 		27,
@@ -1058,10 +1058,10 @@ func TestConvertVerticalIDToAltitudekey_9 (t *testing.T) {
 	}
 }
 
-func TestConvertVerticalIDToMinAltitudekey_1 (t *testing.T) {
+func TestConvertZToMinAltitudekey_1(t *testing.T) {
 	expected := int64(47)
 
-	result, error := convertVerticalIDToMinAltitudekey(
+	result, error := convertZToMinAltitudekey(
 		0,
 		25,
 		25,
@@ -1077,10 +1077,10 @@ func TestConvertVerticalIDToMinAltitudekey_1 (t *testing.T) {
 	}
 }
 
-func TestConvertVerticalIDToMinAltitudekey_2 (t *testing.T) {
+func TestConvertZToMinAltitudekey_2(t *testing.T) {
 	expected := int64(0)
 
-	result, error := convertVerticalIDToMinAltitudekey(
+	result, error := convertZToMinAltitudekey(
 		0,
 		25,
 		25,
@@ -1096,10 +1096,10 @@ func TestConvertVerticalIDToMinAltitudekey_2 (t *testing.T) {
 	}
 }
 
-func TestConvertVerticalIDToMinAltitudekey_3 (t *testing.T) {
+func TestConvertZToMinAltitudekey_3(t *testing.T) {
 	expected := int64(0)
 
-	result, error := convertVerticalIDToMinAltitudekey(
+	result, error := convertZToMinAltitudekey(
 		0,
 		25,
 		27,
@@ -1115,10 +1115,10 @@ func TestConvertVerticalIDToMinAltitudekey_3 (t *testing.T) {
 	}
 }
 
-func TestConvertVerticalIDToMinAltitudekey_4 (t *testing.T) {
+func TestConvertZToMinAltitudekey_4(t *testing.T) {
 	expected := int64(4)
 
-	result, error := convertVerticalIDToMinAltitudekey(
+	result, error := convertZToMinAltitudekey(
 		1,
 		25,
 		27,
@@ -1134,10 +1134,10 @@ func TestConvertVerticalIDToMinAltitudekey_4 (t *testing.T) {
 	}
 }
 
-func TestConvertVerticalIDToMinAltitudekey_5 (t *testing.T) {
+func TestConvertZToMinAltitudekey_5(t *testing.T) {
 	expected := int64(3276800)
 
-	result, error := convertVerticalIDToMinAltitudekey(
+	result, error := convertZToMinAltitudekey(
 		100,
 		10,
 		25,
@@ -1153,10 +1153,10 @@ func TestConvertVerticalIDToMinAltitudekey_5 (t *testing.T) {
 	}
 }
 
-func TestConvertVerticalIDToMinAltitudekey_6 (t *testing.T) {
+func TestConvertZToMinAltitudekey_6(t *testing.T) {
 	expectedError := errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset")
 
-	result, error := convertVerticalIDToMinAltitudekey(
+	result, error := convertZToMinAltitudekey(
 		100,
 		10,
 		25,
@@ -1168,10 +1168,10 @@ func TestConvertVerticalIDToMinAltitudekey_6 (t *testing.T) {
 	}
 }
 
-func TestConvertVerticalIDToMinAltitudekey_7 (t *testing.T) {
+func TestConvertZToMinAltitudekey_7(t *testing.T) {
 	expected := int64(24)
 
-	result, error := convertVerticalIDToMinAltitudekey(
+	result, error := convertZToMinAltitudekey(
 		47,
 		25,
 		24,
@@ -1187,10 +1187,10 @@ func TestConvertVerticalIDToMinAltitudekey_7 (t *testing.T) {
 	}
 }
 
-func TestConvertVerticalIDToMinAltitudekey_8 (t *testing.T) {
+func TestConvertZToMinAltitudekey_8(t *testing.T) {
 	expected := int64(2)
 
-	result, error := convertVerticalIDToMinAltitudekey(
+	result, error := convertZToMinAltitudekey(
 		47,
 		25,
 		20,
@@ -1206,10 +1206,10 @@ func TestConvertVerticalIDToMinAltitudekey_8 (t *testing.T) {
 	}
 }
 
-func TestConvertVerticalIDToMinAltitudekey_9 (t *testing.T) {
+func TestConvertZToMinAltitudekey_9(t *testing.T) {
 	expected := int64(12)
 
-	result, error := convertVerticalIDToMinAltitudekey(
+	result, error := convertZToMinAltitudekey(
 		47,
 		25,
 		12,
@@ -1225,10 +1225,10 @@ func TestConvertVerticalIDToMinAltitudekey_9 (t *testing.T) {
 	}
 }
 
-func TestConvertVerticalIDToMinAltitudekey_10 (t *testing.T) {
+func TestConvertZToMinAltitudekey_10(t *testing.T) {
 	expectedError := errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset")
 
-	result, error := convertVerticalIDToMinAltitudekey(
+	result, error := convertZToMinAltitudekey(
 		-1,
 		25,
 		25,
@@ -1240,10 +1240,10 @@ func TestConvertVerticalIDToMinAltitudekey_10 (t *testing.T) {
 	}
 }
 
-func TestConvertVerticalIDToMinAltitudekey_11 (t *testing.T) {
+func TestConvertZToMinAltitudekey_11(t *testing.T) {
 	expectedError := errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset")
 
-	result, error := convertVerticalIDToMinAltitudekey(
+	result, error := convertZToMinAltitudekey(
 		-100,
 		25,
 		26,

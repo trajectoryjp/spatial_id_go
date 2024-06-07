@@ -401,7 +401,7 @@ func ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(extendedSpatialIDs []str
 		}
 
 		// B. convert vertical IDs to fit Output Vertical Zoom Level
-		altitudeKeys, error = convertVerticalIDToAltitudekey(currentID.Z(), currentID.VZoom(), outputAltitudekeyZoom, zBaseExponent, zBaseOffset)
+		altitudeKeys, error = convertZToAltitudekey(currentID.Z(), currentID.VZoom(), outputAltitudekeyZoom, zBaseExponent, zBaseOffset)
 		if error != nil {
 			return nil, error
 		}
@@ -672,7 +672,7 @@ func convertVerticallIDToBit(vZoom int64, vIndex int64, outputZoom int64, maxHei
 
 }
 
-func convertVerticalIDToAltitudekey(inputIndex int64, inputZoom int64, outputZoom int64, zBaseExponent int64, zBaseOffset int64) ([]int64, error) {
+func convertZToAltitudekey(inputIndex int64, inputZoom int64, outputZoom int64, zBaseExponent int64, zBaseOffset int64) ([]int64, error) {
 
 	var (
 		outputIndexes []int64
@@ -680,11 +680,11 @@ func convertVerticalIDToAltitudekey(inputIndex int64, inputZoom int64, outputZoo
 	)
 
 	// determine the upper and lower index bounds to search for matches in height solution space
-	lowerBound, error := convertVerticalIDToMinAltitudekey(inputIndex, inputZoom, outputZoom, zBaseExponent, zBaseOffset)
+	lowerBound, error := convertZToMinAltitudekey(inputIndex, inputZoom, outputZoom, zBaseExponent, zBaseOffset)
 	if error != nil {
 		return nil, error
 	}
-	upperBound, error := convertVerticalIDToMinAltitudekey(inputIndex+1, inputZoom, outputZoom, zBaseExponent, zBaseOffset)
+	upperBound, error := convertZToMinAltitudekey(inputIndex+1, inputZoom, outputZoom, zBaseExponent, zBaseOffset)
 	if error != nil {
 		return nil, error
 	}
@@ -705,7 +705,7 @@ func convertVerticalIDToAltitudekey(inputIndex int64, inputZoom int64, outputZoo
 
 }
 
-func convertVerticalIDToMinAltitudekey(inputIndex int64, inputZoom int64, outputZoom int64, zBaseExponent int64, zBaseOffset int64) (int64, error) {
+func convertZToMinAltitudekey(inputIndex int64, inputZoom int64, outputZoom int64, zBaseExponent int64, zBaseOffset int64) (int64, error) {
 
 	// 1. check that the input index exists in the input system
 	inputResolution := common.CalculateArithmeticShift(1, inputZoom)
