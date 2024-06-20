@@ -75,3 +75,9 @@ The Ministry of Economy, Trade and Industry of Japan provides an approximate Spa
 [^2]: Ministry of Economy, Trade and Industry of Japan: 4次元時空間情報基盤 アーキテクチャガイドライン（γ版）. 2024/02/29. Page 18. Access Link: https://www.ipa.go.jp/digital/architecture/Individual-link/nq6ept000000g0fh-att/4dspatio-temporal-guideline-gamma.pdf
 
 [^3]: Ministry of Economy, Trade and Industry of Japan: 4次元時空間情報基盤 アーキテクチャガイドライン（γ版）. 2024/02/29. Page 19. Access Link: https://www.ipa.go.jp/digital/architecture/Individual-link/nq6ept000000g0fh-att/4dspatio-temporal-guideline-gamma.pdf
+
+### See also
+
+[^4]: The United Nations Vector Tile Toolkit: https://github.com/unvt/zfxy-spec
+
+[^5]: OpenStreeMap's Slippery Tile Names: https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames
