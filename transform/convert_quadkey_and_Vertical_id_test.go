@@ -376,6 +376,34 @@ func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys_5(t *testing.T) {
 	}
 }
 
+func TestConvertQuadkeysAndAltitudekeysToExtendedSpatialIDs(t *testing.T) {
+	// hZoom/x/y/vZoom/z
+	expected := []object.ExtendedSpatialID{}
+	extendedSpatialID, _ := object.NewExtendedSpatialID("20/85263/65423/3/5")
+	expected = append(expected, *extendedSpatialID)
+
+	request := object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(
+		20,
+		[][2]int64{{7432012031, 3}},
+		3,
+		3,
+		2,
+	)
+
+	result, err := ConvertQuadkeysAndAltitudekeysToExtendedSpatialIDs([]*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{
+		request,
+	})
+	if err != nil {
+		t.Error(err)
+	}
+	if result[0] != expected[0] {
+		// t.Error(result):
+		t.Error(result[0], expected)
+	} else {
+		t.Log("Success", result)
+	}
+}
+
 func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys_Example1(t *testing.T) {
 	expected := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{
 		object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(

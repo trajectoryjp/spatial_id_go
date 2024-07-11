@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/paulmach/orb/maptile"
 	"github.com/trajectoryjp/spatial_id_go/v4/common"
 	"github.com/trajectoryjp/spatial_id_go/v4/common/errors"
 	"github.com/trajectoryjp/spatial_id_go/v4/common/object"
@@ -17,6 +18,11 @@ import (
 var (
 	alt25              = math.Pow(2, 25)
 	zOriginValue int64 = 25
+)
+
+const (
+	quadkeyIndex     = 0
+	altitudekeyIndex = 1
 )
 
 // ConvertQuadkeysAndVerticalIDsToExtendedSpatialIDs 内部形式IDを拡張空間IDに変換する。
@@ -436,6 +442,72 @@ func ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(extendedSpatialIDs []str
 
 	// 構造体のスライスを返却する。
 	return extendedSpatialIDToQuadkeyAndAltitudekey, nil
+}
+
+/*
+SPから来るTileXYZをQuadKeysAndAltitudeKeysに変える
+例：Ouranos GetValueを実行後SPからTileXYZを取得する
+
+QuadKeyをXY、zoomに変換する → maptile で変換する。
+ZとAltitudeKeyは変換が必要。
+*/
+func ConvertQuadkeysAndAltitudekeysToExtendedSpatialIDs(request []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey) ([]object.ExtendedSpatialID, error) {
+
+	extendedSpatialIDs := []object.ExtendedSpatialID{}
+
+	for _, r := range request {
+		for _, qa := range r.InnerIDList() {
+			quadKey := qa[quadkeyIndex]
+			altitudeKey := qa[altitudekeyIndex]
+
+			z, err := convertAltitudeKeyToZ(altitudeKey, r.AltitudekeyZoom(), r.ZBaseExponent(), r.ZBaseOffset())
+			if err != nil {
+				return nil, err
+			}
+
+			mapTile := maptile.FromQuadkey(uint64(quadKey), maptile.Zoom(r.QuadkeyZoom()))
+
+			extendedSpatialID := new(object.ExtendedSpatialID)
+			extendedSpatialID.SetX(int64(mapTile.X))
+			extendedSpatialID.SetY(int64(mapTile.Y))
+			extendedSpatialID.SetZ(z)
+			extendedSpatialID.SetZoom(r.QuadkeyZoom(), r.ZBaseExponent())
+			extendedSpatialIDs = append(extendedSpatialIDs, *extendedSpatialID)
+		}
+	}
+
+	return extendedSpatialIDs, nil
+}
+
+func convertAltitudeKeyToZ(altitudekey int64, altitudekeyZoomLevel int64, zBaseExponent int64, zBaseOffset int64) (int64, error) {
+	// 1. check that the input index exists in the input system
+	inputResolution := common.CalculateArithmeticShift(1, altitudekeyZoomLevel)
+
+	maxInputIndex := inputResolution - 1
+	minInputIndex := -inputResolution
+
+	if altitudekey > maxInputIndex || altitudekey < minInputIndex {
+		return 0, errors.NewSpatialIdError(errors.InputValueErrorCode, "input index does not exist")
+	}
+
+	zoomDifference := zBaseExponent - altitudekeyZoomLevel
+
+	// 2. Calculate outputIndex
+	outputIndex := common.CalculateArithmeticShift(altitudekey, -zoomDifference)
+	outputIndex += zBaseOffset
+	// outputIndex = common.CalculateArithmeticShift(outputIndex, (outputZoom - zBaseExponent))
+
+	// 3. Check to make sure outputIndex exists in the output system
+	outputResolution := common.CalculateArithmeticShift(1, zBaseExponent)
+
+	maxOutputIndex := outputResolution - 1
+	minOutputIndex := int64(0)
+
+	if outputIndex > maxOutputIndex || outputIndex < minOutputIndex {
+		return 0, errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset")
+	}
+
+	return outputIndex, nil
 }
 
 // ConvertSpatialIDsToQuadkeysAndVerticalIDs 空間IDを内部形式IDに変換する。

@@ -9,6 +9,12 @@ require (
 	gonum.org/v1/gonum v0.13.0
 )
 
-require golang.org/x/image v0.7.0 // indirect
+require (
+	go.mongodb.org/mongo-driver v1.11.4 // indirect
+	golang.org/x/image v0.7.0 // indirect
+)
 
-require github.com/trajectoryjp/closest_go v1.0.1
+require (
+	github.com/paulmach/orb v0.11.1
+	github.com/trajectoryjp/closest_go v1.0.1
+)
