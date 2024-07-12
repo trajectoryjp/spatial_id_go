@@ -77,7 +77,7 @@ func TestCheckSpatialIdsOverlap03(t *testing.T) {
 
 	// 期待値
 	expectValue := false
-	expectError := "invalid format. spatialId1: , spatialId2: 16/0/58198/25804"
+	expectError := "InputValueError,入力チェックエラー,spatialId:  @spatialId1[0]"
 
 	if !reflect.DeepEqual(resultValue, expectValue) {
 		t.Errorf("空間ID - 期待値：%v, 取得値：%v", expectValue, resultValue)
@@ -107,7 +107,7 @@ func TestCheckSpatialIdsOverlap04(t *testing.T) {
 
 	// 期待値
 	expectValue := false
-	expectError := "invalid format. spatialId1: 25/0/29803148/13212522/777, spatialId2: 16/0/58198/25804"
+	expectError := "InputValueError,入力チェックエラー,spatialId: 25/0/29803148/13212522/777 @spatialId1[0]"
 
 	if !reflect.DeepEqual(resultValue, expectValue) {
 		t.Errorf("空間ID - 期待値：%v, 取得値：%v", expectValue, resultValue)
@@ -192,7 +192,7 @@ func TestCheckSpatialIdsArrayOverlap03(t *testing.T) {
 
 	// 期待値
 	expectValue := false
-	expectError := "invalid format. spatialId1: , spatialId2: 16/0/58198/25803"
+	expectError := "InputValueError,入力チェックエラー,spatialId:  @spatialId1[0]"
 
 	if !reflect.DeepEqual(resultValue, expectValue) {
 		t.Errorf("空間ID - 期待値：%v, 取得値：%v", expectValue, resultValue)
@@ -222,7 +222,7 @@ func TestCheckSpatialIdsArrayOverlap04(t *testing.T) {
 
 	// 期待値
 	expectValue := false
-	expectError := "invalid format. spatialId1: 25/0/29803148/13212522/777, spatialId2: 16/0/58198/25803"
+	expectError := "InputValueError,入力チェックエラー,spatialId: 25/0/29803148/13212522/777 @spatialId1[0]"
 
 	if !reflect.DeepEqual(resultValue, expectValue) {
 		t.Errorf("空間ID - 期待値：%v, 取得値：%v", expectValue, resultValue)
