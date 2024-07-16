@@ -56,25 +56,39 @@ func CheckSpatialIdsOverlap(spatialId1 string, spatialId2 string) (bool, error) 
 //		以下の条件に当てはまる場合、エラーインスタンスが返却される。ただしこのときbool値にfalseが返却される。
 //	 		空間IDフォーマット不正：空間IDのフォーマットに違反する値が"重複判定対象空間ID"に入力されていた場合。
 func CheckSpatialIdsArrayOverlap(spatialIds1 []string, spatialIds2 []string) (bool, error) {
-	tr := tree.CreateTree(tree.Create2DTable())
+	tr := tree.CreateTree(tree.Create3DTable())
+	trMinus := tree.CreateTree(tree.Create3DTable())
 	// spatialIds1から各要素をradix treeに格納
 	for indexSpatialId1, spatialId1 := range spatialIds1 {
-		zoom1, x1, y1, err := getSpatialIdAttrs(spatialId1)
+		zoom1, f1, x1, y1, err := getSpatialIdAttrs(spatialId1)
 		if err != nil {
 			return false, fmt.Errorf("%w @spatialId1[%v]", err, indexSpatialId1)
 		}
-		index1 := tree.Indexs{int64(x1), int64(y1)}
-		tr.Append(index1, tree.ZoomSetLevel(zoom1), spatialId1)
+		index1 := tree.Indexs{int64(f1), int64(x1), int64(y1)}
+		switch f1 < 0 {
+		case true:
+			//index1[0] *= -1
+			trMinus.Append(index1, tree.ZoomSetLevel(zoom1), spatialId1)
+		case false:
+			tr.Append(index1, tree.ZoomSetLevel(zoom1), spatialId1)
+		}
 	}
 	// spatialIds2から各要素の取り出し
 	for indexSpatialId2, spatialId2 := range spatialIds2 {
-		zoom2, x2, y2, err := getSpatialIdAttrs(spatialId2)
+		zoom2, f2, x2, y2, err := getSpatialIdAttrs(spatialId2)
 		if err != nil {
 			return false, fmt.Errorf("%w @spatialId2[%v]", err, indexSpatialId2)
 		}
-		index2 := tree.Indexs{int64(x2), int64(y2)}
+		index2 := tree.Indexs{int64(f2), int64(x2), int64(y2)}
 		// 取り出した要素の比較
-		result := tr.IsOverlap(index2, tree.ZoomSetLevel(zoom2))
+		result := false
+		switch f2 < 0 {
+		case true:
+			//index2[0] *= -1
+			result = trMinus.IsOverlap(index2, tree.ZoomSetLevel(zoom2))
+		case false:
+			result = tr.IsOverlap(index2, tree.ZoomSetLevel(zoom2))
+		}
 		if result {
 			// 重複判定時、trueとnilを返却
 			return result, nil
@@ -98,25 +112,26 @@ func CheckSpatialIdsArrayOverlap(spatialIds1 []string, spatialIds2 []string) (bo
 //
 // 戻り値：
 //
-//	空間IDに含まれる精度(ズームレベル)、X, Y成分を格納した以下のtuple
-//	 (精度(ズームレベル), X成分, Y成分)
+//	空間IDに含まれる精度(ズームレベル), F, X, Y成分を格納した以下のtuple
+//	 (精度(ズームレベル), F成分, X成分, Y成分)
 //	入力された拡張空間IDのフォーマットが不正な場合、戻り値を0にしエラーインスタンスを返却。
-func getSpatialIdAttrs(spatialId string) (int, int, int, error) {
+func getSpatialIdAttrs(spatialId string) (int, int, int, int, error) {
 	// 分割
 	spatialIdAttributes := strings.Split(spatialId, consts.SpatialIDDelimiter)
 	if len(spatialIdAttributes) != 4 {
 		// 不正形式(要素数)
-		return 0, 0, 0, errors.NewSpatialIdError(errors.InputValueErrorCode, fmt.Sprintf("spatialId: %v", spatialId))
+		return 0, 0, 0, 0, errors.NewSpatialIdError(errors.InputValueErrorCode, fmt.Sprintf("spatialId: %v", spatialId))
 	}
 	var errNumberConversion error
 	zoom, errNumberConversion := strconv.Atoi(spatialIdAttributes[0])
+	f, errNumberConversion := strconv.Atoi(spatialIdAttributes[1])
 	x, errNumberConversion := strconv.Atoi(spatialIdAttributes[2])
 	y, errNumberConversion := strconv.Atoi(spatialIdAttributes[3])
 	// 不正形式(数値)
 	if errNumberConversion != nil {
-		return 0, 0, 0, errors.NewSpatialIdError(errors.InputValueErrorCode, fmt.Sprintf("spatialId: %v", spatialId))
+		return 0, 0, 0, 0, errors.NewSpatialIdError(errors.InputValueErrorCode, fmt.Sprintf("spatialId: %v", spatialId))
 	}
-	return zoom, x, y, nil
+	return zoom, f, x, y, nil
 }
 
 // CheckExtendedSpatialIdsOverlap 2つの拡張空間IDの重複の判定関数

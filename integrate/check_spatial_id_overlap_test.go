@@ -120,6 +120,118 @@ func TestCheckSpatialIdsOverlap04(t *testing.T) {
 	t.Log("テスト終了")
 }
 
+// TestCheckSpatialIdsOverlap05 空間IDの重複確認関数 正常系動作確認
+//
+// + 試験データ
+//   - パターン1：
+//     比較対象の空間ID：{"13/1/7274/3225"}, {"16/8/58198/25804"}
+//
+// + 確認内容
+//   - fインデックスの包含関係があることを確認できること
+func TestCheckSpatialIdsOverlap05(t *testing.T) {
+	// 入力値
+	spatialId1 := "13/1/7274/3225"
+	spatialId2 := "16/8/58198/25804"
+	resultValue, resultErr := CheckSpatialIdsOverlap(spatialId1, spatialId2)
+
+	// 期待値
+	expectValue := true
+
+	if !reflect.DeepEqual(resultValue, expectValue) {
+		t.Errorf("空間ID - 期待値：%v, 取得値：%v", expectValue, resultValue)
+	}
+	if resultErr != nil {
+		// 戻り値のエラーインスタンスが期待値と異なる場合Errorをログに出力
+		t.Errorf("error - 期待値：nil, 取得値：%s", resultErr)
+	}
+
+	t.Log("テスト終了")
+}
+
+// TestCheckSpatialIdsOverlap06 空間IDの重複確認関数 正常系動作確認
+//
+// + 試験データ
+//   - パターン1：
+//     比較対象の空間ID：{"13/1/7274/3225"}, {"16/17/58198/25804"}
+//
+// + 確認内容
+//   - fインデックスの包含関係がないことを確認できること
+func TestCheckSpatialIdsOverlap06(t *testing.T) {
+	// 入力値
+	spatialId1 := "13/1/7274/3225"
+	spatialId2 := "16/17/58198/25804"
+	resultValue, resultErr := CheckSpatialIdsOverlap(spatialId1, spatialId2)
+
+	// 期待値
+	expectValue := false
+
+	if !reflect.DeepEqual(resultValue, expectValue) {
+		t.Errorf("空間ID - 期待値：%v, 取得値：%v", expectValue, resultValue)
+	}
+	if resultErr != nil {
+		// 戻り値のエラーインスタンスが期待値と異なる場合Errorをログに出力
+		t.Errorf("error - 期待値：nil, 取得値：%s", resultErr)
+	}
+
+	t.Log("テスト終了")
+}
+
+// TestCheckSpatialIdsOverlap07 空間IDの重複確認関数 正常系動作確認
+//
+// + 試験データ
+//   - パターン1：
+//     比較対象の空間ID：{"13/-1/7274/3225"}, {"16/-8/58198/25804"}
+//
+// + 確認内容
+//   - fインデックスが負数の場合においても入力値から包含関係があることを確認できること
+func TestCheckSpatialIdsOverlap07(t *testing.T) {
+	// 入力値
+	spatialId1 := "13/-1/7274/3225"
+	spatialId2 := "16/-8/58198/25804"
+	resultValue, resultErr := CheckSpatialIdsOverlap(spatialId1, spatialId2)
+
+	// 期待値
+	expectValue := true
+
+	if !reflect.DeepEqual(resultValue, expectValue) {
+		t.Errorf("空間ID - 期待値：%v, 取得値：%v", expectValue, resultValue)
+	}
+	if resultErr != nil {
+		// 戻り値のエラーインスタンスが期待値と異なる場合Errorをログに出力
+		t.Errorf("error - 期待値：nil, 取得値：%s", resultErr)
+	}
+
+	t.Log("テスト終了")
+}
+
+// TestCheckSpatialIdsOverlap08 空間IDの重複確認関数 正常系動作確認
+//
+// + 試験データ
+//   - パターン1：
+//     比較対象の空間ID：{"13/-1/7274/3225"}, {"16/-10/58198/25804"}
+//
+// + 確認内容
+//   - fインデックスに関する包含関係がないことを確認できること
+func TestCheckSpatialIdsOverlap08(t *testing.T) {
+	// 入力値
+	spatialId1 := "13/-1/7274/3225"
+	spatialId2 := "16/-10/58198/25804"
+	resultValue, resultErr := CheckSpatialIdsOverlap(spatialId1, spatialId2)
+
+	// 期待値
+	expectValue := false
+
+	if !reflect.DeepEqual(resultValue, expectValue) {
+		t.Errorf("空間ID - 期待値：%v, 取得値：%v", expectValue, resultValue)
+	}
+	if resultErr != nil {
+		// 戻り値のエラーインスタンスが期待値と異なる場合Errorをログに出力
+		t.Errorf("error - 期待値：nil, 取得値：%s", resultErr)
+	}
+
+	t.Log("テスト終了")
+}
+
 // TestCheckSpatialIdsArrayOverlap01 空間ID列の重複確認関数 正常系動作確認
 //
 // + 試験データ
