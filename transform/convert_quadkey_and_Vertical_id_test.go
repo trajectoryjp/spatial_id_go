@@ -898,7 +898,7 @@ func TestSpatialIDCheckZoom(t *testing.T) {
 func TestConvertZToAltitudekey_1(t *testing.T) {
 	expected := []int64{400, 401, 402, 403}
 
-	result, error := convertZToAltitudekey(
+	result, error := ConvertZToAltitudekey(
 		100,
 		25,
 		27,
@@ -917,7 +917,7 @@ func TestConvertZToAltitudekey_1(t *testing.T) {
 func TestConvertZToAltitudekey_2(t *testing.T) {
 	expected := []int64{50}
 
-	result, error := convertZToAltitudekey(
+	result, error := ConvertZToAltitudekey(
 		100,
 		25,
 		24,
@@ -936,7 +936,7 @@ func TestConvertZToAltitudekey_2(t *testing.T) {
 func TestConvertZToAltitudekey_3(t *testing.T) {
 	expected := []int64{100}
 
-	result, error := convertZToAltitudekey(
+	result, error := ConvertZToAltitudekey(
 		100,
 		25,
 		25,
@@ -955,7 +955,7 @@ func TestConvertZToAltitudekey_3(t *testing.T) {
 func TestConvertZToAltitudekey_4(t *testing.T) {
 	expected := []int64{53}
 
-	result, error := convertZToAltitudekey(
+	result, error := ConvertZToAltitudekey(
 		100,
 		25,
 		25,
@@ -974,7 +974,7 @@ func TestConvertZToAltitudekey_4(t *testing.T) {
 func TestConvertZToAltitudekey_5(t *testing.T) {
 	expectedError := errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset")
 
-	result, error := convertZToAltitudekey(
+	result, error := ConvertZToAltitudekey(
 		100,
 		25,
 		21,
@@ -989,7 +989,7 @@ func TestConvertZToAltitudekey_5(t *testing.T) {
 func TestConvertZToAltitudekey_6(t *testing.T) {
 	expectedError := errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset")
 
-	result, error := convertZToAltitudekey(
+	result, error := ConvertZToAltitudekey(
 		100,
 		25,
 		25,
@@ -1004,7 +1004,7 @@ func TestConvertZToAltitudekey_6(t *testing.T) {
 func TestConvertZToAltitudekey_7(t *testing.T) {
 	expected := []int64{1000}
 
-	result, error := convertZToAltitudekey(
+	result, error := ConvertZToAltitudekey(
 		28,
 		25,
 		14,
@@ -1023,7 +1023,7 @@ func TestConvertZToAltitudekey_7(t *testing.T) {
 func TestConvertZToAltitudekey_8(t *testing.T) {
 	expected := []int64{100}
 
-	result, error := convertZToAltitudekey(
+	result, error := ConvertZToAltitudekey(
 		100,
 		25,
 		24,
@@ -1042,7 +1042,7 @@ func TestConvertZToAltitudekey_8(t *testing.T) {
 func TestConvertZToAltitudekey_9(t *testing.T) {
 	expected := []int64{800, 801, 802, 803, 804, 805, 806, 807}
 
-	result, error := convertZToAltitudekey(
+	result, error := ConvertZToAltitudekey(
 		100,
 		25,
 		27,

@@ -383,9 +383,9 @@ func ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(extendedSpatialIDs []str
 		var altitudeKeys []int64
 		quadkeys := []int64{}
 
-		currentID, error := object.NewExtendedSpatialID(idString)
-		if error != nil {
-			return nil, error
+		currentID, err := object.NewExtendedSpatialID(idString)
+		if err != nil {
+			return nil, err
 		}
 
 		// check zoom of currentID
@@ -401,9 +401,9 @@ func ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(extendedSpatialIDs []str
 		}
 
 		// B. convert vertical IDs to fit Output Vertical Zoom Level
-		altitudeKeys, error = convertZToAltitudekey(currentID.Z(), currentID.VZoom(), outputAltitudekeyZoom, zBaseExponent, zBaseOffset)
-		if error != nil {
-			return nil, error
+		altitudeKeys, err = ConvertZToAltitudekey(currentID.Z(), currentID.VZoom(), outputAltitudekeyZoom, zBaseExponent, zBaseOffset)
+		if err != nil {
+			return nil, err
 		}
 
 		// 水平方向と垂直方向の組み合わせを作成する
@@ -672,7 +672,32 @@ func convertVerticallIDToBit(vZoom int64, vIndex int64, outputZoom int64, maxHei
 
 }
 
-func convertZToAltitudekey(inputIndex int64, inputZoom int64, outputZoom int64, zBaseExponent int64, zBaseOffset int64) ([]int64, error) {
+// ConvertZToAltitudekey (拡張)空間IDのz成分をaltitudekeyに高度変換する。
+//
+// 変換前と変換後の精度差によって出力されるaltitudekeyの個数は増減する。
+//
+// 引数 :
+//
+//	inputIndex : 変換対象の(拡張)空間IDのz成分(fインデックス)
+//
+//	inputZoom : 変換対象の(拡張)空間IDのズームレベル(zインデックス)
+//
+//	outputZoom : 変換後のaltitudekeyの精度指定
+//
+//	zBaseExponent : 変換後のaltitudekeyの高さが1mとなるズームレベル
+//
+//	zBaseOffset : ズームレベルがzBaseExponentのとき、高度0mにおけるaltitudekeyのインデックス値
+//
+// 戻り値 :
+//
+//	変換後のaltitudekeyのスライス
+//
+// 戻り値(エラー) :
+//
+//	以下の条件に当てはまる場合、エラーインスタンスが返却される。
+//	 入力インデックス不正       ：inputIndexにそのズームレベル(inputZoom)で存在しないインデックス値が入力されていた場合。
+//	 出力インデックス不正       ：出力altitudekeyが出力ズームレベル(outputZoom)で存在しないインデックス値になった場合。
+func ConvertZToAltitudekey(inputIndex int64, inputZoom int64, outputZoom int64, zBaseExponent int64, zBaseOffset int64) ([]int64, error) {
 
 	var (
 		outputIndexes []int64

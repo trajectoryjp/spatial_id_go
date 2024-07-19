@@ -1,10 +1,12 @@
-package integrate
+package detector
 
 import (
 	"fmt"
 	"github.com/trajectoryjp/multidimensional-radix-tree/tree"
 	"github.com/trajectoryjp/spatial_id_go/v4/common/consts"
 	"github.com/trajectoryjp/spatial_id_go/v4/common/errors"
+	"github.com/trajectoryjp/spatial_id_go/v4/integrate"
+	"github.com/trajectoryjp/spatial_id_go/v4/transform"
 	"strconv"
 	"strings"
 )
@@ -56,7 +58,9 @@ func CheckSpatialIdsOverlap(spatialId1 string, spatialId2 string) (bool, error) 
 //		以下の条件に当てはまる場合、エラーインスタンスが返却される。ただしこのときbool値にfalseが返却される。
 //	 		空間IDフォーマット不正：空間IDのフォーマットに違反する値が"重複判定対象空間ID"に入力されていた場合。
 func CheckSpatialIdsArrayOverlap(spatialIds1 []string, spatialIds2 []string) (bool, error) {
+	// f,x,yで3次元分の2分木
 	tr := tree.CreateTree(tree.Create3DTable())
+	// 負数fインデックスを持つ空間IDは高度変換して別の3次元2分木に保存
 	trMinus := tree.CreateTree(tree.Create3DTable())
 	// spatialIds1から各要素をradix treeに格納
 	for indexSpatialId1, spatialId1 := range spatialIds1 {
@@ -64,12 +68,23 @@ func CheckSpatialIdsArrayOverlap(spatialIds1 []string, spatialIds2 []string) (bo
 		if err != nil {
 			return false, fmt.Errorf("%w @spatialId1[%v]", err, indexSpatialId1)
 		}
-		index1 := tree.Indexs{int64(f1), int64(x1), int64(y1)}
 		switch f1 < 0 {
 		case true:
-			//index1[0] *= -1
-			trMinus.Append(index1, tree.ZoomSetLevel(zoom1), spatialId1)
+			convertedFIndices1, errAltConversion := transform.ConvertZToAltitudekey(
+				int64(f1),
+				int64(zoom1),
+				int64(zoom1),
+				25,       // 空間ID高さが1mになるズームレベル
+				16777216, // 元の最大高さを保ったまま正方向と負方向でfインデックスを半数ずつ導入
+			)
+			if errAltConversion != nil {
+				return false, fmt.Errorf("%w @spatialId1[%v]", errAltConversion, indexSpatialId1)
+			}
+			for _, index := range convertedFIndices1 {
+				trMinus.Append(tree.Indexs{index, int64(x1), int64(y1)}, tree.ZoomSetLevel(zoom1), spatialId1)
+			}
 		case false:
+			index1 := tree.Indexs{int64(f1), int64(x1), int64(y1)}
 			tr.Append(index1, tree.ZoomSetLevel(zoom1), spatialId1)
 		}
 	}
@@ -79,14 +94,29 @@ func CheckSpatialIdsArrayOverlap(spatialIds1 []string, spatialIds2 []string) (bo
 		if err != nil {
 			return false, fmt.Errorf("%w @spatialId2[%v]", err, indexSpatialId2)
 		}
-		index2 := tree.Indexs{int64(f2), int64(x2), int64(y2)}
 		// 取り出した要素の比較
 		result := false
 		switch f2 < 0 {
 		case true:
-			//index2[0] *= -1
-			result = trMinus.IsOverlap(index2, tree.ZoomSetLevel(zoom2))
+			convertedFIndices2, errAltConversion := transform.ConvertZToAltitudekey(
+				int64(f2),
+				int64(zoom2),
+				int64(zoom2),
+				25,       // 空間ID高さが1mになるズームレベル
+				16777216, // 元の最大高さ(33,554,432m)を保ったまま正方向と負方向でfインデックスを半数ずつ導入
+			)
+			if errAltConversion != nil {
+				return false, fmt.Errorf("%w @spatialId2[%v]", errAltConversion, indexSpatialId2)
+			}
+			for _, index := range convertedFIndices2 {
+				result = trMinus.IsOverlap(tree.Indexs{index, int64(x2), int64(y2)}, tree.ZoomSetLevel(zoom2))
+				if result {
+					// 重複判定時、trueとnilを返却
+					return result, nil
+				}
+			}
 		case false:
+			index2 := tree.Indexs{int64(f2), int64(x2), int64(y2)}
 			result = tr.IsOverlap(index2, tree.ZoomSetLevel(zoom2))
 		}
 		if result {
@@ -182,12 +212,12 @@ func CheckExtendedSpatialIdsOverlap(extendedSpatialId1 string, extendedSpatialId
 	}
 
 	// 変換後のZoomレベルを指定して変換
-	extendedSpatialIds1, err := ChangeExtendedSpatialIdsZoom([]string{extendedSpatialId1}, int64(targetHorizontalZoom), int64(targetVerticalZoom))
+	extendedSpatialIds1, err := integrate.ChangeExtendedSpatialIdsZoom([]string{extendedSpatialId1}, int64(targetHorizontalZoom), int64(targetVerticalZoom))
 	if err != nil {
 		// 変換エラー
 		return false, err
 	}
-	extendedSpatialIds2, err := ChangeExtendedSpatialIdsZoom([]string{extendedSpatialId2}, int64(targetHorizontalZoom), int64(targetVerticalZoom))
+	extendedSpatialIds2, err := integrate.ChangeExtendedSpatialIdsZoom([]string{extendedSpatialId2}, int64(targetHorizontalZoom), int64(targetVerticalZoom))
 	if err != nil {
 		// 変換エラー
 		return false, err
