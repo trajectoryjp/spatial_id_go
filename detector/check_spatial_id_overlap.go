@@ -1,7 +1,8 @@
-package integrate
+package detector
 
 import (
 	"fmt"
+	"github.com/trajectoryjp/spatial_id_go/v4/integrate"
 	"strconv"
 	"strings"
 )
@@ -41,14 +42,14 @@ func CheckSpatialIdsOverlap(spatialId1 string, spatialId2 string) (bool, error) 
 	// zoomレベルが等しいとき、変換なし
 	if zoom1 > zoom2 {
 		// spatialId2のzoomレベルをzoom1に合わせるよう変換
-		convertedSpatialId, err := ChangeSpatialIdsZoom([]string{spatialId1}, int64(zoom2))
+		convertedSpatialId, err := integrate.ChangeSpatialIdsZoom([]string{spatialId1}, int64(zoom2))
 		if err != nil {
 			return false, err
 		}
 		spatialId1 = convertedSpatialId[0]
 	} else if zoom1 < zoom2 {
 		// spatialId1のzoomレベルをzoom2に合わせるよう変換
-		convertedSpatialId, err := ChangeSpatialIdsZoom([]string{spatialId2}, int64(zoom1))
+		convertedSpatialId, err := integrate.ChangeSpatialIdsZoom([]string{spatialId2}, int64(zoom1))
 		if err != nil {
 			return false, err
 		}
@@ -148,12 +149,12 @@ func CheckExtendedSpatialIdsOverlap(extendedSpatialId1 string, extendedSpatialId
 	}
 
 	// 変換後のZoomレベルを指定して変換
-	extendedSpatialIds1, err := ChangeExtendedSpatialIdsZoom([]string{extendedSpatialId1}, int64(targetHorizontalZoom), int64(targetVerticalZoom))
+	extendedSpatialIds1, err := integrate.ChangeExtendedSpatialIdsZoom([]string{extendedSpatialId1}, int64(targetHorizontalZoom), int64(targetVerticalZoom))
 	if err != nil {
 		// 変換エラー
 		return false, err
 	}
-	extendedSpatialIds2, err := ChangeExtendedSpatialIdsZoom([]string{extendedSpatialId2}, int64(targetHorizontalZoom), int64(targetVerticalZoom))
+	extendedSpatialIds2, err := integrate.ChangeExtendedSpatialIdsZoom([]string{extendedSpatialId2}, int64(targetHorizontalZoom), int64(targetVerticalZoom))
 	if err != nil {
 		// 変換エラー
 		return false, err

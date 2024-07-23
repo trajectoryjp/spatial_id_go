@@ -1,4 +1,4 @@
-package integrate
+package detector
 
 import (
 	"reflect"
@@ -120,6 +120,46 @@ func TestCheckSpatialIdsOverlap04(t *testing.T) {
 	t.Log("テスト終了")
 }
 
+// BenchmarkCheckSpatialIdsOverlap01 空間IDの重複確認関数 包含関係あり
+//
+// + 試験データ
+//   - パターン1：
+//     比較対象の空間ID：{"13/0/7274/3225"}, {"16/0/58198/25804"}(包含関係あり)
+//
+// + 確認内容
+//   - 入力値の先頭に包含関係があった場合の処理速度
+func BenchmarkCheckSpatialIdsOverlap01(b *testing.B) {
+	// 入力値
+	spatialId1 := "13/0/7274/3225"
+	spatialId2 := "16/0/58198/25804"
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = CheckSpatialIdsOverlap(spatialId1, spatialId2)
+	}
+	b.StopTimer()
+	b.Log("テスト終了")
+}
+
+// BenchmarkCheckSpatialIdsOverlap02 空間IDの重複確認関数 包含関係なし
+//
+// + 試験データ
+//   - パターン1：
+//     比較対象の空間ID：{"13/0/7275/3226"}, {"16/0/58198/25804"}(包含関係なし)
+//
+// + 確認内容
+//   - 入力値に包含関係がなかった場合の処理速度
+func BenchmarkCheckSpatialIdsOverlap02(b *testing.B) {
+	// 入力値
+	spatialId1 := "13/0/7275/3226"
+	spatialId2 := "16/-8/58198/25804"
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = CheckSpatialIdsOverlap(spatialId1, spatialId2)
+	}
+	b.StopTimer()
+	b.Log("テスト終了")
+}
+
 // TestCheckSpatialIdsArrayOverlap01 空間ID列の重複確認関数 正常系動作確認
 //
 // + 試験データ
@@ -233,6 +273,54 @@ func TestCheckSpatialIdsArrayOverlap04(t *testing.T) {
 	}
 
 	t.Log("テスト終了")
+}
+
+// BenchmarkCheckSpatialIdsArrayOverlap01 空間ID列の重複確認関数 空間IDの重複確認関数 配列ベンチマーク
+//
+// + 試験データ
+//   - パターン1(包含関係あり)：
+//     比較対象の空間ID列：[100]{"13/0/7274/3225"}, [100]{"16/0/58198/25804"}
+//
+// + 確認内容
+//   - 入力値に包含関係があった場合の処理速度
+func BenchmarkCheckSpatialIdsArrayOverlap01(b *testing.B) {
+	// 入力値
+	spatialIds1 := []string{}
+	spatialIds2 := []string{}
+	for i := 0; i < 100; i++ {
+		spatialIds1 = append(spatialIds1, "13/0/7274/3225")
+		spatialIds2 = append(spatialIds2, "16/0/58198/25804")
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = CheckSpatialIdsArrayOverlap(spatialIds1, spatialIds2)
+	}
+	b.StopTimer()
+	b.Log("テスト終了")
+}
+
+// BenchmarkCheckSpatialIdsArrayOverlap02 空間ID列の重複確認関数 空間IDの重複確認関数 配列ベンチマーク
+//
+// + 試験データ
+//   - パターン1(包含関係なし)：
+//     比較対象の空間ID列：[100]{"13/0/7275/3226"}, [100]{"16/0/58198/25804"}
+//
+// + 確認内容
+//   - 入力値に包含関係がない場合の処理速度
+func BenchmarkCheckSpatialIdsArrayOverlap02(b *testing.B) {
+	// 入力値
+	spatialIds1 := []string{}
+	spatialIds2 := []string{}
+	for i := 0; i < 100; i++ {
+		spatialIds1 = append(spatialIds1, "13/0/7275/3226")
+		spatialIds2 = append(spatialIds2, "16/0/58198/25804")
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = CheckSpatialIdsArrayOverlap(spatialIds1, spatialIds2)
+	}
+	b.StopTimer()
+	b.Log("テスト終了")
 }
 
 //	TestCheckExtendedSpatialIdsOverlap01 拡張空間IDの重複確認関数 正常系動作確認
