@@ -1115,6 +1115,19 @@ func TestAddZBaseOffsetToZ(t *testing.T) {
 	}
 }
 
+func FuzzAddZBaseOffsetToZAt18(f *testing.F) {
+	conditions := []int64{-131072, 131072} // (1 << 24) >> (abs(18-25))
+	for _, cond := range conditions {
+		f.Add(cond)
+	}
+	f.Fuzz(func(t *testing.T, cond int64) {
+		_, err := AddZBaseOffsetToZ(cond, 18, consts.ZBaseOffsetForNegativeFIndex)
+		if err != nil && cond > conditions[0] && cond < conditions[1] {
+			t.Error(err)
+		}
+	})
+}
+
 func TestConvertZToMinAltitudekey_1(t *testing.T) {
 	expected := int64(47)
 
