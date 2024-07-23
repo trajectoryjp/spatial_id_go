@@ -96,25 +96,45 @@ func TestCheckSpatialIdsOverlap03(t *testing.T) {
 // + 試験データ
 //   - パターン1：
 //     比較対象の空間ID：{"25/0/29803148/13212522/777"},{"16/0/58198/25804"}
+//   - パターン2：
+//     比較対象の空間ID：{"25/0/29803148/13212522"},{"16/0/58198/25804/777"}
 //
 // + 確認内容
 //   - 入力値から入力チェックエラーを取得できること
 func TestCheckSpatialIdsOverlap04(t *testing.T) {
-	//入力値
-	spatialId1 := "25/0/29803148/13212522/777"
-	spatialId2 := "16/0/58198/25804"
-	resultValue, resultErr := CheckSpatialIdsOverlap(spatialId1, spatialId2)
-
-	// 期待値
-	expectValue := false
-	expectError := "InputValueError,入力チェックエラー,spatialId: 25/0/29803148/13212522/777 @spatialId1[0]"
-
-	if !reflect.DeepEqual(resultValue, expectValue) {
-		t.Errorf("空間ID - 期待値：%v, 取得値：%v", expectValue, resultValue)
+	testCases := []struct {
+		spatialId1  string
+		spatialId2  string
+		expectValue bool
+		expectError string
+	}{
+		{
+			//入力値
+			spatialId1: "25/0/29803148/13212522/777",
+			spatialId2: "16/0/58198/25804",
+			// 期待値
+			expectValue: false,
+			expectError: "InputValueError,入力チェックエラー,spatialId: 25/0/29803148/13212522/777 @spatialId1[0]",
+		},
+		{
+			//入力値
+			spatialId1: "25/0/29803148/13212522",
+			spatialId2: "16/0/58198/25804/777",
+			// 期待値
+			expectValue: false,
+			expectError: "InputValueError,入力チェックエラー,spatialId: 16/0/58198/25804/777 @spatialId2[0]",
+		},
 	}
-	if resultErr.Error() != expectError {
-		// 戻り値のエラーインスタンスが期待値と異なる場合Errorをログに出力
-		t.Errorf("error - 期待値：%s, 取得値：%s\n", expectError, resultErr.Error())
+	for _, testCase := range testCases {
+		resultValue, resultErr := CheckSpatialIdsOverlap(testCase.spatialId1, testCase.spatialId2)
+
+		if !reflect.DeepEqual(resultValue, testCase.expectValue) {
+			t.Errorf("空間ID - 期待値：%v, 取得値：%v", testCase.expectValue, resultValue)
+		}
+		if resultErr.Error() != testCase.expectError {
+			// 戻り値のエラーインスタンスが期待値と異なる場合Errorをログに出力
+			t.Errorf("error - 期待値：%s, 取得値：%s\n", testCase.expectError, resultErr.Error())
+		}
 	}
 
 	t.Log("テスト終了")
@@ -232,6 +252,140 @@ func TestCheckSpatialIdsOverlap08(t *testing.T) {
 	t.Log("テスト終了")
 }
 
+// TestCheckSpatialIdsOverlap09 空間IDの重複確認関数 空間ID高度変換失敗
+//
+// 試験詳細：
+// + 試験データ
+//   - パターン1(ズームレベル超過エラー)：
+//     比較対象の空間ID：{"26/-1/7274/3225"},{"16/8/58198/25804"}
+//   - パターン2(ズームレベル超過エラー)：
+//     比較対象の空間ID：{"13/1/7274/3225"},{"26/-8/58198/25804"}
+//   - パターン3(高度範囲外エラー)：
+//     比較対象の空間ID：{"25/16777216/0/3225"},{"18/1/58198/25804"}
+//   - パターン4(高度範囲外エラー)：
+//     比較対象の空間ID：{"18/1/58198/25804"},{"25/16777216/0/3225"}
+//   - パターン5(高度範囲外エラー)：
+//     比較対象の空間ID：{"25/-16777217/0/3225"},{"16/8/58198/25804"}
+//   - パターン6(高度範囲外エラー)：
+//     比較対象の空間ID：{"18/1/58198/25804"},{"25/-16777217/0/3225"}
+//
+// + 確認内容
+//   - 入力値から指定した入力チェックエラー、変換エラーを取得できること
+func TestCheckSpatialIdsOverlap09(t *testing.T) {
+	testCases := []struct {
+		spatialId1  string
+		spatialId2  string
+		expectValue bool
+		expectError string
+	}{
+		{
+			//入力値
+			spatialId1: "26/-1/7274/3225",
+			spatialId2: "16/8/58198/25804",
+			// 期待値
+			expectValue: false,
+			expectError: "InputValueError,入力チェックエラー,zoom level 26 must be less than 25 @spatialId1[0] = 26/-1/7274/3225",
+		},
+		{
+			//入力値
+			spatialId1: "13/1/7274/3225",
+			spatialId2: "26/-8/58198/25804",
+			// 期待値
+			expectValue: false,
+			expectError: "InputValueError,入力チェックエラー,zoom level 26 must be less than 25 @spatialId2[0] = 26/-8/58198/25804",
+		},
+		{
+			//入力値
+			spatialId1: "25/16777216/0/3225",
+			spatialId2: "18/1/58198/25804",
+			// 期待値
+			expectValue: false,
+			expectError: "ValueConvertError,値の変換エラー,output index (33554432) does not exist with given zoomLevel (25) @spatialId1[0] = 25/16777216/0/3225",
+		},
+		{
+			//入力値
+			spatialId1: "18/1/58198/25804",
+			spatialId2: "25/16777216/0/3225",
+			// 期待値
+			expectValue: false,
+			expectError: "ValueConvertError,値の変換エラー,output index (33554432) does not exist with given zoomLevel (25) @spatialId2[0] = 25/16777216/0/3225",
+		},
+		{
+			//入力値
+			spatialId1: "25/-16777217/0/3225",
+			spatialId2: "18/1/58198/25804",
+			// 期待値
+			expectValue: false,
+			expectError: "InputValueError,入力チェックエラー,input f-index -16777217 is out of altitude range @spatialId1[0] = 25/-16777217/0/3225",
+		},
+		{
+			//入力値
+			spatialId1: "18/1/58198/25804",
+			spatialId2: "25/-16777217/0/3225",
+			// 期待値
+			expectValue: false,
+			expectError: "InputValueError,入力チェックエラー,input f-index -16777217 is out of altitude range @spatialId2[0] = 25/-16777217/0/3225",
+		},
+	}
+	for _, testCase := range testCases {
+		resultValue, err := CheckSpatialIdsOverlap(testCase.spatialId1, testCase.spatialId2)
+		var resultErr string
+		if err != nil {
+			resultErr = err.Error()
+		}
+
+		if !reflect.DeepEqual(resultValue, testCase.expectValue) {
+			t.Errorf("空間ID - 期待値：%v, 取得値：%v", testCase.expectValue, resultValue)
+		}
+		if resultErr != testCase.expectError {
+			// 戻り値のエラーインスタンスが期待値と異なる場合Errorをログに出力
+			t.Errorf("error - 期待値：%s, 取得値：%s\n", testCase.expectError, resultErr)
+		}
+	}
+
+	t.Log("テスト終了")
+}
+
+// BenchmarkCheckSpatialIdsOverlap01 空間IDの重複確認関数 包含関係あり
+//
+// + 試験データ
+//   - パターン1：
+//     比較対象の空間ID：{"13/0/7274/3225"}, {"16/0/58198/25804"}(包含関係あり)
+//
+// + 確認内容
+//   - 入力値の先頭に包含関係があった場合の処理速度
+func BenchmarkCheckSpatialIdsOverlap01(b *testing.B) {
+	// 入力値
+	spatialId1 := "13/0/7274/3225"
+	spatialId2 := "16/0/58198/25804"
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = CheckSpatialIdsOverlap(spatialId1, spatialId2)
+	}
+	b.StopTimer()
+	b.Log("テスト終了")
+}
+
+// BenchmarkCheckSpatialIdsOverlap02 空間IDの重複確認関数 包含関係なし
+//
+// + 試験データ
+//   - パターン1：
+//     比較対象の空間ID：{"13/0/7275/3226"}, {"16/0/58198/25804"}(包含関係なし)
+//
+// + 確認内容
+//   - 入力値に包含関係がなかった場合の処理速度
+func BenchmarkCheckSpatialIdsOverlap02(b *testing.B) {
+	// 入力値
+	spatialId1 := "13/0/7275/3226"
+	spatialId2 := "16/0/58198/25804"
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = CheckSpatialIdsOverlap(spatialId1, spatialId2)
+	}
+	b.StopTimer()
+	b.Log("テスト終了")
+}
+
 // TestCheckSpatialIdsArrayOverlap01 空間ID列の重複確認関数 正常系動作確認
 //
 // + 試験データ
@@ -345,6 +499,54 @@ func TestCheckSpatialIdsArrayOverlap04(t *testing.T) {
 	}
 
 	t.Log("テスト終了")
+}
+
+// BenchmarkCheckSpatialIdsArrayOverlap01 空間ID列の重複確認関数 空間IDの重複確認関数 配列ベンチマーク(包含関係あり)
+//
+// + 試験データ
+//   - パターン1(包含関係あり)：
+//     比較対象の空間ID列：[100]{"13/0/7274/3225"}, [100]{"16/0/58198/25804"}
+//
+// + 確認内容
+//   - 入力値に包含関係があった場合の処理速度
+func BenchmarkCheckSpatialIdsArrayOverlap01(b *testing.B) {
+	// 入力値
+	spatialIds1 := []string{}
+	spatialIds2 := []string{}
+	for i := 0; i < 100; i++ {
+		spatialIds1 = append(spatialIds1, "13/0/7274/3225")
+		spatialIds2 = append(spatialIds2, "16/0/58198/25804")
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = CheckSpatialIdsArrayOverlap(spatialIds1, spatialIds2)
+	}
+	b.StopTimer()
+	b.Log("テスト終了")
+}
+
+// BenchmarkCheckSpatialIdsArrayOverlap02 空間ID列の重複確認関数 空間IDの重複確認関数 配列ベンチマーク(包含関係なし)
+//
+// + 試験データ
+//   - パターン1(包含関係なし)：
+//     比較対象の空間ID列：[100]{"13/0/7275/3226"}, [100]{"16/0/58198/25804"}
+//
+// + 確認内容
+//   - 入力値に包含関係がない場合の処理速度
+func BenchmarkCheckSpatialIdsArrayOverlap02(b *testing.B) {
+	// 入力値
+	spatialIds1 := []string{}
+	spatialIds2 := []string{}
+	for i := 0; i < 100; i++ {
+		spatialIds1 = append(spatialIds1, "13/0/7275/3226")
+		spatialIds2 = append(spatialIds2, "16/0/58198/25804")
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = CheckSpatialIdsArrayOverlap(spatialIds1, spatialIds2)
+	}
+	b.StopTimer()
+	b.Log("テスト終了")
 }
 
 //	TestCheckExtendedSpatialIdsOverlap01 拡張空間IDの重複確認関数 正常系動作確認
@@ -469,6 +671,26 @@ func TestCheckExtendedSpatialIdsOverlap04(t *testing.T) {
 	t.Log("テスト終了")
 }
 
+// BenchmarkCheckExtendedSpatialIdsOverlap01 空間IDの重複確認関数 自然数fインデックスベンチマーク
+//
+// + 試験データ
+//   - パターン1：
+//     比較対象の空間ID：{"16/58206/25805/16/1"}, {"15/29104/12902/15/0"}(包含関係あり)
+//
+// + 確認内容
+//   - 入力値に包含関係があった場合の処理速度
+func BenchmarkCheckExtendedSpatialIdsOverlap01(b *testing.B) {
+	// 入力値
+	spatialId1 := "16/58209/25805/16/1"
+	spatialId2 := "15/29104/12902/15/0"
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = CheckExtendedSpatialIdsOverlap(spatialId1, spatialId2)
+	}
+	b.StopTimer()
+	b.Log("テスト終了")
+}
+
 //	TestCheckExtendedSpatialIdsArrayOverlap01 拡張空間IDの重複確認関数 正常系動作確認
 //
 // 試験詳細：
@@ -589,4 +811,28 @@ func TestCheckExtendedSpatialIdsArrayOverlap04(t *testing.T) {
 	}
 
 	t.Log("テスト終了")
+}
+
+// BenchmarkCheckExtendedSpatialIdsArrayOverlap01 空間ID列の重複確認関数 空間IDの重複確認関数 配列ベンチマーク
+//
+// + 試験データ
+//   - パターン1(包含関係あり)：
+//     比較対象の空間ID列：[10]{"16/58206/25805/16/1"}, [10]{"15/29104/12902/15/0"}
+//
+// + 確認内容
+//   - 入力値に包含関係があった場合の処理速度
+func BenchmarkCheckExtendedSpatialIdsArrayOverlap01(b *testing.B) {
+	// 入力値
+	spatialIds1 := []string{"16/58206/25805/16/1"}
+	spatialIds2 := []string{"15/29104/12902/15/0"}
+	for i := 0; i < 9; i++ {
+		spatialIds1 = append(spatialIds1, "16/58206/25805/16/1")
+		spatialIds2 = append(spatialIds2, "15/29104/12902/15/0")
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = CheckExtendedSpatialIdsArrayOverlap(spatialIds1, spatialIds2)
+	}
+	b.StopTimer()
+	b.Log("テスト終了")
 }
