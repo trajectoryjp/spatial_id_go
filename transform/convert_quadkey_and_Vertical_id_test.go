@@ -1082,6 +1082,34 @@ func TestAddZBaseOffsetToZ(t *testing.T) {
 			false,
 		},
 		{
+			(1 << (consts.ZBaseExponent - 1)) - 1, // 16777215
+			consts.ZBaseExponent,
+			consts.ZBaseOffsetForNegativeFIndex,
+			33554431,
+			false,
+		},
+		{
+			-(1 << (consts.ZBaseExponent - 1)), // -16777216
+			consts.ZBaseExponent,
+			consts.ZBaseOffsetForNegativeFIndex,
+			0,
+			false,
+		},
+		{
+			-1 - (1 << (consts.ZBaseExponent - 1)), // -16777217
+			consts.ZBaseExponent,
+			consts.ZBaseOffsetForNegativeFIndex,
+			-1,
+			false,
+		},
+		{
+			1 << (consts.ZBaseExponent - 1), // 16777216
+			consts.ZBaseExponent,
+			consts.ZBaseOffsetForNegativeFIndex,
+			0,
+			true,
+		},
+		{
 			1 - (1 << consts.ZBaseExponent), // -33554431
 			consts.ZBaseExponent,
 			-consts.ZBaseOffsetForNegativeFIndex,
