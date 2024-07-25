@@ -49,6 +49,8 @@ func CheckSpatialIdsOverlap(spatialId1 string, spatialId2 string) (bool, error) 
 //
 //	spatialIds1, spatialIds2: 重複判定対象の空間ID列。ズームレベルが異なっている入力も許容。
 //
+// ただし高度は16,777,216 〜 -16,777,216mに制限される(この範囲で高度変換を行う)
+//
 // 戻り値:
 //
 //	bool:
@@ -57,6 +59,7 @@ func CheckSpatialIdsOverlap(spatialId1 string, spatialId2 string) (bool, error) 
 //	error:
 //		以下の条件に当てはまる場合、エラーインスタンスが返却される。ただしこのときbool値にfalseが返却される。
 //	 		空間IDフォーマット不正：空間IDのフォーマットに違反する値が"重複判定対象空間ID"に入力されていた場合。
+//	 		空間ID高度変換失敗：高度範囲外の空間IDが入力されていた場合。
 func CheckSpatialIdsArrayOverlap(spatialIds1 []string, spatialIds2 []string) (bool, error) {
 	// f,x,yで3次元分の2分木
 	tr := tree.CreateTree(tree.Create3DTable())
@@ -68,22 +71,14 @@ func CheckSpatialIdsArrayOverlap(spatialIds1 []string, spatialIds2 []string) (bo
 		if err != nil {
 			return false, fmt.Errorf("%w @spatialId1[%v]", err, indexSpatialId1)
 		}
-		switch f1 < 0 {
-		case true:
-			convertedFIndices1, errAltConversion := transform.ConvertZToAltitudekey(
-				int64(f1),
-				int64(zoom1),
-				int64(zoom1),
-				25,       // 空間ID高さが1mになるズームレベル
-				16777216, // 元の最大高さを保ったまま正方向と負方向でfインデックスを半数ずつ導入
-			)
+		if f1 < 0 {
+			// 高度インデックスをオフセット変換のみ実行して自然数にする
+			convertedFIndex, errAltConversion := transform.AddZBaseOffsetToZ(int64(f1), uint8(zoom1), consts.ZBaseOffsetForNegativeFIndex)
 			if errAltConversion != nil {
 				return false, fmt.Errorf("%w @spatialId1[%v]", errAltConversion, indexSpatialId1)
 			}
-			for _, index := range convertedFIndices1 {
-				trMinus.Append(tree.Indexs{index, int64(x1), int64(y1)}, tree.ZoomSetLevel(zoom1), spatialId1)
-			}
-		case false:
+			trMinus.Append(tree.Indexs{convertedFIndex, int64(x1), int64(y1)}, tree.ZoomSetLevel(zoom1), spatialId1)
+		} else {
 			index1 := tree.Indexs{int64(f1), int64(x1), int64(y1)}
 			tr.Append(index1, tree.ZoomSetLevel(zoom1), spatialId1)
 		}
@@ -96,26 +91,14 @@ func CheckSpatialIdsArrayOverlap(spatialIds1 []string, spatialIds2 []string) (bo
 		}
 		// 取り出した要素の比較
 		result := false
-		switch f2 < 0 {
-		case true:
-			convertedFIndices2, errAltConversion := transform.ConvertZToAltitudekey(
-				int64(f2),
-				int64(zoom2),
-				int64(zoom2),
-				25,       // 空間ID高さが1mになるズームレベル
-				16777216, // 元の最大高さ(33,554,432m)を保ったまま正方向と負方向でfインデックスを半数ずつ導入
-			)
+		if f2 < 0 {
+			// 高度インデックスをオフセット変換のみ実行して自然数にする
+			convertedFIndex2, errAltConversion := transform.AddZBaseOffsetToZ(int64(f2), uint8(zoom2), consts.ZBaseOffsetForNegativeFIndex)
 			if errAltConversion != nil {
 				return false, fmt.Errorf("%w @spatialId2[%v]", errAltConversion, indexSpatialId2)
 			}
-			for _, index := range convertedFIndices2 {
-				result = trMinus.IsOverlap(tree.Indexs{index, int64(x2), int64(y2)}, tree.ZoomSetLevel(zoom2))
-				if result {
-					// 重複判定時、trueとnilを返却
-					return result, nil
-				}
-			}
-		case false:
+			result = trMinus.IsOverlap(tree.Indexs{convertedFIndex2, int64(x2), int64(y2)}, tree.ZoomSetLevel(zoom2))
+		} else {
 			index2 := tree.Indexs{int64(f2), int64(x2), int64(y2)}
 			result = tr.IsOverlap(index2, tree.ZoomSetLevel(zoom2))
 		}
