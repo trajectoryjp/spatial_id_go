@@ -2,6 +2,7 @@
 package transform
 
 import (
+	"github.com/trajectoryjp/spatial_id_go/v4/common/consts"
 	"reflect"
 	"sort"
 	"strconv"
@@ -1055,6 +1056,62 @@ func TestConvertZToAltitudekey_9(t *testing.T) {
 
 	if !reflect.DeepEqual(result, expected) {
 		t.Fatal(result)
+	}
+}
+
+func TestAddZBaseOffsetToZ(t *testing.T) {
+	testCases := []struct {
+		fIndex    int64
+		zoomLevel uint8
+		offset    int64
+		expected  int64
+		expectErr bool
+	}{
+		{ // "16/-10/58198/25804" (z=16,f=-10のみ使用)
+			-10,
+			16,
+			consts.ZBaseOffsetForNegativeFIndex,
+			(1 << (16 - 1)) - 10, // 32758
+			false,
+		},
+		{
+			1 - (1 << consts.ZBaseExponent), // -33554431
+			consts.ZBaseExponent,
+			consts.ZBaseOffsetForNegativeFIndex,
+			-16777215,
+			false,
+		},
+		{
+			1 - (1 << consts.ZBaseExponent), // -33554431
+			consts.ZBaseExponent,
+			-consts.ZBaseOffsetForNegativeFIndex,
+			0,
+			true,
+		},
+		{
+			(1 << consts.ZBaseExponent) - 1, // 33554431
+			consts.ZBaseExponent,
+			consts.ZBaseOffsetForNegativeFIndex,
+			0,
+			true,
+		},
+		{
+			-10,
+			consts.ZBaseExponent + 1,
+			consts.ZBaseOffsetForNegativeFIndex,
+			0,
+			true,
+		},
+	}
+
+	for _, testCase := range testCases {
+		result, err := AddZBaseOffsetToZ(testCase.fIndex, testCase.zoomLevel, testCase.offset)
+		if testCase.expectErr == (err == nil) {
+			t.Errorf("CalcAddZBaseOffsetToZ(%d, %d, %d) expected error existence: %v, result: %v", testCase.fIndex, testCase.zoomLevel, testCase.offset, testCase.expectErr, err)
+		}
+		if result != testCase.expected {
+			t.Errorf("CalcAddZBaseOffsetToZ(%d, %d, %d) == %d, result: %d", testCase.fIndex, testCase.zoomLevel, testCase.offset, testCase.expected, result)
+		}
 	}
 }
 

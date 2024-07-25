@@ -2,6 +2,8 @@
 package transform
 
 import (
+	"fmt"
+	"github.com/trajectoryjp/spatial_id_go/v4/common/consts"
 	"math"
 	"strconv"
 	"strings"
@@ -733,13 +735,9 @@ func ConvertZToAltitudekey(inputIndex int64, inputZoom int64, outputZoom int64, 
 func convertZToMinAltitudekey(inputIndex int64, inputZoom int64, outputZoom int64, zBaseExponent int64, zBaseOffset int64) (int64, error) {
 
 	// 1. check that the input index exists in the input system
-	inputResolution := common.CalculateArithmeticShift(1, inputZoom)
-
-	maxInputIndex := inputResolution - 1
-	minInputIndex := -inputResolution
-
-	if inputIndex > maxInputIndex || inputIndex < minInputIndex {
-		return 0, errors.NewSpatialIdError(errors.InputValueErrorCode, "input index does not exist")
+	err, ok := validateIndexExists(inputIndex, inputZoom, true)
+	if !ok {
+		return 0, err
 	}
 
 	// 2. Calculate outputIndex
@@ -748,17 +746,94 @@ func convertZToMinAltitudekey(inputIndex int64, inputZoom int64, outputZoom int6
 	outputIndex = common.CalculateArithmeticShift(outputIndex, (outputZoom - zBaseExponent))
 
 	// 3. Check to make sure outputIndex exists in the output system
-	outputResolution := common.CalculateArithmeticShift(1, outputZoom)
+	_, ok = validateIndexExists(outputIndex, outputZoom, false)
 
-	maxOutputIndex := outputResolution - 1
-	minOutputIndex := int64(0)
-
-	if outputIndex > maxOutputIndex || outputIndex < minOutputIndex {
+	if !ok {
 		return 0, errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset")
 	}
 
 	return outputIndex, nil
 
+}
+
+// validateIndexExists 指定した(拡張)空間IDインデックスが指定ズームレベルにおいて存在するか確認する
+//
+// 引数 :
+//
+//	inputIndex : 確認対象の(拡張)空間IDのインデックス
+//
+//	inputZoom : 変換対象の(拡張)空間IDのズームレベル(zインデックス)
+//
+//	minValueIsNegative : 最小インデックス範囲が0未満である(fインデックス)場合true, そうでない(x,yインデックス)場合false
+//
+// trueの場合最大インデックス値を符号反転したものを最小インデックス範囲として扱う
+//
+// falseの場合最小インデックス範囲を0として扱う
+//
+// 戻り値 :
+//
+//	インデックスが存在すればtrue,しなければfalse
+//
+// 戻り値(エラー) :
+//
+//	戻り値がfalseの場合、同時に以下の内容のエラーインスタンスが返却される。
+//	 入力インデックス不正       ：inputIndexにそのズームレベル(inputZoom)で存在しないインデックス値が入力されていた場合。
+//	 出力インデックス不正       ：変換後のインデックスが入力ズームレベル(inputZoom)で存在しないインデックス値になった場合。
+func validateIndexExists(inputIndex int64, inputZoom int64, minValueIsNegative bool) (error, bool) {
+	inputResolution := common.CalculateArithmeticShift(1, inputZoom)
+
+	maxInputIndex := inputResolution - 1
+	var minInputIndex int64
+	if minValueIsNegative {
+		minInputIndex = -inputResolution
+	} else {
+		minInputIndex = 0
+	}
+
+	if inputIndex > maxInputIndex || inputIndex < minInputIndex {
+		return errors.NewSpatialIdError(errors.InputValueErrorCode, "input index does not exist"), false
+	}
+	return nil, true
+}
+
+// AddZBaseOffsetToZ (拡張)空間IDz成分(fインデックス)にオフセット加算する
+// ConvertZToAltitudekey()でズームレベル変換を行わずオフセット変換のみ指定したもの
+//
+// したがって ConvertZToAltitudekey(f, z, z, consts.ZBaseExponent, zBaseOffset)と等価
+//
+// 引数 :
+//
+//	fIndex : (拡張)空間ID高さインデックス(f)
+//
+//	zoomLevel : (拡張)空間IDのズームレベル(z)
+//
+// ここで指定するズームレベルはconsts.ZBaseExponent以下の値でなければならない
+//
+//	offsetZoom : オフセット変換量。正のoffsetで上方向, 負のoffsetで下方向に変換される
+//
+// offsetZoomは2**(consts.ZBaseExponent - zoomLevel)より大きくするべき(除算時に切り捨てられるため)
+//
+// 戻り値 :
+//
+//	オフセット変換後のfインデックス
+//
+// 戻り値(エラー) :
+//
+//	以下の条件に当てはまる場合、エラーインスタンスが返却される。
+//	 入力ズームレベル不正       ：zoomLevelが最大ズームレベルを超える場合(consts.zBaseExponent より上のズームレベルはサポートしない)。
+//	 出力インデックス不正       ：変換後のインデックスが入力ズームレベル(inputZoom)で存在しないインデックス値になった場合。
+func AddZBaseOffsetToZ(fIndex int64, zoomLevel uint8, zBaseOffset int64) (int64, error) {
+	if zoomLevel > consts.ZBaseExponent {
+		return 0, errors.NewSpatialIdError(errors.InputValueErrorCode, fmt.Sprintf("zoom level %v must be less than %v", zoomLevel, consts.ZBaseExponent))
+	}
+	// zBaseOffset * (2**(zoomLevel-ZBaseExponent))
+	offset := zBaseOffset >> (consts.ZBaseExponent - zoomLevel)
+	outputIndex := offset + fIndex
+	_, ok := validateIndexExists(outputIndex, int64(zoomLevel), true)
+	if !ok {
+		return 0, errors.NewSpatialIdError(errors.ValueConvertErrorCode, fmt.Sprintf("output index (%v) does not exist with given zoomLevel (%v)", outputIndex, zoomLevel))
+	}
+	return outputIndex, nil
 }
 
 // 高さのbit形式のインデックスを計算する。
