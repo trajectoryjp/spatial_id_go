@@ -377,31 +377,62 @@ func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys_5(t *testing.T) {
 }
 
 func TestConvertQuadkeysAndAltitudekeysToExtendedSpatialIDs(t *testing.T) {
-	// hZoom/x/y/vZoom/z
-	expected := []object.ExtendedSpatialID{}
-	extendedSpatialID, _ := object.NewExtendedSpatialID("20/85263/65423/3/5")
-	expected = append(expected, *extendedSpatialID)
-
-	request := object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(
-		20,
-		[][2]int64{{7432012031, 3}},
-		3,
-		3,
-		2,
-	)
-
-	result, err := ConvertQuadkeysAndAltitudekeysToExtendedSpatialIDs([]*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{
-		request,
-	})
-	if err != nil {
-		t.Error(err)
+	testCases := []struct {
+		expected []string
+		request  []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey
+	}{
+		{
+			// hZoom/x/y/vZoom/z
+			[]string{"20/85263/65423/23/-2"},
+			[]*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(
+				20,
+				[][2]int64{{7432012031, 0}},
+				23,
+				23,
+				8,
+			)},
+		},
+		{
+			[]string{"20/85263/65423/25/1"},
+			[]*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(
+				20,
+				[][2]int64{{7432012031, 3}},
+				25,
+				25,
+				2,
+			)},
+		},
+		{
+			[]string{"20/85263/65423/3/0"},
+			[]*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(
+				20,
+				[][2]int64{{7432012031, 3}},
+				3,
+				3,
+				2,
+			)},
+		},
 	}
-	if result[0] != expected[0] {
-		// t.Error(result):
-		t.Error(result[0], expected)
-	} else {
-		t.Log("Success", result)
+	for _, testCase := range testCases {
+		expectedData := []object.ExtendedSpatialID{}
+		for i := 0; i < len(testCase.expected); i++ {
+			extendedSpatialId, _ := object.NewExtendedSpatialID(testCase.expected[i])
+			expectedData = append(expectedData, *extendedSpatialId)
+		}
+		result, err := ConvertQuadkeysAndAltitudekeysToExtendedSpatialIDs(
+			testCase.request,
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if reflect.DeepEqual(expectedData, result) == false {
+			// t.Error(result):
+			t.Errorf("expected: %v result: %v", expectedData, result)
+		} else {
+			t.Log("Success", result)
+		}
 	}
+
 }
 
 func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys_Example1(t *testing.T) {

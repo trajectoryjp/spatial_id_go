@@ -444,13 +444,23 @@ func ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(extendedSpatialIDs []str
 	return extendedSpatialIDToQuadkeyAndAltitudekey, nil
 }
 
-/*
-SPから来るTileXYZをQuadKeysAndAltitudeKeysに変える
-例：Ouranos GetValueを実行後SPからTileXYZを取得する
-
-QuadKeyをXY、zoomに変換する → maptile で変換する。
-ZとAltitudeKeyは変換が必要。
-*/
+// ConvertQuadkeysAndAltitudekeysToExtendedSpatialIDs
+// QuadKeys+AltitudeKeys形式から拡張空間ID形式へ変換する
+//
+// QuadKeyは同一の意味のまま拡張空間IDのX,Yに変換される
+// AltitudeKeyから拡張空間ID垂直インデックス(f)へは高度変換が用いられ変化する。
+// 引数 :
+//
+//	request : 変換対象のromExtendedSpatialIDToQuadkeyAndAltitudekey構造体のスライス
+//
+// 戻り値 :
+//
+//	変換後の拡張空間IDのスライス
+//
+// 戻り値(エラー) :
+//
+//	以下の条件に当てはまる場合、エラーインスタンスが返却される。
+//	 拡張空間ID高度範囲外：変換後の拡張空間ID高度がその垂直ズームレベルにおける高度範囲外である場合。
 func ConvertQuadkeysAndAltitudekeysToExtendedSpatialIDs(request []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey) ([]object.ExtendedSpatialID, error) {
 
 	extendedSpatialIDs := []object.ExtendedSpatialID{}
@@ -460,54 +470,65 @@ func ConvertQuadkeysAndAltitudekeysToExtendedSpatialIDs(request []*object.FromEx
 			quadKey := qa[quadkeyIndex]
 			altitudeKey := qa[altitudekeyIndex]
 
-			z, err := convertAltitudeKeyToZ(altitudeKey, r.AltitudekeyZoom(), r.ZBaseExponent(), r.ZBaseOffset())
+			zMin, zMax, err := convertAltitudeKeyToZ(altitudeKey, r.AltitudekeyZoom(), r.AltitudekeyZoom(), r.ZBaseExponent(), r.ZBaseOffset())
 			if err != nil {
 				return nil, err
 			}
 
 			mapTile := maptile.FromQuadkey(uint64(quadKey), maptile.Zoom(r.QuadkeyZoom()))
 
-			extendedSpatialID := new(object.ExtendedSpatialID)
-			extendedSpatialID.SetX(int64(mapTile.X))
-			extendedSpatialID.SetY(int64(mapTile.Y))
-			extendedSpatialID.SetZ(z)
-			extendedSpatialID.SetZoom(r.QuadkeyZoom(), r.ZBaseExponent())
-			extendedSpatialIDs = append(extendedSpatialIDs, *extendedSpatialID)
+			for z := zMin; z <= zMax; z++ {
+				extendedSpatialID := new(object.ExtendedSpatialID)
+				extendedSpatialID.SetX(int64(mapTile.X))
+				extendedSpatialID.SetY(int64(mapTile.Y))
+				extendedSpatialID.SetZ(z)
+				extendedSpatialID.SetZoom(r.QuadkeyZoom(), r.AltitudekeyZoom())
+				extendedSpatialIDs = append(extendedSpatialIDs, *extendedSpatialID)
+			}
 		}
 	}
 
 	return extendedSpatialIDs, nil
 }
 
-func convertAltitudeKeyToZ(altitudekey int64, altitudekeyZoomLevel int64, zBaseExponent int64, zBaseOffset int64) (int64, error) {
+func convertAltitudeKeyToZ(altitudekey int64, altitudekeyZoomLevel int64, zZoomLevel int64, zBaseExponent int64, zBaseOffset int64) (int64, int64, error) {
 	// 1. check that the input index exists in the input system
 	inputResolution := common.CalculateArithmeticShift(1, altitudekeyZoomLevel)
 
 	maxInputIndex := inputResolution - 1
-	minInputIndex := -inputResolution
+	minInputIndex := int64(0)
 
 	if altitudekey > maxInputIndex || altitudekey < minInputIndex {
-		return 0, errors.NewSpatialIdError(errors.InputValueErrorCode, "input index does not exist")
+		return 0, 0, errors.NewSpatialIdError(errors.InputValueErrorCode, "input index does not exist")
 	}
 
+	// 2. Calculate internal index
 	zoomDifference := zBaseExponent - altitudekeyZoomLevel
 
-	// 2. Calculate outputIndex
-	outputIndex := common.CalculateArithmeticShift(altitudekey, -zoomDifference)
-	outputIndex += zBaseOffset
-	// outputIndex = common.CalculateArithmeticShift(outputIndex, (outputZoom - zBaseExponent))
-
-	// 3. Check to make sure outputIndex exists in the output system
-	outputResolution := common.CalculateArithmeticShift(1, zBaseExponent)
-
-	maxOutputIndex := outputResolution - 1
-	minOutputIndex := int64(0)
-
-	if outputIndex > maxOutputIndex || outputIndex < minOutputIndex {
-		return 0, errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset")
+	internalMinIndex := common.CalculateArithmeticShift(altitudekey, zoomDifference)
+	internalMaxIndex := internalMinIndex
+	if zoomDifference > 0 {
+		internalMaxIndex = common.CalculateArithmeticShift(altitudekey+1, zoomDifference) - 1
+	}
+	// 3. Calculate outputMinIndex
+	outputZoomDifference := zZoomLevel - 25
+	outputMinIndex := common.CalculateArithmeticShift(internalMinIndex-zBaseOffset, outputZoomDifference)
+	outputMaxIndex := outputMinIndex
+	if outputZoomDifference > 0 {
+		outputMaxIndex = common.CalculateArithmeticShift(internalMaxIndex-zBaseOffset+1, outputZoomDifference) - 1
 	}
 
-	return outputIndex, nil
+	// 4. Check to make sure outputMinIndex exists in the output system
+	outputResolution := common.CalculateArithmeticShift(1, zZoomLevel)
+
+	maxOutputIndex := outputResolution - 1
+	minOutputIndex := -outputResolution
+
+	if outputMaxIndex > maxOutputIndex || outputMinIndex < minOutputIndex {
+		return 0, 0, errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset")
+	}
+
+	return outputMinIndex, outputMaxIndex, nil
 }
 
 // ConvertSpatialIDsToQuadkeysAndVerticalIDs 空間IDを内部形式IDに変換する。
