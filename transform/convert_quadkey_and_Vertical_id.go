@@ -460,6 +460,7 @@ func ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(extendedSpatialIDs []str
 // 戻り値(エラー) :
 //
 //	以下の条件に当てはまる場合、エラーインスタンスが返却される。
+//	 AltitudeKey高度範囲外：変換前のAltitudeKeyがその垂直ズームレベルにおける高度範囲外である場合。
 //	 拡張空間ID高度範囲外：変換後の拡張空間ID高度がその垂直ズームレベルにおける高度範囲外である場合。
 func ConvertQuadkeysAndAltitudekeysToExtendedSpatialIDs(request []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey) ([]object.ExtendedSpatialID, error) {
 
@@ -513,7 +514,7 @@ func convertAltitudeKeyToZ(altitudekey int64, altitudekeyZoomLevel int64, zZoomL
 	// 3. Calculate outputMinIndex
 	outputZoomDifference := zZoomLevel - 25
 	outputMinIndex := common.CalculateArithmeticShift(internalMinIndex-zBaseOffset, outputZoomDifference)
-	outputMaxIndex := outputMinIndex
+	outputMaxIndex := common.CalculateArithmeticShift(internalMaxIndex-zBaseOffset, outputZoomDifference)
 	if outputZoomDifference > 0 {
 		outputMaxIndex = common.CalculateArithmeticShift(internalMaxIndex-zBaseOffset+1, outputZoomDifference) - 1
 	}

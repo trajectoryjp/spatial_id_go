@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"sort"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/trajectoryjp/spatial_id_go/v4/common/errors"
@@ -412,6 +413,36 @@ func TestConvertQuadkeysAndAltitudekeysToExtendedSpatialIDs(t *testing.T) {
 				2,
 			)},
 		},
+		{
+			[]string{"20/85263/65423/23/-2"},
+			[]*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(
+				20,
+				[][2]int64{{7432012031, 0}},
+				23,
+				25,
+				8,
+			)},
+		},
+		{
+			[]string{"20/85263/65423/23/-2", "20/85263/65423/23/-1"},
+			[]*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(
+				20,
+				[][2]int64{{7432012031, 0}},
+				23,
+				25,
+				7,
+			)},
+		},
+		{
+			[]string{"20/85263/65423/26/6", "20/85263/65423/26/7"},
+			[]*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(
+				20,
+				[][2]int64{{7432012031, 3}},
+				26,
+				25,
+				-2,
+			)},
+		},
 	}
 	for _, testCase := range testCases {
 		expectedData := []object.ExtendedSpatialID{}
@@ -433,6 +464,47 @@ func TestConvertQuadkeysAndAltitudekeysToExtendedSpatialIDs(t *testing.T) {
 		}
 	}
 
+}
+
+func TestErrorConvertQuadkeysAndAltitudekeysToExtendedSpatialIDs(t *testing.T) {
+	testCases := []struct {
+		expected string
+		request  []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey
+	}{
+		{
+			"input index does not exist",
+			[]*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(
+				20,
+				[][2]int64{{7432012031, (1 << zOriginValue) + 1}},
+				25,
+				25,
+				8,
+			)},
+		},
+		{
+			"output index does not exist",
+			[]*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(
+				20,
+				[][2]int64{{7432012031, (1 << zOriginValue) - 1}},
+				25,
+				25,
+				-1,
+			)},
+		},
+	}
+	for _, testCase := range testCases {
+		_, err := ConvertQuadkeysAndAltitudekeysToExtendedSpatialIDs(
+			testCase.request,
+		)
+		if err == nil {
+			t.Fatal(err)
+		}
+		if strings.Contains(err.Error(), testCase.expected) == false {
+			t.Errorf("expected: %v result: %v", testCase.expected, err)
+		} else {
+			t.Log("Success", err)
+		}
+	}
 }
 
 func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys_Example1(t *testing.T) {
