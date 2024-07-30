@@ -443,6 +443,16 @@ func TestConvertQuadkeysAndAltitudekeysToExtendedSpatialIDs(t *testing.T) {
 				-2,
 			)},
 		},
+		{
+			[]string{"20/85263/65423/23/0", "20/85263/65423/23/1"},
+			[]*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(
+				20,
+				[][2]int64{{7432012031, 0}},
+				23,
+				25,
+				-1,
+			)},
+		},
 	}
 	for _, testCase := range testCases {
 		expectedData := []object.ExtendedSpatialID{}

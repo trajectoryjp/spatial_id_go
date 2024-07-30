@@ -20,8 +20,11 @@ var (
 	zOriginValue int64 = 25
 )
 
+// FromExtendedSpatialIDToQuadkeyAndAltitudekey.innerIDの並び順
 const (
-	quadkeyIndex     = 0
+	// quadkeyはinnerID[0]
+	quadkeyIndex = 0
+	// altitudekeyがinnerID[1]
 	altitudekeyIndex = 1
 )
 
@@ -451,7 +454,7 @@ func ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(extendedSpatialIDs []str
 // AltitudeKeyから拡張空間ID垂直インデックス(f)へは高度変換が用いられ変化する。
 // 引数 :
 //
-//	request : 変換対象のromExtendedSpatialIDToQuadkeyAndAltitudekey構造体のスライス
+//	request : 変換対象のFromExtendedSpatialIDToQuadkeyAndAltitudekey構造体のスライス
 //
 // 戻り値 :
 //
@@ -462,6 +465,59 @@ func ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(extendedSpatialIDs []str
 //	以下の条件に当てはまる場合、エラーインスタンスが返却される。
 //	 AltitudeKey高度範囲外：変換前のAltitudeKeyがその垂直ズームレベルにおける高度範囲外である場合。
 //	 拡張空間ID高度範囲外：変換後の拡張空間ID高度がその垂直ズームレベルにおける高度範囲外である場合。
+//
+// 補足事項：
+//
+//	高さについて：
+//	 AltitudeKeys形式と拡張空間ID形式垂直インデックスは高度基準が異なる(同じにすることも可能)
+//	 FromExtendedSpatialIDToQuadkeyAndAltitudekey構造体でデータと高度基準を定義する
+//	 構造体内のデータが次の状態のとき、入力AltitudeKeyに対して出力拡張空間ID垂直インデックス数が増加する
+//	 - altitudekeyZoomがzBaseExponentまたは25(空間IDの高度基準におけるzBaseExponent)より大きい場合
+//	 - zBaseOffsetが2のべき乗でない場合
+//
+// 変換利用例：
+//
+// 1. 入力altitudekeyが出力拡張空間ID垂直インデックスに対応する場合
+//
+//	[]FromExtendedSpatialIDToQuadkeyAndAltitudekey{
+//	    {
+//	        quadkeyZoom : 20
+//	        innerIDList : [[7432012031,0]]
+//	        altitudekeyZoom : 23
+//	        zBaseExponent : 25
+//	        zBaseOffset : 8
+//	    }
+//	}
+//
+//	extendedSpatialIDs :["20/85263/65423/23/-2"]
+//
+// 2. altitudekeyZoomが25より大きい場合
+//
+//	[]FromExtendedSpatialIDToQuadkeyAndAltitudekey{
+//	    {
+//	        quadkeyZoom : 20
+//	        innerIDList : [[7432012031,3]]
+//	        altitudekeyZoom : 26
+//	        zBaseExponent : 25
+//	        zBaseOffset : -2
+//	    }
+//	}
+//
+//	extendedSpatialIDs :["20/85263/65423/26/7", "20/85263/65423/26/7]
+//
+// 3. zBaseOffsetが2のべき乗でない場合
+//
+//	[]FromExtendedSpatialIDToQuadkeyAndAltitudekey{
+//	    {
+//	        quadkeyZoom : 20
+//	        innerIDList : [[7432012031,0]]
+//	        altitudekeyZoom : 23
+//	        zBaseExponent : 25
+//	        zBaseOffset : 7
+//	    }
+//	}
+//
+//	extendedSpatialIDs :["20/85263/65423/23/-2", "20/85263/65423/23/-1"]
 func ConvertQuadkeysAndAltitudekeysToExtendedSpatialIDs(request []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey) ([]object.ExtendedSpatialID, error) {
 
 	extendedSpatialIDs := []object.ExtendedSpatialID{}
