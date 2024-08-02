@@ -410,7 +410,7 @@ func ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(extendedSpatialIDs []str
 		}
 
 		// B. convert vertical IDs to fit Output Vertical Zoom Level
-		altitudeKeys, error = convertZToAltitudekey(currentID.Z(), currentID.VZoom(), outputAltitudekeyZoom, zBaseExponent, zBaseOffset)
+		altitudeKeys, error = ConvertZToAltitudekey(currentID.Z(), currentID.VZoom(), outputAltitudekeyZoom, zBaseExponent, zBaseOffset)
 		if error != nil {
 			return nil, error
 		}
@@ -527,7 +527,7 @@ func ConvertQuadkeysAndAltitudekeysToExtendedSpatialIDs(request []*object.FromEx
 			quadKey := qa[quadkeyIndex]
 			altitudeKey := qa[altitudekeyIndex]
 
-			zMin, zMax, err := convertAltitudeKeyToZ(altitudeKey, r.AltitudekeyZoom(), r.AltitudekeyZoom(), r.ZBaseExponent(), r.ZBaseOffset())
+			zMin, zMax, err := ConvertAltitudeKeyToZ(altitudeKey, r.AltitudekeyZoom(), r.AltitudekeyZoom(), r.ZBaseExponent(), r.ZBaseOffset())
 			if err != nil {
 				return nil, err
 			}
@@ -548,7 +548,32 @@ func ConvertQuadkeysAndAltitudekeysToExtendedSpatialIDs(request []*object.FromEx
 	return extendedSpatialIDs, nil
 }
 
-func convertAltitudeKeyToZ(altitudekey int64, altitudekeyZoomLevel int64, zZoomLevel int64, zBaseExponent int64, zBaseOffset int64) (int64, int64, error) {
+// ConvertAltitudeKeyToZ altitudekeyを(拡張)空間IDのz成分に高度変換する。
+//
+// 変換前と変換後の精度差によって出力されるaltitudekeyの個数は増減する。
+//
+// 引数 :
+//
+//	altitudekey : 変換前のaltitudekeyの値
+//
+//	altitudekeyZoom : 変換前のaltitudekeyの精度指定
+//
+//	outputZoom : 変換対象の拡張空間ID垂直精度の指定
+//
+//	zBaseExponent : 変換対象の拡張空間IDの高さが1mとなるズームレベル
+//
+//	zBaseOffset : ズームレベルがzBaseExponentのとき、高度0mにおける拡張空間IDの垂直インデックス値
+//
+// 戻り値 :
+//
+//	変換後のaltitudekeyのスライス
+//
+// 戻り値(エラー) :
+//
+//	以下の条件に当てはまる場合、エラーインスタンスが返却される。
+//	 入力インデックス不正       ：inputIndexにそのズームレベル(inputZoom)で存在しないインデックス値が入力されていた場合。
+//	 出力インデックス不正       ：出力altitudekeyが出力ズームレベル(outputZoom)で存在しないインデックス値になった場合。
+func ConvertAltitudeKeyToZ(altitudekey int64, altitudekeyZoomLevel int64, outputZoom int64, zBaseExponent int64, zBaseOffset int64) (int64, int64, error) {
 	// 1. check that the input index exists in the input system
 	inputResolution := common.CalculateArithmeticShift(1, altitudekeyZoomLevel)
 
@@ -568,7 +593,7 @@ func convertAltitudeKeyToZ(altitudekey int64, altitudekeyZoomLevel int64, zZoomL
 		internalMaxIndex = common.CalculateArithmeticShift(altitudekey+1, zoomDifference) - 1
 	}
 	// 3. Calculate outputMinIndex
-	outputZoomDifference := zZoomLevel - 25
+	outputZoomDifference := outputZoom - 25
 	outputMinIndex := common.CalculateArithmeticShift(internalMinIndex-zBaseOffset, outputZoomDifference)
 	outputMaxIndex := common.CalculateArithmeticShift(internalMaxIndex-zBaseOffset, outputZoomDifference)
 	if outputZoomDifference > 0 {
@@ -576,7 +601,7 @@ func convertAltitudeKeyToZ(altitudekey int64, altitudekeyZoomLevel int64, zZoomL
 	}
 
 	// 4. Check to make sure outputMinIndex exists in the output system
-	outputResolution := common.CalculateArithmeticShift(1, zZoomLevel)
+	outputResolution := common.CalculateArithmeticShift(1, outputZoom)
 
 	maxOutputIndex := outputResolution - 1
 	minOutputIndex := -outputResolution
@@ -822,7 +847,32 @@ func convertVerticallIDToBit(vZoom int64, vIndex int64, outputZoom int64, maxHei
 
 }
 
-func convertZToAltitudekey(inputIndex int64, inputZoom int64, outputZoom int64, zBaseExponent int64, zBaseOffset int64) ([]int64, error) {
+// ConvertZToAltitudekey (拡張)空間IDのz成分をaltitudekeyに高度変換する。
+//
+// 変換前と変換後の精度差によって出力されるaltitudekeyの個数は増減する。
+//
+// 引数 :
+//
+//	inputIndex : 変換対象の(拡張)空間IDのz成分(fインデックス)
+//
+//	inputZoom : 変換対象の(拡張)空間IDのズームレベル(zインデックス)
+//
+//	outputZoom : 変換後のaltitudekeyの精度指定
+//
+//	zBaseExponent : 変換後のaltitudekeyの高さが1mとなるズームレベル
+//
+//	zBaseOffset : ズームレベルがzBaseExponentのとき、高度0mにおけるaltitudekeyのインデックス値
+//
+// 戻り値 :
+//
+//	変換後のaltitudekeyのスライス
+//
+// 戻り値(エラー) :
+//
+//	以下の条件に当てはまる場合、エラーインスタンスが返却される。
+//	 入力インデックス不正       ：inputIndexにそのズームレベル(inputZoom)で存在しないインデックス値が入力されていた場合。
+//	 出力インデックス不正       ：出力altitudekeyが出力ズームレベル(outputZoom)で存在しないインデックス値になった場合。
+func ConvertZToAltitudekey(inputIndex int64, inputZoom int64, outputZoom int64, zBaseExponent int64, zBaseOffset int64) ([]int64, error) {
 
 	var (
 		outputIndexes []int64
