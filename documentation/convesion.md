@@ -2,6 +2,23 @@
 
 `transform/convert_quadkey_and_Vertical_id.go`内にある各種変換関数の利用方法を記載
 
+## 変換関数一覧
+
+| 変換元         | 変換先         | 対応関数                                                   | 今後の変更予定など備考                                        |
+|-------------|-------------|--------------------------------------------------------|----------------------------------------------------|
+| 空間ID        | 拡張空間ID      | なし                                                     | `ConvertSpatialIDsToQuadkeysAndVerticalIDs`が部分的に行う |
+| 拡張空間ID      | 拡張空間ID      | なし                                                     | `ConvertQuadkeysAndVerticalIDsToSpatialIDs`が部分的に行う |
+| 拡張空間ID      | XYZKeys     | なし                                                     | `ConvertExtendedSpatialIDsToXYZKeys()`に実装予定        |
+| XYZKeys     | 拡張空間ID      | なし                                                     | `ConvertXYZkeysToExtendedSpatialIDs()`に実装予定        |
+| 3Dtilekey   | 拡張空間ID      | `ConvertQuadkeysAndAltitudekeysToExtendedSpatialIDs()` | Pull Request#27のもの 廃止する                            |
+| 拡張空間ID      | 3Dtilekey   | `ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys()` | 廃止予定                                               |
+| 一次元インデックス   | 一次元変換インデックス | `ConvertZToAltitudekey()`                              | `TransformIndexCoordinate()`にリネーム予定                |
+| 一次元変換インデックス | 一次元インデックス   | `ConvertAltitudeKeyToZ()`                              | `InverseTransformIndexCoordinate()`にリネーム予定         |
+| Key         | 拡張空間ID      | `ConvertQuadkeysAndVerticalIDsToExtendedSpatialIDs()`  | 廃止予定                                               |
+| Key         | 空間ID        | `ConvertQuadkeysAndVerticalIDsToSpatialIDs()`          | 廃止予定                                               |
+| 空間ID        | Key         | `ConvertSpatialIDsToQuadkeysAndVerticalIDs()`          | 廃止予定                                               |
+| 拡張空間ID      | Key         | `ConvertExtendedSpatialIDsToQuadkeysAndVerticalIDs()`  | 廃止予定                                               |
+
 ## ConvertQuadkeysAndAltitudekeysToExtendedSpatialIDs
 
 Quadkey+AltitudeKey空間のボクセルを拡張空間IDに変換する
