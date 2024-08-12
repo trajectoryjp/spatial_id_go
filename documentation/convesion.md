@@ -8,8 +8,8 @@
 |-------------|-------------|--------------------------------------------------------|----------------------------------------------------|
 | 空間ID        | 拡張空間ID      | なし                                                     | `ConvertSpatialIDsToQuadkeysAndVerticalIDs`が部分的に行う |
 | 拡張空間ID      | 拡張空間ID      | なし                                                     | `ConvertQuadkeysAndVerticalIDsToSpatialIDs`が部分的に行う |
-| 拡張空間ID      | XYZKeys     | なし                                                     | `ConvertExtendedSpatialIDsToXYZKeys()`に実装予定        |
-| XYZKeys     | 拡張空間ID      | なし                                                     | `ConvertXYZkeysToExtendedSpatialIDs()`に実装予定        |
+| 拡張空間ID      | TileXYZ     | なし                                                     | `ConvertExtendedSpatialIDsToTileXYZ()`に実装予定        |
+| TileXYZ     | 拡張空間ID      | なし                                                     | `ConvertTileXYZToExtendedSpatialIDs()`に実装予定        |
 | 3Dtilekey   | 拡張空間ID      | `ConvertQuadkeysAndAltitudekeysToExtendedSpatialIDs()` | Pull Request#27のもの 廃止する                            |
 | 拡張空間ID      | 3Dtilekey   | `ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys()` | 廃止予定                                               |
 | 一次元インデックス   | 一次元変換インデックス | `ConvertZToAltitudekey()`                              | `TransformIndexCoordinate()`にリネーム予定                |

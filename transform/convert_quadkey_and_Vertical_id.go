@@ -2,11 +2,11 @@
 package transform
 
 import (
+	"fmt"
 	"math"
 	"strconv"
 	"strings"
 
-	"github.com/paulmach/orb/maptile"
 	"github.com/trajectoryjp/spatial_id_go/v4/common"
 	"github.com/trajectoryjp/spatial_id_go/v4/common/errors"
 	"github.com/trajectoryjp/spatial_id_go/v4/common/object"
@@ -18,14 +18,6 @@ import (
 var (
 	alt25              = math.Pow(2, 25)
 	zOriginValue int64 = 25
-)
-
-// FromExtendedSpatialIDToQuadkeyAndAltitudekey.innerIDの並び順
-const (
-	// quadkeyはinnerID[0]
-	quadkeyIndex = 0
-	// altitudekeyがinnerID[1]
-	altitudekeyIndex = 1
 )
 
 // ConvertQuadkeysAndVerticalIDsToExtendedSpatialIDs 内部形式IDを拡張空間IDに変換する。
@@ -447,14 +439,18 @@ func ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(extendedSpatialIDs []str
 	return extendedSpatialIDToQuadkeyAndAltitudekey, nil
 }
 
-// ConvertQuadkeysAndAltitudekeysToExtendedSpatialIDs
-// QuadKeys+AltitudeKeys形式から拡張空間ID形式へ変換する
+// ConvertTileXYZToExtendedSpatialIDs
+// TileXYZ形式から拡張空間ID形式へ変換する
 //
-// QuadKeyは同一の意味のまま拡張空間IDのX,Yに変換される
-// AltitudeKeyから拡張空間ID垂直インデックス(f)へは高度変換が用いられ変化する。
+// TileXYZのx,yは同一の意味のまま拡張空間IDのX,Yに変換される
+// TileXYZのZから拡張空間ID垂直インデックス(f)へは高度変換が用いられ変化する。
 // 引数 :
 //
-//	request : 変換対象のFromExtendedSpatialIDToQuadkeyAndAltitudekey構造体のスライス
+//	request : 変換対象のTileXYZ構造体のスライス
+//	zBaseExponent： zの高さが1mとなるズームレベル
+//	zBaseOffset： ズームレベルがzBaseExponentのとき高度0mにおけるvZoom
+//	outputHZoom : 入力値が変換後の拡張空間IDの水平精度となる。拡張空間IDの精度の閾値である 0 ～ 35 の整数値を指定可能。
+//	outputVZoom : 入力値が変換後の拡張空間IDの高さの精度となる。拡張空間IDの精度の閾値である 0 ～ 35 の整数値を指定可能。
 //
 // 戻り値 :
 //
@@ -463,85 +459,96 @@ func ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(extendedSpatialIDs []str
 // 戻り値(エラー) :
 //
 //	以下の条件に当てはまる場合、エラーインスタンスが返却される。
-//	 AltitudeKey高度範囲外：変換前のAltitudeKeyがその垂直ズームレベルにおける高度範囲外である場合。
+//	 精度閾値超過(出力精度)：出力の水平方向精度、または高さ方向の精度に 0 ～ 35 の整数値以外が入力されていた場合。
+//	 z高度範囲外：変換前のzがその垂直ズームレベルにおける高度範囲外である場合。
 //	 拡張空間ID高度範囲外：変換後の拡張空間ID高度がその垂直ズームレベルにおける高度範囲外である場合。
 //
 // 補足事項：
 //
 //	高さについて：
-//	 AltitudeKeys形式と拡張空間ID形式垂直インデックスは高度基準が異なる(同じにすることも可能)
-//	 FromExtendedSpatialIDToQuadkeyAndAltitudekey構造体でデータと高度基準を定義する
-//	 構造体内のデータが次の状態のとき、入力AltitudeKeyに対して出力拡張空間ID垂直インデックス数が増加する
-//	 - altitudekeyZoomがzBaseExponentまたは25(空間IDの高度基準におけるzBaseExponent)より大きい場合
+//	 TileXYZ形式のzと拡張空間ID形式垂直インデックスは高度基準が異なる(同じにすることも可能)
+//	 引数のzBaseExponentとzBaseOffsetで高度基準を定義する
+//	 TileXYZ内のデータもしくは引数が次の状態のとき、入力TileXYZ数に対して出力拡張空間ID垂直インデックス数が増加する
+//	 - vZoomがzBaseExponentまたは25(空間IDの高度基準におけるzBaseExponent)より大きい場合
 //	 - zBaseOffsetが2のべき乗でない場合
 //
 // 変換利用例：
 //
-// 1. 入力altitudekeyが出力拡張空間ID垂直インデックスに対応する場合
+// 1. 入力TileXYZのzが出力拡張空間ID垂直インデックスに対応する場合
 //
-//	[]FromExtendedSpatialIDToQuadkeyAndAltitudekey{
+//	[]TileXYZ{
 //	    {
-//	        quadkeyZoom : 20
-//	        innerIDList : [[7432012031,0]]
-//	        altitudekeyZoom : 23
-//	        zBaseExponent : 25
-//	        zBaseOffset : 8
+//	        hZoom : 20
+//	        x 85263
+//	        y 65423
+//	        vZoom 23
+//	        z 0
 //	    }
-//	}
+//	},
+//	zBaseExponent 25,
+//	zBaseOffset 8,
+//	outputHZoom 20,
+//	outputVZoom 23
 //
 //	extendedSpatialIDs :["20/85263/65423/23/-2"]
 //
-// 2. altitudekeyZoomが25より大きい場合
+// 2. vZoomが25より大きい場合
 //
-//	[]FromExtendedSpatialIDToQuadkeyAndAltitudekey{
+//	[]TileXYZ{
 //	    {
-//	        quadkeyZoom : 20
-//	        innerIDList : [[7432012031,3]]
-//	        altitudekeyZoom : 26
-//	        zBaseExponent : 25
-//	        zBaseOffset : -2
+//	        hZoom : 20
+//	        x 85263
+//	        y 65423
+//	        vZoom 26
+//	        z 3
 //	    }
-//	}
+//	},
+//	zBaseExponent 25,
+//	zBaseOffset -2,
+//	outputHZoom 20,
+//	outputVZoom 26
 //
 //	extendedSpatialIDs :["20/85263/65423/26/7", "20/85263/65423/26/7]
 //
 // 3. zBaseOffsetが2のべき乗でない場合
 //
-//	[]FromExtendedSpatialIDToQuadkeyAndAltitudekey{
+//	[]TileXYZ{
 //	    {
-//	        quadkeyZoom : 20
-//	        innerIDList : [[7432012031,0]]
-//	        altitudekeyZoom : 23
-//	        zBaseExponent : 25
-//	        zBaseOffset : 7
+//	        hZoom : 20
+//	        x 85263
+//	        y 65423
+//	        vZoom 23
+//	        z 0
 //	    }
-//	}
+//	},
+//	zBaseExponent 25,
+//	zBaseOffset 7,
+//	outputHZoom 20,
+//	outputVZoom 23
 //
 //	extendedSpatialIDs :["20/85263/65423/23/-2", "20/85263/65423/23/-1"]
-func ConvertQuadkeysAndAltitudekeysToExtendedSpatialIDs(request []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey) ([]object.ExtendedSpatialID, error) {
+func ConvertTileXYZToExtendedSpatialIDs(request []*object.TileXYZ, zBaseExponent uint16, zBaseOffset int64, outputHZoom uint16, outputVZoom uint16) ([]object.ExtendedSpatialID, error) {
+	if !extendedSpatialIDCheckZoom(int64(outputHZoom), int64(outputVZoom)) {
+		return nil, errors.NewSpatialIdError(errors.InputValueErrorCode, fmt.Sprintf("extendSpatialID zoom level must be in 0-35: hZoom=%v, vZoom=%v", outputHZoom, outputVZoom))
+	}
 
 	extendedSpatialIDs := []object.ExtendedSpatialID{}
 
 	for _, r := range request {
-		for _, qa := range r.InnerIDList() {
-			quadKey := qa[quadkeyIndex]
-			altitudeKey := qa[altitudekeyIndex]
 
-			zMin, zMax, err := ConvertAltitudeKeyToZ(altitudeKey, r.AltitudekeyZoom(), r.AltitudekeyZoom(), r.ZBaseExponent(), r.ZBaseOffset())
-			if err != nil {
-				return nil, err
-			}
+		zMin, zMax, err := ConvertAltitudeKeyToZ(r.Z(), int64(r.VZoom()), int64(outputVZoom), int64(zBaseExponent), zBaseOffset)
+		if err != nil {
+			return nil, err
+		}
 
-			mapTile := maptile.FromQuadkey(uint64(quadKey), maptile.Zoom(r.QuadkeyZoom()))
-
-			for z := zMin; z <= zMax; z++ {
-				extendedSpatialID := new(object.ExtendedSpatialID)
-				extendedSpatialID.SetX(int64(mapTile.X))
-				extendedSpatialID.SetY(int64(mapTile.Y))
-				extendedSpatialID.SetZ(z)
-				extendedSpatialID.SetZoom(r.QuadkeyZoom(), r.AltitudekeyZoom())
-				extendedSpatialIDs = append(extendedSpatialIDs, *extendedSpatialID)
-			}
+		// TODO change x,y with integrate.HorizontalZoom()
+		for z := zMin; z <= zMax; z++ {
+			extendedSpatialID := new(object.ExtendedSpatialID)
+			extendedSpatialID.SetX(r.X())
+			extendedSpatialID.SetY(r.Y())
+			extendedSpatialID.SetZ(z)
+			extendedSpatialID.SetZoom(int64(r.HZoom()), int64(outputVZoom))
+			extendedSpatialIDs = append(extendedSpatialIDs, *extendedSpatialID)
 		}
 	}
 

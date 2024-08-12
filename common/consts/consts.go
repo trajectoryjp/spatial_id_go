@@ -6,3 +6,13 @@ const OrthCrs = 3857           // OrthCrs 直交座標系のEPSGコード
 const SpatialIDDelimiter = "/" // SpatialIDDelimiter 空間IDの区切り文字
 
 const Minima = 1e-10 // Minima 浮動小数点誤差
+
+const MaxTileXYZZoom = 35 // MaxTileXYZZoom TileXYZにおける最大ズームレベル(水平、垂直共通)
+
+// FromExtendedSpatialIDToQuadkeyAndAltitudekey.innerIDの並び順
+const (
+	// InnerIDQuadkeyIndex quadkeyはinnerID[0]
+	InnerIDQuadkeyIndex = 0
+	// InnerIDAltitudekeyIndex altitudekeyはinnerID[1]
+	InnerIDAltitudekeyIndex = 1
+)
