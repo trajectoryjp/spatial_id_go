@@ -11,4 +11,7 @@ require (
 
 require golang.org/x/image v0.7.0 // indirect
 
-require github.com/trajectoryjp/closest_go v1.0.1
+require (
+	github.com/trajectoryjp/closest_go v1.0.1
+	github.com/trajectoryjp/multidimensional-radix-tree/src v0.0.0-20240725143308-c304415df20d
+)

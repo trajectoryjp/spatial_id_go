@@ -2,7 +2,7 @@ package detector
 
 import (
 	"fmt"
-	"github.com/trajectoryjp/multidimensional-radix-tree/tree"
+	"github.com/trajectoryjp/multidimensional-radix-tree/src/tree"
 	"github.com/trajectoryjp/spatial_id_go/v4/common/consts"
 	"github.com/trajectoryjp/spatial_id_go/v4/common/errors"
 	"github.com/trajectoryjp/spatial_id_go/v4/integrate"
