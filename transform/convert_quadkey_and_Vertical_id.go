@@ -442,14 +442,14 @@ func ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(extendedSpatialIDs []str
 // ConvertTileXYZToExtendedSpatialIDs
 // TileXYZ形式から拡張空間ID形式へ変換する
 //
-// TileXYZのx,yは同一の意味のまま拡張空間IDのX,Yに変換される
+// TileXYZのx,yは同一の意味のまま拡張空間IDのX,Yに変換される。
+// このため出力の水平精度は入力のものが用いられる(ただし精度チェックは行われる)。
 // TileXYZのZから拡張空間ID垂直インデックス(f)へは高度変換が用いられ変化する。
 // 引数 :
 //
 //	request : 変換対象のTileXYZ構造体のスライス
 //	zBaseExponent： zの高さが1mとなるズームレベル
 //	zBaseOffset： ズームレベルがzBaseExponentのとき高度0mにおけるvZoom
-//	outputHZoom : 入力値が変換後の拡張空間IDの水平精度となる。拡張空間IDの精度の閾値である 0 ～ 35 の整数値を指定可能。
 //	outputVZoom : 入力値が変換後の拡張空間IDの高さの精度となる。拡張空間IDの精度の閾値である 0 ～ 35 の整数値を指定可能。
 //
 // 戻り値 :
@@ -487,7 +487,6 @@ func ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(extendedSpatialIDs []str
 //	},
 //	zBaseExponent 25,
 //	zBaseOffset 8,
-//	outputHZoom 20,
 //	outputVZoom 23
 //
 //	extendedSpatialIDs :["20/85263/65423/23/-2"]
@@ -505,7 +504,6 @@ func ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(extendedSpatialIDs []str
 //	},
 //	zBaseExponent 25,
 //	zBaseOffset -2,
-//	outputHZoom 20,
 //	outputVZoom 26
 //
 //	extendedSpatialIDs :["20/85263/65423/26/7", "20/85263/65423/26/7]
@@ -523,25 +521,23 @@ func ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(extendedSpatialIDs []str
 //	},
 //	zBaseExponent 25,
 //	zBaseOffset 7,
-//	outputHZoom 20,
 //	outputVZoom 23
 //
 //	extendedSpatialIDs :["20/85263/65423/23/-2", "20/85263/65423/23/-1"]
-func ConvertTileXYZToExtendedSpatialIDs(request []*object.TileXYZ, zBaseExponent uint16, zBaseOffset int64, outputHZoom uint16, outputVZoom uint16) ([]object.ExtendedSpatialID, error) {
-	if !extendedSpatialIDCheckZoom(int64(outputHZoom), int64(outputVZoom)) {
-		return nil, errors.NewSpatialIdError(errors.InputValueErrorCode, fmt.Sprintf("extendSpatialID zoom level must be in 0-35: hZoom=%v, vZoom=%v", outputHZoom, outputVZoom))
-	}
+func ConvertTileXYZToExtendedSpatialIDs(request []*object.TileXYZ, zBaseExponent uint16, zBaseOffset int64, outputVZoom uint16) ([]object.ExtendedSpatialID, error) {
 
 	extendedSpatialIDs := []object.ExtendedSpatialID{}
 
 	for _, r := range request {
+		if !extendedSpatialIDCheckZoom(int64(r.HZoom()), int64(outputVZoom)) {
+			return nil, errors.NewSpatialIdError(errors.InputValueErrorCode, fmt.Sprintf("extendSpatialID zoom level must be in 0-35: hZoom=%v, vZoom=%v", r.HZoom(), outputVZoom))
+		}
 
 		zMin, zMax, err := ConvertAltitudeKeyToZ(r.Z(), int64(r.VZoom()), int64(outputVZoom), int64(zBaseExponent), zBaseOffset)
 		if err != nil {
 			return nil, err
 		}
 
-		// TODO change x,y with integrate.HorizontalZoom()
 		for z := zMin; z <= zMax; z++ {
 			extendedSpatialID := new(object.ExtendedSpatialID)
 			extendedSpatialID.SetX(r.X())
