@@ -3,6 +3,7 @@ package transform
 
 import (
 	"fmt"
+	"golang.org/x/exp/maps"
 	"math"
 	"strconv"
 	"strings"
@@ -526,6 +527,7 @@ func ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(extendedSpatialIDs []str
 //	extendedSpatialIDs :["20/85263/65423/23/-2", "20/85263/65423/23/-1"]
 func ConvertTileXYZToExtendedSpatialIDs(request []*object.TileXYZ, zBaseExponent uint16, zBaseOffset int64, outputVZoom uint16) ([]object.ExtendedSpatialID, error) {
 
+	extendedSpatialIDsMap := make(map[int64]object.ExtendedSpatialID)
 	extendedSpatialIDs := []object.ExtendedSpatialID{}
 
 	for _, r := range request {
@@ -539,13 +541,20 @@ func ConvertTileXYZToExtendedSpatialIDs(request []*object.TileXYZ, zBaseExponent
 		}
 
 		for z := zMin; z <= zMax; z++ {
+			// 重複排除
+			if _, exists := extendedSpatialIDsMap[z]; exists {
+				continue
+			}
 			extendedSpatialID := new(object.ExtendedSpatialID)
 			extendedSpatialID.SetX(r.X())
 			extendedSpatialID.SetY(r.Y())
 			extendedSpatialID.SetZ(z)
 			extendedSpatialID.SetZoom(int64(r.HZoom()), int64(outputVZoom))
-			extendedSpatialIDs = append(extendedSpatialIDs, *extendedSpatialID)
+			extendedSpatialIDsMap[z] = *extendedSpatialID
 		}
+	}
+	for _, extendedSpatialID := range maps.Values(extendedSpatialIDsMap) {
+		extendedSpatialIDs = append(extendedSpatialIDs, extendedSpatialID)
 	}
 
 	return extendedSpatialIDs, nil

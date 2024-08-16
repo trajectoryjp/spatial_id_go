@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/trajectoryjp/spatial_id_go/v4/common/errors"
 	"github.com/trajectoryjp/spatial_id_go/v4/common/object"
 )
@@ -386,7 +387,16 @@ func newTileXYZ(t *testing.T, hZoom uint16, x int64, y int64, vZoom uint16, z in
 	return xyz
 }
 
-func TestConvertQuadkeysAndAltitudekeysToExtendedSpatialIDs(t *testing.T) {
+func newExtendedSpatialID(t *testing.T, id string) *object.ExtendedSpatialID {
+	t.Helper()
+	extendedSpatialId, err := object.NewExtendedSpatialID(id)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return extendedSpatialId
+}
+
+func TestConvertTileXYZToExtendedSpatialIDs(t *testing.T) {
 	type argSet struct {
 		tile          []*object.TileXYZ
 		zBaseExponent uint16
@@ -495,16 +505,25 @@ func TestConvertQuadkeysAndAltitudekeysToExtendedSpatialIDs(t *testing.T) {
 			},
 		},
 		{
-			[]string{"20/85263/65423/23/0", "20/85263/65423/23/1"},
+			[]string{"20/85263/65423/23/0", "20/85263/65423/23/1", "20/85263/65423/23/2"},
 			argSet{
-				[]*object.TileXYZ{newTileXYZ(
-					t,
-					20,
-					85263,
-					65423,
-					23,
-					0,
-				)},
+				[]*object.TileXYZ{
+					newTileXYZ(
+						t,
+						20,
+						85263,
+						65423,
+						23,
+						0,
+					),
+					newTileXYZ(
+						t,
+						20,
+						85263,
+						65423,
+						23,
+						1,
+					)},
 				25,
 				-1,
 				23,
@@ -514,14 +533,14 @@ func TestConvertQuadkeysAndAltitudekeysToExtendedSpatialIDs(t *testing.T) {
 	for _, testCase := range testCases {
 		expectedData := []object.ExtendedSpatialID{}
 		for i := 0; i < len(testCase.expected); i++ {
-			extendedSpatialId, _ := object.NewExtendedSpatialID(testCase.expected[i])
+			extendedSpatialId := newExtendedSpatialID(t, testCase.expected[i])
 			expectedData = append(expectedData, *extendedSpatialId)
 		}
 		result, err := ConvertTileXYZToExtendedSpatialIDs(testCase.request.tile, testCase.request.zBaseExponent, testCase.request.zBaseOffset, testCase.request.outputVZoom)
 		if err != nil {
 			t.Fatal(err)
 		}
-		if reflect.DeepEqual(expectedData, result) == false {
+		if assert.ElementsMatch(t, expectedData, result) == false {
 			// t.Error(result):
 			t.Errorf("expected: %v result: %v", expectedData, result)
 		} else {
@@ -531,7 +550,7 @@ func TestConvertQuadkeysAndAltitudekeysToExtendedSpatialIDs(t *testing.T) {
 
 }
 
-func TestErrorConvertQuadkeysAndAltitudekeysToExtendedSpatialIDs(t *testing.T) {
+func TestErrorConvertTileXYZToExtendedSpatialIDs(t *testing.T) {
 	type argSet struct {
 		tile          []*object.TileXYZ
 		zBaseExponent uint16
