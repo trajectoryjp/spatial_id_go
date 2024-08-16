@@ -623,6 +623,40 @@ func TestErrorConvertTileXYZToExtendedSpatialIDs(t *testing.T) {
 	}
 }
 
+func TestConvertExtendedSpatialIDsToSpatialIDs(t *testing.T) {
+	testCases := []struct {
+		expected []string
+		id       *object.ExtendedSpatialID
+	}{
+		{
+			// 水平精度の方が低い場合
+			[]string{"7/0/48/106", "7/0/48/107", "7/0/49/106", "7/0/49/107"},
+			newExtendedSpatialID(t, "6/24/53/7/0"),
+		},
+		{
+			// 水平精度の方が低い場合
+			[]string{"7/0/48/98", "7/0/48/99", "7/0/49/98", "7/0/49/99"},
+			newExtendedSpatialID(t, "6/24/49/7/0"),
+		},
+		{
+			// 垂直精度の方が低い場合
+			[]string{"7/48/24/53", "7/49/24/53"},
+			newExtendedSpatialID(t, "7/24/53/6/24"),
+		},
+		{
+			// 水平精度、垂直精度に差がない場合
+			[]string{"6/0/24/49"},
+			newExtendedSpatialID(t, "6/24/49/6/0"),
+		},
+	}
+	for _, testCase := range testCases {
+		result := ConvertExtendedSpatialIDsToSpatialIDs(testCase.id)
+		if !assert.ElementsMatch(t, testCase.expected, result) {
+			t.Errorf("expected: %v result: %v", testCase.expected, result)
+		}
+	}
+}
+
 func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys_Example1(t *testing.T) {
 	expected := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{
 		object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(

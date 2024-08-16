@@ -440,6 +440,88 @@ func ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(extendedSpatialIDs []str
 	return extendedSpatialIDToQuadkeyAndAltitudekey, nil
 }
 
+// ConvertExtendedSpatialIDsToSpatialIDs 拡張空間IDを空間IDへ変換する
+//
+// 引数 :
+//
+//	extendedSpatialID : 変換対象の拡張空間ID構造体
+//
+// 戻り値 :
+//
+//	変換後の空間IDのスライス
+//
+// 補足事項：
+//
+//	入力拡張空間IDの垂直精度と水平精度の間で差がある場合、差が1増えるごとに4のべき乗で出力空間ID数が増加する。
+//	そのため、精度差が大きすぎると変換後の空間ID数は大幅に増大する。
+//	動作環境によってはメモリ不足となる可能性があるため、注意すること。
+//
+//	変換利用例：
+//	1. 水平精度の方が低い場合
+//	入力
+//	ExtendedSpatialID{
+//		hZoom: 6,
+//		x:     24,
+//		y:     49,
+//		vZoom: 7,
+//		z:     0,
+//	}
+//
+//	出力
+//	[]string{"7/0/48/98", "7/0/48/99", "7/0/49/98", "7/0/49/99"}
+//
+//	2. 垂直精度の方が低い場合
+//	入力
+//	ExtendedSpatialID{
+//		hZoom: 7,
+//		x:     24,
+//		y:     53,
+//		vZoom: 6,
+//		z:     24,
+//	}
+//
+//	出力
+//	[]string{"7/48/24/53", "7/49/24/53"}
+//
+//	3. 水平精度、垂直精度に差がない場合
+//	入力
+//	ExtendedSpatialID{
+//		hZoom: 6,
+//		x:     24,
+//		y:     49,
+//		vZoom: 6,
+//		z:     0,
+//	}
+//
+//	出力
+//	[]string{"6/0/24/49"}
+func ConvertExtendedSpatialIDsToSpatialIDs(extendedSpatialID *object.ExtendedSpatialID) []string {
+	spatialIds := []string{}
+	// 精度が高い方へズームレベルを上げる
+	switch {
+	case extendedSpatialID.HZoom() < extendedSpatialID.VZoom():
+		targetZoomLevel := extendedSpatialID.VZoom()
+		xMin, yMin, xMax, yMax := integrate.HorizontalZoomMinMax(extendedSpatialID.HZoom(), extendedSpatialID.X(), extendedSpatialID.Y(), targetZoomLevel)
+		for x := xMin; x <= xMax; x++ {
+			for y := yMin; y <= yMax; y++ {
+				spatialIds = append(spatialIds, fmt.Sprintf("%v/%v/%v/%v", targetZoomLevel, extendedSpatialID.Z(), x, y))
+			}
+		}
+	case extendedSpatialID.HZoom() > extendedSpatialID.VZoom():
+		targetZoomLevel := extendedSpatialID.HZoom()
+		verticalIds := integrate.VerticalZoom(extendedSpatialID.VZoom(), extendedSpatialID.Z(), targetZoomLevel)
+		for _, verticalId := range verticalIds {
+			// "z/f" + "x/y"
+			spatialIds = append(spatialIds, fmt.Sprintf("%v/%v/%v", verticalId, extendedSpatialID.X(), extendedSpatialID.Y()))
+		}
+	// ズームレベルが等しい場合は直接変換可
+	case extendedSpatialID.HZoom() == extendedSpatialID.VZoom():
+		spatialId := fmt.Sprintf("%v/%v/%v/%v", extendedSpatialID.HZoom(), extendedSpatialID.Z(), extendedSpatialID.X(), extendedSpatialID.Y())
+		spatialIds = append(spatialIds, spatialId)
+	}
+	return spatialIds
+}
+
 // ConvertTileXYZToExtendedSpatialIDs
 // TileXYZ形式から拡張空間ID形式へ変換する
 //
