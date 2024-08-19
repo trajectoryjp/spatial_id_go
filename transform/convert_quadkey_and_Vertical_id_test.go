@@ -396,6 +396,152 @@ func newExtendedSpatialID(t *testing.T, id string) *object.ExtendedSpatialID {
 	return extendedSpatialId
 }
 
+func TestConvertTileXYZToSpatialIDs(t *testing.T) {
+	type argSet struct {
+		tile          []*object.TileXYZ
+		zBaseExponent uint16
+		zBaseOffset   int64
+		outputVZoom   uint16
+	}
+	testCases := []struct {
+		expected []string
+		request  argSet
+	}{
+		{
+			// hZoom/z/x/y
+			[]string{"23/-2/85263/65423"},
+			argSet{
+				[]*object.TileXYZ{newTileXYZ(
+					t,
+					23,
+					85263,
+					65423,
+					23,
+					0,
+				)},
+				23,
+				8,
+				23,
+			},
+		},
+		{
+			[]string{"25/1/170526/130846", "25/1/170526/130847", "25/1/170527/130846", "25/1/170527/130847"},
+			argSet{
+				[]*object.TileXYZ{newTileXYZ(
+					t,
+					24,
+					85263,
+					65423,
+					25,
+					3,
+				)},
+				25,
+				2,
+				25,
+			},
+		},
+		{
+			[]string{"4/0/63/23", "4/1/63/23"},
+			argSet{
+				[]*object.TileXYZ{newTileXYZ(
+					t,
+					4,
+					63,
+					23,
+					3,
+					3,
+				)},
+				3,
+				2,
+				3,
+			},
+		},
+		{
+			[]string{"23/-2/85263/65423", "23/-1/85263/65423"},
+			argSet{
+				[]*object.TileXYZ{newTileXYZ(
+					t,
+					23,
+					85263,
+					65423,
+					23,
+					0,
+				)},
+				25,
+				7,
+				23,
+			},
+		},
+		{
+			[]string{"26/6/85263/65423", "26/7/85263/65423"},
+			argSet{
+				[]*object.TileXYZ{newTileXYZ(
+					t,
+					26,
+					85263,
+					65423,
+					26,
+					3,
+				)},
+				25,
+				-2,
+				26,
+			},
+		},
+		{
+			[]string{
+				"23/0/170526/130846",
+				"23/1/170526/130846",
+				"23/2/170526/130846",
+				"23/0/170526/130847",
+				"23/1/170526/130847",
+				"23/2/170526/130847",
+				"23/0/170527/130846",
+				"23/1/170527/130846",
+				"23/2/170527/130846",
+				"23/0/170527/130847",
+				"23/1/170527/130847",
+				"23/2/170527/130847",
+			},
+			argSet{
+				[]*object.TileXYZ{
+					newTileXYZ(
+						t,
+						22,
+						85263,
+						65423,
+						23,
+						0,
+					),
+					newTileXYZ(
+						t,
+						22,
+						85263,
+						65423,
+						23,
+						1,
+					)},
+				25,
+				-1,
+				23,
+			},
+		},
+	}
+	for _, testCase := range testCases {
+		result, err := ConvertTileXYZToSpatialIDs(testCase.request.tile, testCase.request.zBaseExponent, testCase.request.zBaseOffset, testCase.request.outputVZoom)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if assert.ElementsMatch(t, testCase.expected, result) == false {
+			// t.Error(result):
+			t.Errorf("expected: %v result: %v", testCase.expected, result)
+		} else {
+			t.Log("Success", result)
+		}
+	}
+
+}
+
 func TestConvertTileXYZToExtendedSpatialIDs(t *testing.T) {
 	type argSet struct {
 		tile          []*object.TileXYZ
@@ -650,7 +796,7 @@ func TestConvertExtendedSpatialIDsToSpatialIDs(t *testing.T) {
 		},
 	}
 	for _, testCase := range testCases {
-		result := ConvertExtendedSpatialIDsToSpatialIDs(testCase.id)
+		result := ConvertExtendedSpatialIDToSpatialIDs(testCase.id)
 		if !assert.ElementsMatch(t, testCase.expected, result) {
 			t.Errorf("expected: %v result: %v", testCase.expected, result)
 		}

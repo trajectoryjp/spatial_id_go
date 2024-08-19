@@ -440,7 +440,7 @@ func ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(extendedSpatialIDs []str
 	return extendedSpatialIDToQuadkeyAndAltitudekey, nil
 }
 
-// ConvertExtendedSpatialIDsToSpatialIDs 拡張空間IDを空間IDへ変換する
+// ConvertExtendedSpatialIDToSpatialIDs 拡張空間IDを空間IDへ変換する
 //
 // 引数 :
 //
@@ -495,7 +495,7 @@ func ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(extendedSpatialIDs []str
 //
 //	出力
 //	[]string{"6/0/24/49"}
-func ConvertExtendedSpatialIDsToSpatialIDs(extendedSpatialID *object.ExtendedSpatialID) []string {
+func ConvertExtendedSpatialIDToSpatialIDs(extendedSpatialID *object.ExtendedSpatialID) []string {
 	spatialIds := []string{}
 	// 精度が高い方へズームレベルを上げる
 	switch {
@@ -640,6 +640,53 @@ func ConvertTileXYZToExtendedSpatialIDs(request []*object.TileXYZ, zBaseExponent
 	}
 
 	return extendedSpatialIDs, nil
+}
+
+// ConvertTileXYZToSpatialIDs
+// TileXYZ形式から空間ID形式へ変換する
+// ConvertTileXYZToExtendedSpatialIDs と ConvertExtendedSpatialIDToSpatialIDs の組み合わせであるため、詳細はそちらを参照
+//
+// TileXYZのx,yは水平精度と垂直精度のうち高い方の空間IDのX,Yに変換される。
+// TileXYZのZから拡張空間ID垂直インデックス(f)へは高度変換が用いられ変化する。
+//
+// 引数 :
+//
+//	request : 変換対象のTileXYZ構造体のスライス
+//	zBaseExponent： zの高さが1mとなるズームレベル
+//	zBaseOffset： ズームレベルがzBaseExponentのとき高度0mにおけるvZoom
+//	outputVZoom : 拡張空間ID変換中の拡張空間IDの高さの精度指定。空間ID変換時、水平精度の方が高い場合この値は使われない。拡張空間IDの精度の閾値である 0 ～ 35 の整数値を指定可能。
+//
+// 戻り値 :
+//
+//	変換後の空間IDのスライス
+//
+// 戻り値(エラー) :
+//
+//	以下の条件に当てはまる場合、エラーインスタンスが返却される。
+//	 精度閾値超過(出力精度)：出力の水平方向精度、または高さ方向の精度に 0 ～ 35 の整数値以外が入力されていた場合。
+//	 z高度範囲外：変換前のzがその垂直ズームレベルにおける高度範囲外である場合。
+//	 拡張空間ID高度範囲外：拡張空間ID変換時の拡張空間ID高度がその垂直ズームレベルにおける高度範囲外である場合。
+//
+// 補足事項：
+//
+//	入力のoutputVZoomは次の2項目と関係しており、出力空間ID数に影響を与える
+//	1. TileXYZの垂直精度, zBaseExponent, zBaseOffset: 条件により拡張空間ID変換後の拡張空間ID数が増加する(詳しくは ConvertTileXYZToExtendedSpatialIDs の例を参照)
+//	2. TileXYZの水平精度の差: 差が1増えるごとに1で出力された拡張空間ID数の4のべき乗で出力空間ID数が増加する。
+//	そのため、これら2項目の値によっては変換後の空間ID数は大幅に増大する。
+//	動作環境によってはメモリ不足となる可能性があるため、注意すること。
+func ConvertTileXYZToSpatialIDs(request []*object.TileXYZ, zBaseExponent uint16, zBaseOffset int64, outputVZoom uint16) ([]string, error) {
+	var outputData []string
+	outputExtendedSpatialIds, err := ConvertTileXYZToExtendedSpatialIDs(
+		request, zBaseExponent, zBaseOffset, outputVZoom,
+	)
+	if err != nil {
+		return nil, err
+	}
+	for _, out := range outputExtendedSpatialIds {
+		spatialIds := ConvertExtendedSpatialIDToSpatialIDs(&out)
+		outputData = append(outputData, spatialIds...)
+	}
+	return outputData, nil
 }
 
 // ConvertAltitudeKeyToZ altitudekeyを(拡張)空間IDのz成分に高度変換する。
