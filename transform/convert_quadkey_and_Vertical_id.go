@@ -527,12 +527,12 @@ func ConvertExtendedSpatialIDToSpatialIDs(extendedSpatialID *object.ExtendedSpat
 //
 // TileXYZのx,yは同一の意味のまま拡張空間IDのX,Yに変換される。
 // このため出力の水平精度は入力のものが用いられる(ただし精度チェックは行われる)。
-// TileXYZのZから拡張空間ID垂直インデックス(f)へは高度変換が用いられ変化する。
+// TileXYZのzから拡張空間ID垂直インデックス(f)へは高度変換が用いられ変化する。
 // 引数 :
 //
 //	request : 変換対象のTileXYZ構造体のスライス
-//	zBaseExponent： zの高さが1mとなるズームレベル
-//	zBaseOffset： ズームレベルがzBaseExponentのとき高度0mにおけるvZoom
+//	zBaseExponent： TileXYZのzの高さが1mとなるズームレベル
+//	zBaseOffset： ズームレベルがzBaseExponentのとき高度0mにおけるTileXYZのz
 //	outputVZoom : 入力値が変換後の拡張空間IDの高さの精度となる。拡張空間IDの精度の閾値である 0 ～ 35 の整数値を指定可能。
 //
 // 戻り値 :
