@@ -528,7 +528,7 @@ func TestConvertTileXYZToSpatialIDs(t *testing.T) {
 		},
 	}
 	for _, testCase := range testCases {
-		result, err := ConvertTileXYZToSpatialIDs(testCase.request.tile, testCase.request.zBaseExponent, testCase.request.zBaseOffset, testCase.request.outputVZoom)
+		result, err := ConvertTileXYZsToSpatialIDs(testCase.request.tile, testCase.request.zBaseExponent, testCase.request.zBaseOffset, testCase.request.outputVZoom)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -682,7 +682,7 @@ func TestConvertTileXYZToExtendedSpatialIDs(t *testing.T) {
 			extendedSpatialId := newExtendedSpatialID(t, testCase.expected[i])
 			expectedData = append(expectedData, *extendedSpatialId)
 		}
-		result, err := ConvertTileXYZToExtendedSpatialIDs(testCase.request.tile, testCase.request.zBaseExponent, testCase.request.zBaseOffset, testCase.request.outputVZoom)
+		result, err := ConvertTileXYZsToExtendedSpatialIDs(testCase.request.tile, testCase.request.zBaseExponent, testCase.request.zBaseOffset, testCase.request.outputVZoom)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -757,7 +757,7 @@ func TestErrorConvertTileXYZToExtendedSpatialIDs(t *testing.T) {
 		},
 	}
 	for _, testCase := range testCases {
-		_, err := ConvertTileXYZToExtendedSpatialIDs(testCase.request.tile, testCase.request.zBaseExponent, testCase.request.zBaseOffset, testCase.request.outputVZoom)
+		_, err := ConvertTileXYZsToExtendedSpatialIDs(testCase.request.tile, testCase.request.zBaseExponent, testCase.request.zBaseOffset, testCase.request.outputVZoom)
 		if err == nil {
 			t.Fatal(err)
 		}

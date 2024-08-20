@@ -522,7 +522,7 @@ func ConvertExtendedSpatialIDToSpatialIDs(extendedSpatialID *object.ExtendedSpat
 	return spatialIds
 }
 
-// ConvertTileXYZToExtendedSpatialIDs
+// ConvertTileXYZsToExtendedSpatialIDs
 // TileXYZ形式から拡張空間ID形式へ変換する
 //
 // TileXYZのx,yは同一の意味のまま拡張空間IDのX,Yに変換される。
@@ -607,7 +607,7 @@ func ConvertExtendedSpatialIDToSpatialIDs(extendedSpatialID *object.ExtendedSpat
 //	outputVZoom 23
 //
 //	extendedSpatialIDs :["20/85263/65423/23/-2", "20/85263/65423/23/-1"]
-func ConvertTileXYZToExtendedSpatialIDs(request []*object.TileXYZ, zBaseExponent uint16, zBaseOffset int64, outputVZoom uint16) ([]object.ExtendedSpatialID, error) {
+func ConvertTileXYZsToExtendedSpatialIDs(request []*object.TileXYZ, zBaseExponent uint16, zBaseOffset int64, outputVZoom uint16) ([]object.ExtendedSpatialID, error) {
 
 	extendedSpatialIDsMap := make(map[int64]object.ExtendedSpatialID)
 	extendedSpatialIDs := []object.ExtendedSpatialID{}
@@ -642,9 +642,9 @@ func ConvertTileXYZToExtendedSpatialIDs(request []*object.TileXYZ, zBaseExponent
 	return extendedSpatialIDs, nil
 }
 
-// ConvertTileXYZToSpatialIDs
+// ConvertTileXYZsToSpatialIDs
 // TileXYZ形式から空間ID形式へ変換する
-// ConvertTileXYZToExtendedSpatialIDs と ConvertExtendedSpatialIDToSpatialIDs の組み合わせであるため、詳細はそちらを参照
+// ConvertTileXYZsToExtendedSpatialIDs と ConvertExtendedSpatialIDToSpatialIDs の組み合わせであるため、詳細はそちらを参照
 //
 // TileXYZのx,yは水平精度と垂直精度のうち高い方の空間IDのX,Yに変換される。
 // TileXYZのZから拡張空間ID垂直インデックス(f)へは高度変換が用いられ変化する。
@@ -654,7 +654,7 @@ func ConvertTileXYZToExtendedSpatialIDs(request []*object.TileXYZ, zBaseExponent
 //	request : 変換対象のTileXYZ構造体のスライス
 //	zBaseExponent： zの高さが1mとなるズームレベル
 //	zBaseOffset： ズームレベルがzBaseExponentのとき高度0mにおけるvZoom
-//	outputVZoom : 拡張空間ID変換中の拡張空間IDの高さの精度指定。空間ID変換時、水平精度の方が高い場合この値は使われない。拡張空間IDの精度の閾値である 0 ～ 35 の整数値を指定可能。
+//	extendedSpatialIdVZoom : 拡張空間ID変換中の拡張空間IDの高さの精度指定。空間ID変換時、水平精度の方が高い場合この値は使われない。拡張空間IDの精度の閾値である 0 ～ 35 の整数値を指定可能。
 //
 // 戻り値 :
 //
@@ -670,14 +670,14 @@ func ConvertTileXYZToExtendedSpatialIDs(request []*object.TileXYZ, zBaseExponent
 // 補足事項：
 //
 //	入力のoutputVZoomは次の2項目と関係しており、出力空間ID数に影響を与える
-//	1. TileXYZの垂直精度, zBaseExponent, zBaseOffset: 条件により拡張空間ID変換後の拡張空間ID数が増加する(詳しくは ConvertTileXYZToExtendedSpatialIDs の例を参照)
+//	1. TileXYZの垂直精度, zBaseExponent, zBaseOffset: 条件により拡張空間ID変換後の拡張空間ID数が増加する(詳しくは ConvertTileXYZsToExtendedSpatialIDs の例を参照)
 //	2. TileXYZの水平精度の差: 差が1増えるごとに1で出力された拡張空間ID数の4のべき乗で出力空間ID数が増加する。
 //	そのため、これら2項目の値によっては変換後の空間ID数は大幅に増大する。
 //	動作環境によってはメモリ不足となる可能性があるため、注意すること。
-func ConvertTileXYZToSpatialIDs(request []*object.TileXYZ, zBaseExponent uint16, zBaseOffset int64, outputVZoom uint16) ([]string, error) {
+func ConvertTileXYZsToSpatialIDs(request []*object.TileXYZ, zBaseExponent uint16, zBaseOffset int64, extendedSpatialIdVZoom uint16) ([]string, error) {
 	var outputData []string
-	outputExtendedSpatialIds, err := ConvertTileXYZToExtendedSpatialIDs(
-		request, zBaseExponent, zBaseOffset, outputVZoom,
+	outputExtendedSpatialIds, err := ConvertTileXYZsToExtendedSpatialIDs(
+		request, zBaseExponent, zBaseOffset, extendedSpatialIdVZoom,
 	)
 	if err != nil {
 		return nil, err
