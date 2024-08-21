@@ -1,6 +1,7 @@
 package detector
 
 import (
+	"github.com/trajectoryjp/multidimensional-radix-tree/src/tree"
 	"reflect"
 	"testing"
 )
@@ -497,6 +498,36 @@ func TestCheckSpatialIdsArrayOverlap04(t *testing.T) {
 		// 戻り値のエラーインスタンスが期待値と異なる場合Errorをログに出力
 		t.Errorf("error - 期待値：%s, 取得値：%s\n", expectError, resultErr.Error())
 	}
+
+	t.Log("テスト終了")
+}
+
+// TestPanicCheckSpatialIdsArrayOverlapWithCache 空間ID列の重複確認関数 バイナリツリー次元不正
+//
+// 試験詳細：
+// + 試験データ
+//   - パターン1：
+//     比較対象の空間ID列：2DTable(){"13/7274/3225"}, {"16/0/58198/25804"}
+//
+// + 確認内容
+//   - 入力値からpanic発生を取得できること
+func TestPanicCheckSpatialIdsArrayOverlapWithCache(t *testing.T) {
+	defer func() {
+		// panicが発生しなかった場合Errorをログに出力
+		if err := recover(); err == nil {
+			t.Errorf("error - 期待値：(panic()), 取得値：nil\n")
+		} else {
+			t.Logf("success paniced: %v", err)
+		}
+	}()
+	//入力値
+	spatialIds1 := tree.CreateTree(tree.Create2DTable())
+	// "13/7274/3225" (Appendでpanicしないよう、2Dデータを作成)
+	spatialIds1.Append(tree.Indexs{0, 7274, 3225}, tree.ZoomSetLevel(13), "2d value")
+	spatialIds2 := []string{"16/0/58198/25803"}
+
+	// panic生成
+	_, _ = CheckSpatialIdsArrayOverlapWithCache(spatialIds1, spatialIds2)
 
 	t.Log("テスト終了")
 }
