@@ -24,7 +24,7 @@
 
 3Dタイルキー空間でボクセルデータを扱っている場合、`transform`パッケージの関数を用いて(拡張)空間IDへ変換することが可能
 
-以下のコードブロックの全文は[examples/convertTileXYZToSpatialId](../examples/convertTileXYZToSpatialId/main.go)で実行可能
+以下のコードブロックの全文は`ExampleConvertTileXYZsToSpatialIDs`([transform/convert_quadkey_and_Vertical_id_test.go](../transform/convert_quadkey_and_Vertical_id_test.go))で実行可能
 
 次のような3Dタイルキー空間データがある時を考える
 

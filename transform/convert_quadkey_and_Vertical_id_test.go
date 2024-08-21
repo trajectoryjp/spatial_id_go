@@ -2,6 +2,7 @@
 package transform
 
 import (
+	"fmt"
 	"reflect"
 	"sort"
 	"strconv"
@@ -540,6 +541,64 @@ func TestConvertTileXYZsToSpatialIDs(t *testing.T) {
 		}
 	}
 
+}
+
+func ExampleConvertTileXYZsToSpatialIDs() {
+	inputData := []struct {
+		hZoom int64
+		x     int64
+		y     int64
+		vZoom int64
+		z     int64
+	}{
+		{
+			22,
+			85263,
+			65423,
+			23,
+			0,
+		},
+		{
+			22,
+			85263,
+			65423,
+			23,
+			1,
+		},
+	}
+	var inputXYZ []*object.TileXYZ
+	for _, in := range inputData {
+		tile, err := object.NewTileXYZ(in.hZoom, in.x, in.y, in.vZoom, in.z)
+		if err != nil {
+			panic(err)
+		}
+		inputXYZ = append(inputXYZ, tile)
+	}
+	outputData, err := ConvertTileXYZsToSpatialIDs(
+		inputXYZ,
+		25,
+		-1,
+		23,
+	)
+	if err != nil {
+		panic(err)
+	}
+	for _, out := range outputData {
+		fmt.Println(out)
+	}
+	// Unordered output:
+	// 23/0/170526/130846
+	// 23/0/170527/130846
+	// 23/0/170526/130847
+	// 23/0/170527/130847
+	// 23/1/170526/130846
+	// 23/1/170526/130847
+	// 23/1/170527/130846
+	// 23/1/170527/130847
+	// 23/2/170526/130846
+	// 23/2/170526/130847
+	// 23/2/170527/130846
+	// 23/2/170527/130847
 }
 
 func TestConvertTileXYZsToExtendedSpatialIDs(t *testing.T) {
