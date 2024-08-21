@@ -378,7 +378,7 @@ func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys_5(t *testing.T) {
 	}
 }
 
-func newTileXYZ(t *testing.T, hZoom uint16, x int64, y int64, vZoom uint16, z int64) *object.TileXYZ {
+func newTileXYZ(t *testing.T, hZoom int64, x int64, y int64, vZoom int64, z int64) *object.TileXYZ {
 	t.Helper()
 	xyz, err := object.NewTileXYZ(hZoom, x, y, vZoom, z)
 	if err != nil {
@@ -396,12 +396,12 @@ func newExtendedSpatialID(t *testing.T, id string) *object.ExtendedSpatialID {
 	return extendedSpatialId
 }
 
-func TestConvertTileXYZToSpatialIDs(t *testing.T) {
+func TestConvertTileXYZsToSpatialIDs(t *testing.T) {
 	type argSet struct {
 		tile          []*object.TileXYZ
-		zBaseExponent uint16
+		zBaseExponent int64
 		zBaseOffset   int64
-		outputVZoom   uint16
+		outputVZoom   int64
 	}
 	testCases := []struct {
 		expected []string
@@ -542,12 +542,12 @@ func TestConvertTileXYZToSpatialIDs(t *testing.T) {
 
 }
 
-func TestConvertTileXYZToExtendedSpatialIDs(t *testing.T) {
+func TestConvertTileXYZsToExtendedSpatialIDs(t *testing.T) {
 	type argSet struct {
 		tile          []*object.TileXYZ
-		zBaseExponent uint16
+		zBaseExponent int64
 		zBaseOffset   int64
-		outputVZoom   uint16
+		outputVZoom   int64
 	}
 	testCases := []struct {
 		expected []string
@@ -696,12 +696,12 @@ func TestConvertTileXYZToExtendedSpatialIDs(t *testing.T) {
 
 }
 
-func TestErrorConvertTileXYZToExtendedSpatialIDs(t *testing.T) {
+func TestErrorConvertTileXYZsToExtendedSpatialIDs(t *testing.T) {
 	type argSet struct {
 		tile          []*object.TileXYZ
-		zBaseExponent uint16
+		zBaseExponent int64
 		zBaseOffset   int64
-		outputVZoom   uint16
+		outputVZoom   int64
 	}
 	testCases := []struct {
 		expected string

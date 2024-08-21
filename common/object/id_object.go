@@ -517,13 +517,13 @@ func (qh QuadkeyAndVerticalID) MinHeight() float64 {
 // TileXYZ 水平方向TileKey(x,y)と垂直方向TileKey(z)の組み合わせを管理する構造体
 type TileXYZ struct {
 	// 水平精度 [0, consts.MaxTileXYZZoom]の整数
-	hZoom uint16
+	hZoom int64
 	// x 水平方向key x軸
 	x int64
 	// y 水平方向key y軸
 	y int64
 	// 垂直精度 [0, consts.MaxTileXYZZoom]の整数
-	vZoom uint16
+	vZoom int64
 	// 垂直方向key
 	z int64
 }
@@ -548,7 +548,7 @@ type TileXYZ struct {
 //
 //	以下の条件に当てはまる場合、エラーインスタンスが返却される。
 //	 ズームレベル不正：hZoomまたはvZoomに[0, consts.MaxTileXYZZoom]以外の数値が含まれていた場合
-func NewTileXYZ(hZoom uint16, x int64, y int64, vZoom uint16, z int64) (*TileXYZ, error) {
+func NewTileXYZ(hZoom int64, x int64, y int64, vZoom int64, z int64) (*TileXYZ, error) {
 	tile := &TileXYZ{}
 
 	// 水平精度設定
@@ -586,7 +586,7 @@ func NewTileXYZ(hZoom uint16, x int64, y int64, vZoom uint16, z int64) (*TileXYZ
 //
 //	以下の条件に当てはまる場合、エラーインスタンスが返却される。
 //	 ズームレベル不正：hZoomに[0, consts.MaxTileXYZZoom]以外の数値が含まれていた場合
-func (a *TileXYZ) SetHZoom(hZoom uint16) error {
+func (a *TileXYZ) SetHZoom(hZoom int64) error {
 	if !(hZoom <= consts.MaxTileXYZZoom) {
 		return errors.NewSpatialIdError(errors.InputValueErrorCode, fmt.Sprintf("hZoom must be in 0-%v, but got %v", consts.MaxTileXYZZoom, hZoom))
 	}
@@ -628,7 +628,7 @@ func (a *TileXYZ) SetY(y int64) {
 //
 //	以下の条件に当てはまる場合、エラーインスタンスが返却される。
 //	 ズームレベル不正：はvZoomに0-35以外の数値が含まれていた場合
-func (a *TileXYZ) SetVZoom(vZoom uint16) error {
+func (a *TileXYZ) SetVZoom(vZoom int64) error {
 	if !(vZoom <= consts.MaxTileXYZZoom) {
 		return errors.NewSpatialIdError(errors.InputValueErrorCode, fmt.Sprintf("vZoom must be in 0-%v, but got %v", consts.MaxTileXYZZoom, vZoom))
 	}
@@ -654,7 +654,7 @@ func (a *TileXYZ) SetZ(z int64) {
 // output 戻り値：
 //
 //	TileXYZオブジェクトに設定されているHZoomの値
-func (a *TileXYZ) HZoom() uint16 {
+func (a *TileXYZ) HZoom() int64 {
 	return a.hZoom
 }
 
@@ -687,7 +687,7 @@ func (a *TileXYZ) Y() int64 {
 // output 戻り値：
 //
 //	TileXYZオブジェクトに設定されているvZoomの値
-func (a *TileXYZ) VZoom() uint16 {
+func (a *TileXYZ) VZoom() int64 {
 	return a.vZoom
 }
 

@@ -609,16 +609,16 @@ func ConvertExtendedSpatialIDToSpatialIDs(extendedSpatialID *object.ExtendedSpat
 //	outputVZoom 23
 //
 //	extendedSpatialIDs :["20/85263/65423/23/-2", "20/85263/65423/23/-1"]
-func ConvertTileXYZsToExtendedSpatialIDs(request []*object.TileXYZ, zBaseExponent uint16, zBaseOffset int64, outputVZoom uint16) ([]object.ExtendedSpatialID, error) {
+func ConvertTileXYZsToExtendedSpatialIDs(request []*object.TileXYZ, zBaseExponent int64, zBaseOffset int64, outputVZoom int64) ([]object.ExtendedSpatialID, error) {
 
 	extendedSpatialIDsMap := make(map[int64]object.ExtendedSpatialID)
 
 	for _, r := range request {
-		if !extendedSpatialIDCheckZoom(int64(r.HZoom()), int64(outputVZoom)) {
+		if !extendedSpatialIDCheckZoom(r.HZoom(), outputVZoom) {
 			return nil, errors.NewSpatialIdError(errors.InputValueErrorCode, fmt.Sprintf("extendSpatialID zoom level must be in 0-35: hZoom=%v, vZoom=%v", r.HZoom(), outputVZoom))
 		}
 
-		zMin, zMax, err := ConvertAltitudeKeyToZ(r.Z(), int64(r.VZoom()), int64(outputVZoom), int64(zBaseExponent), zBaseOffset)
+		zMin, zMax, err := ConvertAltitudeKeyToZ(r.Z(), r.VZoom(), outputVZoom, zBaseExponent, zBaseOffset)
 		if err != nil {
 			return nil, err
 		}
@@ -632,7 +632,7 @@ func ConvertTileXYZsToExtendedSpatialIDs(request []*object.TileXYZ, zBaseExponen
 			extendedSpatialID.SetX(r.X())
 			extendedSpatialID.SetY(r.Y())
 			extendedSpatialID.SetZ(z)
-			extendedSpatialID.SetZoom(int64(r.HZoom()), int64(outputVZoom))
+			extendedSpatialID.SetZoom(r.HZoom(), outputVZoom)
 			extendedSpatialIDsMap[z] = *extendedSpatialID
 		}
 	}
@@ -676,7 +676,7 @@ func ConvertTileXYZsToExtendedSpatialIDs(request []*object.TileXYZ, zBaseExponen
 //	2. TileXYZの水平精度の差: 差が1増えるごとに1で出力された拡張空間ID数の4のべき乗で出力空間ID数が増加する。
 //	そのため、これら2項目の値によっては変換後の空間ID数は大幅に増大する。
 //	動作環境によってはメモリ不足となる可能性があるため、注意すること。
-func ConvertTileXYZsToSpatialIDs(request []*object.TileXYZ, zBaseExponent uint16, zBaseOffset int64, extendedSpatialIdVZoom uint16) ([]string, error) {
+func ConvertTileXYZsToSpatialIDs(request []*object.TileXYZ, zBaseExponent int64, zBaseOffset int64, extendedSpatialIdVZoom int64) ([]string, error) {
 	var outputData []string
 	outputExtendedSpatialIds, err := ConvertTileXYZsToExtendedSpatialIDs(
 		request, zBaseExponent, zBaseOffset, extendedSpatialIdVZoom,
