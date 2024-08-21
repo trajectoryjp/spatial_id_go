@@ -3,7 +3,7 @@ package transform
 
 import (
 	"fmt"
-	"golang.org/x/exp/maps"
+	"github.com/trajectoryjp/spatial_id_go/v4/common/consts"
 	"math"
 	"strconv"
 	"strings"
@@ -504,7 +504,8 @@ func ConvertExtendedSpatialIDToSpatialIDs(extendedSpatialID *object.ExtendedSpat
 		xMin, yMin, xMax, yMax := integrate.HorizontalZoomMinMax(extendedSpatialID.HZoom(), extendedSpatialID.X(), extendedSpatialID.Y(), targetZoomLevel)
 		for x := xMin; x <= xMax; x++ {
 			for y := yMin; y <= yMax; y++ {
-				spatialIds = append(spatialIds, fmt.Sprintf("%v/%v/%v/%v", targetZoomLevel, extendedSpatialID.Z(), x, y))
+				spatialId := strconv.FormatInt(targetZoomLevel, 10) + consts.SpatialIDDelimiter + strconv.FormatInt(extendedSpatialID.Z(), 10) + consts.SpatialIDDelimiter + strconv.FormatInt(x, 10) + consts.SpatialIDDelimiter + strconv.FormatInt(y, 10)
+				spatialIds = append(spatialIds, spatialId)
 			}
 		}
 	case extendedSpatialID.HZoom() > extendedSpatialID.VZoom():
@@ -512,11 +513,12 @@ func ConvertExtendedSpatialIDToSpatialIDs(extendedSpatialID *object.ExtendedSpat
 		verticalIds := integrate.VerticalZoom(extendedSpatialID.VZoom(), extendedSpatialID.Z(), targetZoomLevel)
 		for _, verticalId := range verticalIds {
 			// "z/f" + "x/y"
-			spatialIds = append(spatialIds, fmt.Sprintf("%v/%v/%v", verticalId, extendedSpatialID.X(), extendedSpatialID.Y()))
+			spatialId := verticalId + consts.SpatialIDDelimiter + strconv.FormatInt(extendedSpatialID.X(), 10) + consts.SpatialIDDelimiter + strconv.FormatInt(extendedSpatialID.Y(), 10)
+			spatialIds = append(spatialIds, spatialId)
 		}
 	// ズームレベルが等しい場合は直接変換可
 	case extendedSpatialID.HZoom() == extendedSpatialID.VZoom():
-		spatialId := fmt.Sprintf("%v/%v/%v/%v", extendedSpatialID.HZoom(), extendedSpatialID.Z(), extendedSpatialID.X(), extendedSpatialID.Y())
+		spatialId := strconv.FormatInt(extendedSpatialID.HZoom(), 10) + consts.SpatialIDDelimiter + strconv.FormatInt(extendedSpatialID.Z(), 10) + consts.SpatialIDDelimiter + strconv.FormatInt(extendedSpatialID.X(), 10) + consts.SpatialIDDelimiter + strconv.FormatInt(extendedSpatialID.Y(), 10)
 		spatialIds = append(spatialIds, spatialId)
 	}
 	return spatialIds
@@ -610,7 +612,6 @@ func ConvertExtendedSpatialIDToSpatialIDs(extendedSpatialID *object.ExtendedSpat
 func ConvertTileXYZsToExtendedSpatialIDs(request []*object.TileXYZ, zBaseExponent uint16, zBaseOffset int64, outputVZoom uint16) ([]object.ExtendedSpatialID, error) {
 
 	extendedSpatialIDsMap := make(map[int64]object.ExtendedSpatialID)
-	extendedSpatialIDs := []object.ExtendedSpatialID{}
 
 	for _, r := range request {
 		if !extendedSpatialIDCheckZoom(int64(r.HZoom()), int64(outputVZoom)) {
@@ -635,7 +636,8 @@ func ConvertTileXYZsToExtendedSpatialIDs(request []*object.TileXYZ, zBaseExponen
 			extendedSpatialIDsMap[z] = *extendedSpatialID
 		}
 	}
-	for _, extendedSpatialID := range maps.Values(extendedSpatialIDsMap) {
+	extendedSpatialIDs := make([]object.ExtendedSpatialID, 0, len(extendedSpatialIDsMap))
+	for _, extendedSpatialID := range extendedSpatialIDsMap {
 		extendedSpatialIDs = append(extendedSpatialIDs, extendedSpatialID)
 	}
 
@@ -707,7 +709,9 @@ func ConvertTileXYZsToSpatialIDs(request []*object.TileXYZ, zBaseExponent uint16
 //
 // 戻り値 :
 //
-//	変換後のaltitudekeyのスライス
+//	変換後のaltitudekeyの最小値と最大値
+//
+//	戻り値の順序:(最小altitudekey, 最大altitudekey)
 //
 // 戻り値(エラー) :
 //
@@ -734,7 +738,7 @@ func ConvertAltitudeKeyToZ(altitudekey int64, altitudekeyZoomLevel int64, output
 		internalMaxIndex = common.CalculateArithmeticShift(altitudekey+1, zoomDifference) - 1
 	}
 	// 3. Calculate outputMinIndex
-	outputZoomDifference := outputZoom - 25
+	outputZoomDifference := outputZoom - consts.ZOriginValue
 	outputMinIndex := common.CalculateArithmeticShift(internalMinIndex-zBaseOffset, outputZoomDifference)
 	outputMaxIndex := common.CalculateArithmeticShift(internalMaxIndex-zBaseOffset, outputZoomDifference)
 	if outputZoomDifference > 0 {
