@@ -4,21 +4,30 @@
 
 ## 変換関数一覧
 
-| 変換元         | 変換先         | 対応関数                                                   | 今後の変更予定など備考                                            |
-|-------------|-------------|--------------------------------------------------------|--------------------------------------------------------|
-| 空間ID        | 拡張空間ID      | なし                                                     | `ConvertSpatialIDsToQuadkeysAndVerticalIDs`が部分的に行う     |
-| 拡張空間ID      | 空間ID        | `ConvertExtendedSpatialIDToSpatialIDs`                 | `ConvertQuadkeysAndVerticalIDsToSpatialIDs`も部分的に行う     |
-| 拡張空間ID      | TileXYZ     | なし                                                     | `ConvertExtendedSpatialIDsToTileXYZ()`に実装予定            |
-| TileXYZ     | 拡張空間ID      | `ConvertTileXYZsToExtendedSpatialIDs()`                | 空間IDへの変換は`ConvertExtendedSpatialIDToSpatialIDs`と組み合わせる |
-| TileXYZ     | 空間ID        | `ConvertTileXYZsToSpatialIDs()`                        | TileXYZ->拡張空間ID変換と拡張空間ID->空間ID変換の組み合わせ                 |
-| 3Dtilekey   | 拡張空間ID      | なし                                                     | Pull Request#27のもの 実装**しない**                           |
-| 拡張空間ID      | 3Dtilekey   | `ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys()` | 廃止予定                                                   |
-| 一次元インデックス   | 一次元変換インデックス | `ConvertZToAltitudekey()`                              | `TransformIndexCoordinate()`にリネーム予定                    |
-| 一次元変換インデックス | 一次元インデックス   | `ConvertAltitudeKeyToZ()`                              | `InverseTransformIndexCoordinate()`にリネーム予定             |
-| Key         | 拡張空間ID      | `ConvertQuadkeysAndVerticalIDsToExtendedSpatialIDs()`  | 廃止予定                                                   |
-| Key         | 空間ID        | `ConvertQuadkeysAndVerticalIDsToSpatialIDs()`          | 廃止予定                                                   |
-| 空間ID        | Key         | `ConvertSpatialIDsToQuadkeysAndVerticalIDs()`          | 廃止予定                                                   |
-| 拡張空間ID      | Key         | `ConvertExtendedSpatialIDsToQuadkeysAndVerticalIDs()`  | 廃止予定                                                   |
+TileXYZ/空間ID/拡張空間ID相互変換における変換関数の対応関係:
+
+| 変換元(縦軸)\変換先(横軸) | 空間ID                                     | 拡張空間ID                                  | TileXYZ |
+|-----------------|------------------------------------------|-----------------------------------------|---------|
+| 空間ID            | -                                        | なし                                      | なし      |
+| 拡張空間ID          | `ConvertExtendedSpatialIDToSpatialIDs()` | -                                       | なし      |
+| TileXYZ         | `ConvertTileXYZsToSpatialIDs()`          | `ConvertTileXYZsToExtendedSpatialIDs()` | -       |
+
+高度(一次元インデックス)変換関数:
+
+| 変換元          | 変換先          | 対応関数                                     |
+|--------------|--------------|------------------------------------------|
+| 一次元インデックス    | 一次元変換先インデックス | `ConvertZToAltitudekey()`                |
+| 一次元変換先インデックス | 一次元インデックス    | `ConvertAltitudeKeyToZ()`                |
+
+廃止/非推奨予定の関数:
+
+| 変換元    | 変換先    | 関数                                                     |
+|--------|--------|--------------------------------------------------------|
+| 拡張空間ID | Key    | `ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys()` |
+| 拡張空間ID | Key    | `ConvertExtendedSpatialIDsToQuadkeysAndVerticalIDs()`  |
+| Key    | 拡張空間ID | `ConvertQuadkeysAndVerticalIDsToExtendedSpatialIDs()`  |
+| Key    | 空間ID   | `ConvertQuadkeysAndVerticalIDsToSpatialIDs()`          |
+| 空間ID   | Key    | `ConvertSpatialIDsToQuadkeysAndVerticalIDs()`          |
 
 ## TileXYZ -> 空間ID変換
 

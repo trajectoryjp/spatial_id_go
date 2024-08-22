@@ -442,6 +442,9 @@ func ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(extendedSpatialIDs []str
 
 // ConvertExtendedSpatialIDToSpatialIDs 拡張空間IDを空間IDへ変換する
 //
+// 拡張空間IDの水平精度と垂直精度は変換によって高い方に揃えられる。
+// このため、出力空間ID配列の長さは拡張空間IDの水平ズームレベルと垂直ズームレベルの差に依存する
+//
 // 引数 :
 //
 //	extendedSpatialID : 変換対象の拡張空間ID構造体
@@ -452,7 +455,8 @@ func ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(extendedSpatialIDs []str
 //
 // 補足事項：
 //
-//	入力拡張空間IDの垂直精度と水平精度の間で差がある場合、差が1増えるごとに4のべき乗で出力空間ID数が増加する。
+//	入力拡張空間IDの垂直精度と水平精度の間で差がある場合、差が1増えるごとに4(垂直精度の方が低い場合)
+//	または2(垂直精度の方が低い場合)のべき乗で出力空間ID数が増加する。
 //	そのため、精度差が大きすぎると変換後の空間ID数は大幅に増大する。
 //	動作環境によってはメモリ不足となる可能性があるため、注意すること。
 //
