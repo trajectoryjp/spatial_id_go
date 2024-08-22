@@ -1383,86 +1383,120 @@ func TestSpatialIDCheckZoom(t *testing.T) {
 
 }
 
-func TestConvertZToAltitudekey_1(t *testing.T) {
-	expected := []int64{400, 401, 402, 403}
-
-	result, error := ConvertZToAltitudekey(
-		100,
-		25,
-		27,
-		25,
-		0,
-	)
-	if error != nil {
-		t.Fatal(error)
+func TestConvertZToMinMaxAltitudekey_1(t *testing.T) {
+	type argSet struct {
+		inputIndex    int64
+		inputZoom     int64
+		outputZoom    int64
+		zBaseExponent int64
+		zBaseOffset   int64
+	}
+	testCases := []struct {
+		args        argSet
+		expectedMin int64
+		expectedMax int64
+	}{
+		{
+			argSet{
+				100,
+				25,
+				27,
+				25,
+				0,
+			},
+			400,
+			403,
+		},
+		{
+			argSet{
+				100,
+				25,
+				24,
+				25,
+				0,
+			},
+			50,
+			50,
+		},
+		{
+			argSet{
+				100,
+				25,
+				25,
+				25,
+				0,
+			},
+			100,
+			100,
+		},
+		{
+			argSet{
+				100,
+				25,
+				25,
+				25,
+				-47,
+			},
+			53,
+			53,
+		},
+		{
+			argSet{
+				28,
+				25,
+				14,
+				25,
+				2048000,
+			},
+			1000,
+			1000,
+		},
+		{
+			argSet{
+				100,
+				25,
+				24,
+				24,
+				0,
+			},
+			100,
+			100,
+		},
+		{
+			argSet{
+				100,
+				25,
+				27,
+				24,
+				0,
+			},
+			800,
+			807,
+		},
 	}
 
-	if !reflect.DeepEqual(result, expected) {
-		t.Fatal(result)
+	for _, testCase := range testCases {
+		resultMin, resultMax, err := ConvertZToMinMaxAltitudekey(
+			testCase.args.inputIndex,
+			testCase.args.inputZoom,
+			testCase.args.outputZoom,
+			testCase.args.zBaseExponent,
+			testCase.args.zBaseOffset,
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if resultMin != testCase.expectedMin || resultMax != testCase.expectedMax {
+			t.Errorf("expected=[%v, %v], result=[%v, %v], input=%+v", testCase.expectedMin, testCase.expectedMax, resultMin, resultMax, testCase.args)
+		}
 	}
 }
 
-func TestConvertZToAltitudekey_2(t *testing.T) {
-	expected := []int64{50}
-
-	result, error := ConvertZToAltitudekey(
-		100,
-		25,
-		24,
-		25,
-		0,
-	)
-	if error != nil {
-		t.Fatal(error)
-	}
-
-	if !reflect.DeepEqual(result, expected) {
-		t.Fatal(result)
-	}
-}
-
-func TestConvertZToAltitudekey_3(t *testing.T) {
-	expected := []int64{100}
-
-	result, error := ConvertZToAltitudekey(
-		100,
-		25,
-		25,
-		25,
-		0,
-	)
-	if error != nil {
-		t.Fatal(error)
-	}
-
-	if !reflect.DeepEqual(result, expected) {
-		t.Fatal(result)
-	}
-}
-
-func TestConvertZToAltitudekey_4(t *testing.T) {
-	expected := []int64{53}
-
-	result, error := ConvertZToAltitudekey(
-		100,
-		25,
-		25,
-		25,
-		-47,
-	)
-	if error != nil {
-		t.Fatal(error)
-	}
-
-	if !reflect.DeepEqual(result, expected) {
-		t.Fatal(result)
-	}
-}
-
-func TestConvertZToAltitudekey_5(t *testing.T) {
+func TestConvertZToMinMaxAltitudekey_2(t *testing.T) {
 	expectedError := errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset")
 
-	result, error := ConvertZToAltitudekey(
+	result, _, error := ConvertZToMinMaxAltitudekey(
 		100,
 		25,
 		21,
@@ -1474,10 +1508,10 @@ func TestConvertZToAltitudekey_5(t *testing.T) {
 	}
 }
 
-func TestConvertZToAltitudekey_6(t *testing.T) {
+func TestConvertZToMinMaxAltitudekey_3(t *testing.T) {
 	expectedError := errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset")
 
-	result, error := ConvertZToAltitudekey(
+	result, _, error := ConvertZToMinMaxAltitudekey(
 		100,
 		25,
 		25,
@@ -1486,63 +1520,6 @@ func TestConvertZToAltitudekey_6(t *testing.T) {
 	)
 	if error != expectedError {
 		t.Fatal(result, error)
-	}
-}
-
-func TestConvertZToAltitudekey_7(t *testing.T) {
-	expected := []int64{1000}
-
-	result, error := ConvertZToAltitudekey(
-		28,
-		25,
-		14,
-		25,
-		2048000,
-	)
-	if error != nil {
-		t.Fatal(error)
-	}
-
-	if !reflect.DeepEqual(result, expected) {
-		t.Fatal(result)
-	}
-}
-
-func TestConvertZToAltitudekey_8(t *testing.T) {
-	expected := []int64{100}
-
-	result, error := ConvertZToAltitudekey(
-		100,
-		25,
-		24,
-		24,
-		0,
-	)
-	if error != nil {
-		t.Fatal(error)
-	}
-
-	if !reflect.DeepEqual(result, expected) {
-		t.Fatal(result)
-	}
-}
-
-func TestConvertZToAltitudekey_9(t *testing.T) {
-	expected := []int64{800, 801, 802, 803, 804, 805, 806, 807}
-
-	result, error := ConvertZToAltitudekey(
-		100,
-		25,
-		27,
-		24,
-		0,
-	)
-	if error != nil {
-		t.Fatal(error)
-	}
-
-	if !reflect.DeepEqual(result, expected) {
-		t.Fatal(result)
 	}
 }
 

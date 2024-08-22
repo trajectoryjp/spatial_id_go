@@ -382,7 +382,6 @@ func ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(extendedSpatialIDs []str
 	duplicate := map[[2]int64]interface{}{}
 
 	for _, idString := range extendedSpatialIDs {
-		var altitudeKeys []int64
 		quadkeys := []int64{}
 
 		currentID, error := object.NewExtendedSpatialID(idString)
@@ -403,15 +402,15 @@ func ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(extendedSpatialIDs []str
 		}
 
 		// B. convert vertical IDs to fit Output Vertical Zoom Level
-		altitudeKeys, error = ConvertZToAltitudekey(currentID.Z(), currentID.VZoom(), outputAltitudekeyZoom, zBaseExponent, zBaseOffset)
-		if error != nil {
-			return nil, error
+		minAltitudeKey, maxAltitudeKey, err := ConvertZToMinMaxAltitudekey(currentID.Z(), currentID.VZoom(), outputAltitudekeyZoom, zBaseExponent, zBaseOffset)
+		if err != nil {
+			return nil, err
 		}
 
 		// 水平方向と垂直方向の組み合わせを作成する
 		idList := [][2]int64{}
 		for _, quadkey := range quadkeys {
-			for _, altitudeKey := range altitudeKeys {
+			for altitudeKey := minAltitudeKey; altitudeKey <= maxAltitudeKey; altitudeKey++ {
 				newID := [2]int64{quadkey, altitudeKey}
 				if _, ok := duplicate[newID]; ok {
 					continue
@@ -996,7 +995,7 @@ func convertVerticallIDToBit(vZoom int64, vIndex int64, outputZoom int64, maxHei
 
 }
 
-// ConvertZToAltitudekey (拡張)空間IDのz成分をaltitudekeyに高度変換する。
+// ConvertZToMinMaxAltitudekey (拡張)空間IDのz成分をaltitudekeyに高度変換する。
 //
 // 変換前と変換後の精度差によって出力されるaltitudekeyの個数は増減する。
 //
@@ -1021,21 +1020,16 @@ func convertVerticallIDToBit(vZoom int64, vIndex int64, outputZoom int64, maxHei
 //	以下の条件に当てはまる場合、エラーインスタンスが返却される。
 //	 入力インデックス不正       ：inputIndexにそのズームレベル(inputZoom)で存在しないインデックス値が入力されていた場合。
 //	 出力インデックス不正       ：出力altitudekeyが出力ズームレベル(outputZoom)で存在しないインデックス値になった場合。
-func ConvertZToAltitudekey(inputIndex int64, inputZoom int64, outputZoom int64, zBaseExponent int64, zBaseOffset int64) ([]int64, error) {
-
-	var (
-		outputIndexes []int64
-		error         error
-	)
+func ConvertZToMinMaxAltitudekey(inputIndex int64, inputZoom int64, outputZoom int64, zBaseExponent int64, zBaseOffset int64) (minAltitudeKey int64, maxAltitudeKey int64, err error) {
 
 	// determine the upper and lower index bounds to search for matches in height solution space
-	lowerBound, error := convertZToMinAltitudekey(inputIndex, inputZoom, outputZoom, zBaseExponent, zBaseOffset)
-	if error != nil {
-		return nil, error
+	lowerBound, err := convertZToMinAltitudekey(inputIndex, inputZoom, outputZoom, zBaseExponent, zBaseOffset)
+	if err != nil {
+		return 0, 0, err
 	}
-	upperBound, error := convertZToMinAltitudekey(inputIndex+1, inputZoom, outputZoom, zBaseExponent, zBaseOffset)
-	if error != nil {
-		return nil, error
+	upperBound, err := convertZToMinAltitudekey(inputIndex+1, inputZoom, outputZoom, zBaseExponent, zBaseOffset)
+	if err != nil {
+		return 0, 0, err
 	}
 
 	// Determine the vertical index/indices to return.
@@ -1043,15 +1037,14 @@ func ConvertZToAltitudekey(inputIndex int64, inputZoom int64, outputZoom int64, 
 	// mathematically the altitude associated with the lower bounds will always satisfy the solution set.
 	// b) cycle through indices from lowerBounds+1 to upperBounds with i to find any possible additional indexes
 	// that satisfy the solution set.
-	outputIndexes = append(outputIndexes, lowerBound)
-
-	for i := lowerBound + 1; i < upperBound; i++ {
-
-		outputIndexes = append(outputIndexes, int64(i))
+	// but only output (minimum key, maximum key) as (lowerBound, upperBound - 1)
+	minAltitudeKey = lowerBound
+	maxAltitudeKey = upperBound - 1
+	if minAltitudeKey > maxAltitudeKey {
+		return minAltitudeKey, minAltitudeKey, nil
+	} else {
+		return minAltitudeKey, maxAltitudeKey, nil
 	}
-
-	return outputIndexes, nil
-
 }
 
 func convertZToMinAltitudekey(inputIndex int64, inputZoom int64, outputZoom int64, zBaseExponent int64, zBaseOffset int64) (int64, error) {
