@@ -9,6 +9,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/trajectoryjp/spatial_id_go/v4/common/consts"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/trajectoryjp/spatial_id_go/v4/common/errors"
 	"github.com/trajectoryjp/spatial_id_go/v4/common/object"
@@ -775,7 +777,7 @@ func TestErrorConvertTileXYZsToExtendedSpatialIDs(t *testing.T) {
 					85263,
 					65423,
 					25,
-					(1<<zOriginValue)+1,
+					(1<<consts.ZOriginValue)+1,
 				)},
 				25,
 				8,
@@ -791,7 +793,7 @@ func TestErrorConvertTileXYZsToExtendedSpatialIDs(t *testing.T) {
 					85263,
 					65423,
 					25,
-					(1<<zOriginValue)-1,
+					(1<<consts.ZOriginValue)-1,
 				)},
 				25,
 				-1,
@@ -1741,7 +1743,7 @@ func TestConvertZToMinAltitudekey_11(t *testing.T) {
 	}
 }
 
-func TestConvertAltitudeKeyToZ(t *testing.T) {
+func TestConvertAltitudeKeyToMinMaxZ(t *testing.T) {
 	type args struct {
 		altitudekey          int64
 		altitudekeyZoomLevel int64
@@ -1811,16 +1813,16 @@ func TestConvertAltitudeKeyToZ(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotMinZ, gotMaxZ, err := ConvertAltitudeKeyToZ(tt.args.altitudekey, tt.args.altitudekeyZoomLevel, tt.args.outputZoomLevel, tt.args.zBaseExponent, tt.args.zBaseOffset)
+			gotMinZ, gotMaxZ, err := ConvertAltitudeKeyToMinMaxZ(tt.args.altitudekey, tt.args.altitudekeyZoomLevel, tt.args.outputZoomLevel, tt.args.zBaseExponent, tt.args.zBaseOffset)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("ConvertAltitudeKeyToZ() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("ConvertAltitudeKeyToMinMaxZ() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if gotMinZ != tt.minZ {
-				t.Errorf("ConvertAltitudeKeyToZ() gotMinZ = %v, minZ %v", gotMinZ, tt.minZ)
+				t.Errorf("ConvertAltitudeKeyToMinMaxZ() gotMinZ = %v, minZ %v", gotMinZ, tt.minZ)
 			}
 			if gotMaxZ != tt.maxZ {
-				t.Errorf("ConvertAltitudeKeyToZ() gotMaxZ = %v, maxZ %v", gotMaxZ, tt.maxZ)
+				t.Errorf("ConvertAltitudeKeyToMinMaxZ() gotMaxZ = %v, maxZ %v", gotMaxZ, tt.maxZ)
 			}
 		})
 	}

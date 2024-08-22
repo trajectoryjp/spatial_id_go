@@ -3,10 +3,11 @@ package transform
 
 import (
 	"fmt"
-	"github.com/trajectoryjp/spatial_id_go/v4/common/consts"
 	"math"
 	"strconv"
 	"strings"
+
+	"github.com/trajectoryjp/spatial_id_go/v4/common/consts"
 
 	"github.com/trajectoryjp/spatial_id_go/v4/common"
 	"github.com/trajectoryjp/spatial_id_go/v4/common/errors"
@@ -17,8 +18,7 @@ import (
 
 // 宣言
 var (
-	alt25              = math.Pow(2, 25)
-	zOriginValue int64 = 25
+	alt25 = math.Pow(2, 25)
 )
 
 // ConvertQuadkeysAndVerticalIDsToExtendedSpatialIDs 内部形式IDを拡張空間IDに変換する。
@@ -622,7 +622,7 @@ func ConvertTileXYZsToExtendedSpatialIDs(request []*object.TileXYZ, zBaseExponen
 			return nil, errors.NewSpatialIdError(errors.InputValueErrorCode, fmt.Sprintf("extendSpatialID zoom level must be in 0-35: hZoom=%v, vZoom=%v", r.HZoom(), outputVZoom))
 		}
 
-		zMin, zMax, err := ConvertAltitudeKeyToZ(r.Z(), r.VZoom(), outputVZoom, zBaseExponent, zBaseOffset)
+		zMin, zMax, err := ConvertAltitudeKeyToMinMaxZ(r.Z(), r.VZoom(), outputVZoom, zBaseExponent, zBaseOffset)
 		if err != nil {
 			return nil, err
 		}
@@ -695,7 +695,7 @@ func ConvertTileXYZsToSpatialIDs(request []*object.TileXYZ, zBaseExponent int64,
 	return outputData, nil
 }
 
-// ConvertAltitudeKeyToZ altitudekeyを(拡張)空間IDのz成分に高度変換する。
+// ConvertAltitudeKeyToMinMaxZ altitudekeyを(拡張)空間IDのz成分に高度変換する。
 //
 // 変換前と変換後の精度差によって出力されるaltitudekeyの個数は増減する。
 //
@@ -722,7 +722,7 @@ func ConvertTileXYZsToSpatialIDs(request []*object.TileXYZ, zBaseExponent int64,
 //	以下の条件に当てはまる場合、エラーインスタンスが返却される。
 //	 入力インデックス不正       ：inputIndexにそのズームレベル(inputZoom)で存在しないインデックス値が入力されていた場合。
 //	 出力インデックス不正       ：出力altitudekeyが出力ズームレベル(outputZoom)で存在しないインデックス値になった場合。
-func ConvertAltitudeKeyToZ(altitudekey int64, altitudekeyZoomLevel int64, outputZoom int64, zBaseExponent int64, zBaseOffset int64) (int64, int64, error) {
+func ConvertAltitudeKeyToMinMaxZ(altitudekey int64, altitudekeyZoomLevel int64, outputZoom int64, zBaseExponent int64, zBaseOffset int64) (int64, int64, error) {
 	// 1. check that the input index exists in the input system
 	inputResolution := common.CalculateArithmeticShift(1, altitudekeyZoomLevel)
 
@@ -1067,7 +1067,7 @@ func convertZToMinAltitudekey(inputIndex int64, inputZoom int64, outputZoom int6
 	}
 
 	// 2. Calculate outputIndex
-	outputIndex := common.CalculateArithmeticShift(inputIndex, -(inputZoom - zOriginValue))
+	outputIndex := common.CalculateArithmeticShift(inputIndex, -(inputZoom - consts.ZOriginValue))
 	outputIndex += zBaseOffset
 	outputIndex = common.CalculateArithmeticShift(outputIndex, (outputZoom - zBaseExponent))
 
