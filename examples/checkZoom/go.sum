@@ -1,7 +1,8 @@
-github.com/trajectoryjp/spatial_id_go/v2 v2.0.0 h1:AZkQkIrsOV6IYFPheoDkTiRYSdoARCw0HQe5cfhWci8=
-github.com/trajectoryjp/spatial_id_go/v2 v2.0.0/go.mod h1:XEDPqIuIatdNOE08aoZ+jQKf3YPMS57WA2pbrD/3GTE=
+github.com/trajectoryjp/spatial_id_go/v4 v4.0.0 h1:EV8B81DORXjQtLO59xYZw+ML6c+23PfhZd1e4DZdUdo=
+github.com/trajectoryjp/spatial_id_go/v4 v4.0.0/go.mod h1:Q5epEMx4BXEvPwe/8Ffc6RsHI6IPZYAPJVwgZhZi66k=
 github.com/wroge/wgs84 v1.1.7 h1:8WVUUrpjysYxrn0ssWX7z90SOUKCuHt9NQ5tg9ovjIY=
 github.com/wroge/wgs84 v1.1.7/go.mod h1:mc1F8ubW03DO4zaf/006cmhaiMlfvbKmqVAcPuAtsNA=
-golang.org/x/exp v0.0.0-20230321023759-10a507213a29 h1:ooxPy7fPvB4kwsA2h+iBNHkAbp/4JxTSwCmvdjEYmug=
-gonum.org/v1/gonum v0.13.0 h1:a0T3bh+7fhRyqeNbiC3qVHYmkiQgit3wnNan/2c0HMM=
-gonum.org/v1/gonum v0.13.0/go.mod h1:/WPYRckkfWrhWefxyYTfrTtQR0KH4iyHNuzxqXAKyAU=
+golang.org/x/exp v0.0.0-20231110203233-9a3e6036ecaa h1:FRnLl4eNAQl8hwxVVC17teOw8kdjVDVAiFMtgUdTSRQ=
+golang.org/x/exp v0.0.0-20231110203233-9a3e6036ecaa/go.mod h1:zk2irFbV9DP96SEBUUAy67IdHUaZuSnrz1n472HUCLE=
+gonum.org/v1/gonum v0.15.1 h1:FNy7N6OUZVUaWG9pTiD+jlhdQ3lMP+/LcTpJ6+a8sQ0=
+gonum.org/v1/gonum v0.15.1/go.mod h1:eZTZuRFrzu5pcyjN5wJhcIhnUdNijYxX1T2IcrOGY0o=
