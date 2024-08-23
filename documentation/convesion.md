@@ -17,7 +17,7 @@ TileXYZ/空間ID/拡張空間ID相互変換における変換関数の対応関�
 | 変換元          | 変換先          | 対応関数                            |
 |--------------|--------------|---------------------------------|
 | 一次元インデックス    | 一次元変換先インデックス | `ConvertZToMinMaxAltitudekey()` |
-| 一次元変換先インデックス | 一次元インデックス    | `ConvertAltitudeKeyToMinMaxZ()` |
+| 一次元変換先インデックス | 一次元インデックス    | `ConvertAltitudekeyToMinMaxZ()` |
 
 廃止/非推奨予定の関数:
 
@@ -146,7 +146,7 @@ request []*object.TileXYZ, zBaseExponent uint16, zBaseOffset int64, extendedSpat
 TileXYZ空間のボクセルを拡張空間IDに変換する
 
 変換時、`TileXYZ.x`,`TileXYZ.y`は元の値が利用されるのみである  
-しかし`TileXYZ.z`は一次元逆変換(`ConvertAltitudeKeyToMinMaxZ()`)によって元の値に近い垂直方向拡張空間インデックスに変換される
+しかし`TileXYZ.z`は一次元逆変換(`ConvertAltitudekeyToMinMaxZ()`)によって元の値に近い垂直方向拡張空間インデックスに変換される
 
 これは`TileXYZ.z`と拡張空間ID垂直インデックスの間ではボクセルのインデックス付番や0番の位置の基準を変更されているためである
 

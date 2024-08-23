@@ -621,7 +621,7 @@ func ConvertTileXYZsToExtendedSpatialIDs(request []*object.TileXYZ, zBaseExponen
 			return nil, errors.NewSpatialIdError(errors.InputValueErrorCode, fmt.Sprintf("extendSpatialID zoom level must be in 0-35: hZoom=%v, vZoom=%v", r.HZoom(), outputVZoom))
 		}
 
-		zMin, zMax, err := ConvertAltitudeKeyToMinMaxZ(r.Z(), r.VZoom(), outputVZoom, zBaseExponent, zBaseOffset)
+		zMin, zMax, err := ConvertAltitudekeyToMinMaxZ(r.Z(), r.VZoom(), outputVZoom, zBaseExponent, zBaseOffset)
 		if err != nil {
 			return nil, err
 		}
@@ -694,7 +694,7 @@ func ConvertTileXYZsToSpatialIDs(request []*object.TileXYZ, zBaseExponent int64,
 	return outputData, nil
 }
 
-// ConvertAltitudeKeyToMinMaxZ altitudekeyを(拡張)空間IDのz成分に高度変換する。
+// ConvertAltitudekeyToMinMaxZ altitudekeyを(拡張)空間IDのz成分に高度変換する。
 //
 // 変換前と変換後の精度差によって出力されるaltitudekeyの個数は増減する。
 //
@@ -721,7 +721,7 @@ func ConvertTileXYZsToSpatialIDs(request []*object.TileXYZ, zBaseExponent int64,
 //	以下の条件に当てはまる場合、エラーインスタンスが返却される。
 //	 入力インデックス不正       ：inputIndexにそのズームレベル(inputZoom)で存在しないインデックス値が入力されていた場合。
 //	 出力インデックス不正       ：出力altitudekeyが出力ズームレベル(outputZoom)で存在しないインデックス値になった場合。
-func ConvertAltitudeKeyToMinMaxZ(altitudekey int64, altitudekeyZoomLevel int64, outputZoom int64, zBaseExponent int64, zBaseOffset int64) (int64, int64, error) {
+func ConvertAltitudekeyToMinMaxZ(altitudekey int64, altitudekeyZoomLevel int64, outputZoom int64, zBaseExponent int64, zBaseOffset int64) (int64, int64, error) {
 	// 1. check that the input index exists in the input system
 	inputResolution := common.CalculateArithmeticShift(1, altitudekeyZoomLevel)
 
