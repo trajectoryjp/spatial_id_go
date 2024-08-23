@@ -1383,117 +1383,84 @@ func TestSpatialIDCheckZoom(t *testing.T) {
 
 }
 
-func TestConvertZToMinMaxAltitudekey_1(t *testing.T) {
-	type argSet struct {
+type argSetForConvertZToMinMaxAltitudekey struct {
 		inputIndex    int64
 		inputZoom     int64
 		outputZoom    int64
 		zBaseExponent int64
 		zBaseOffset   int64
 	}
-	testCases := []struct {
-		args        argSet
-		expectedMin int64
-		expectedMax int64
-	}{
-		{
-			argSet{
+
+func assertConvertZToMinMaxAltitudekey(t *testing.T, expectedMin int64, expectedMax int64, testInput argSetForConvertZToMinMaxAltitudekey) {
+	resultMin, resultMax, err := ConvertZToMinMaxAltitudekey(
+		testInput.inputIndex,
+		testInput.inputZoom,
+		testInput.outputZoom,
+		testInput.zBaseExponent,
+		testInput.zBaseOffset,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if resultMin != expectedMin || resultMax != expectedMax {
+		t.Errorf("expected=[%v, %v], result=[%v, %v], input=%+v", expectedMin, expectedMax, resultMin, resultMax, testInput)
+	}
+}
+
+func TestConvertZToMinMaxAltitudekey_1(t *testing.T) {
+	var expectedMin int64 = 400
+	var expectedMax int64 = 403
+	args := argSetForConvertZToMinMaxAltitudekey{
 				100,
 				25,
 				27,
 				25,
 				0,
-			},
-			400,
-			403,
-		},
-		{
-			argSet{
+	}
+	assertConvertZToMinMaxAltitudekey(t, expectedMin, expectedMax, args)
+}
+
+func TestConvertZToMinMaxAltitudekey_2(t *testing.T) {
+	var expectedMin int64 = 50
+	expectedMax := expectedMin
+	args := argSetForConvertZToMinMaxAltitudekey{
 				100,
 				25,
 				24,
 				25,
 				0,
-			},
-			50,
-			50,
-		},
-		{
-			argSet{
+	}
+	assertConvertZToMinMaxAltitudekey(t, expectedMin, expectedMax, args)
+}
+
+func TestConvertZToMinMaxAltitudekey_3(t *testing.T) {
+	var expectedMin int64 = 100
+	expectedMax := expectedMin
+	args := argSetForConvertZToMinMaxAltitudekey{
 				100,
 				25,
 				25,
 				25,
 				0,
-			},
-			100,
-			100,
-		},
-		{
-			argSet{
+	}
+	assertConvertZToMinMaxAltitudekey(t, expectedMin, expectedMax, args)
+}
+
+func TestConvertZToMinMaxAltitudekey_4(t *testing.T) {
+	var expectedMin int64 = 53
+	expectedMax := expectedMin
+	args := argSetForConvertZToMinMaxAltitudekey{
 				100,
 				25,
 				25,
 				25,
 				-47,
-			},
-			53,
-			53,
-		},
-		{
-			argSet{
-				28,
-				25,
-				14,
-				25,
-				2048000,
-			},
-			1000,
-			1000,
-		},
-		{
-			argSet{
-				100,
-				25,
-				24,
-				24,
-				0,
-			},
-			100,
-			100,
-		},
-		{
-			argSet{
-				100,
-				25,
-				27,
-				24,
-				0,
-			},
-			800,
-			807,
-		},
 	}
-
-	for _, testCase := range testCases {
-		resultMin, resultMax, err := ConvertZToMinMaxAltitudekey(
-			testCase.args.inputIndex,
-			testCase.args.inputZoom,
-			testCase.args.outputZoom,
-			testCase.args.zBaseExponent,
-			testCase.args.zBaseOffset,
-		)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if resultMin != testCase.expectedMin || resultMax != testCase.expectedMax {
-			t.Errorf("expected=[%v, %v], result=[%v, %v], input=%+v", testCase.expectedMin, testCase.expectedMax, resultMin, resultMax, testCase.args)
-		}
-	}
+	assertConvertZToMinMaxAltitudekey(t, expectedMin, expectedMax, args)
 }
 
-func TestConvertZToMinMaxAltitudekey_2(t *testing.T) {
+func TestConvertZToMinMaxAltitudekey_5(t *testing.T) {
 	expectedError := errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset")
 
 	result, _, error := ConvertZToMinMaxAltitudekey(
@@ -1508,7 +1475,7 @@ func TestConvertZToMinMaxAltitudekey_2(t *testing.T) {
 	}
 }
 
-func TestConvertZToMinMaxAltitudekey_3(t *testing.T) {
+func TestConvertZToMinMaxAltitudekey_6(t *testing.T) {
 	expectedError := errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset")
 
 	result, _, error := ConvertZToMinMaxAltitudekey(
@@ -1521,6 +1488,45 @@ func TestConvertZToMinMaxAltitudekey_3(t *testing.T) {
 	if error != expectedError {
 		t.Fatal(result, error)
 	}
+}
+
+func TestConvertZToMinMaxAltitudekey_7(t *testing.T) {
+	var expectedMin int64 = 1000
+	expectedMax := expectedMin
+	args := argSetForConvertZToMinMaxAltitudekey{
+		28,
+		25,
+		14,
+		25,
+		2048000,
+	}
+	assertConvertZToMinMaxAltitudekey(t, expectedMin, expectedMax, args)
+}
+
+func TestConvertZToMinMaxAltitudekey_8(t *testing.T) {
+	var expectedMin int64 = 100
+	expectedMax := expectedMin
+	args := argSetForConvertZToMinMaxAltitudekey{
+		100,
+		25,
+		24,
+		24,
+		0,
+	}
+	assertConvertZToMinMaxAltitudekey(t, expectedMin, expectedMax, args)
+}
+
+func TestConvertZToMinMaxAltitudekey_9(t *testing.T) {
+	var expectedMin int64 = 800
+	var expectedMax int64 = 807
+	args := argSetForConvertZToMinMaxAltitudekey{
+		100,
+		25,
+		27,
+		24,
+		0,
+	}
+	assertConvertZToMinMaxAltitudekey(t, expectedMin, expectedMax, args)
 }
 
 func TestConvertZToMinAltitudekey_1(t *testing.T) {
