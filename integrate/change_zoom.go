@@ -214,6 +214,28 @@ func HorizontalZoom(
 	// 変換後の拡張空間ID格納用のスライス
 	horizontalIDs := []string{}
 
+	minXparam, minYparam, maxXparam, maxYparam := HorizontalZoomMinMax(inputZoom, xIndex, yIndex, outputZoom)
+
+	// 変換後の拡張空間IDを定義
+	for y := minYparam; y <= maxYparam; y++ {
+		for x := minXparam; x <= maxXparam; x++ {
+			horizontalIDs = append(
+				horizontalIDs,
+				strconv.FormatInt(outputZoom, 10)+
+					"/"+strconv.FormatInt(x, 10)+
+					"/"+strconv.FormatInt(y, 10))
+		}
+	}
+	return horizontalIDs
+}
+
+// HorizontalZoomMinMax 拡張空間IDの水平方向の精度変換関数
+//
+// HorizontalZoom() の返却値が最小x,yインデックスと最大x,yインデックスになったもの
+// 詳細は HorizontalZoom のドキュメントを参照
+//
+// 戻り値の順序:(最小xインデックス, 最小yインデックス, 最大xインデックス, 最大yインデックス)
+func HorizontalZoomMinMax(inputZoom int64, xIndex int64, yIndex int64, outputZoom int64) (int64, int64, int64, int64) {
 	// 精度の差異を取得
 	hZoomDiff := outputZoom - inputZoom
 
@@ -248,18 +270,7 @@ func HorizontalZoom(
 		maxXparam = minXparam
 		maxYparam = minYparam
 	}
-
-	// 変換後の拡張空間IDを定義
-	for y := minYparam; y <= maxYparam; y++ {
-		for x := minXparam; x <= maxXparam; x++ {
-			horizontalIDs = append(
-				horizontalIDs,
-				strconv.FormatInt(outputZoom, 10)+
-					"/"+strconv.FormatInt(x, 10)+
-					"/"+strconv.FormatInt(y, 10))
-		}
-	}
-	return horizontalIDs
+	return minXparam, minYparam, maxXparam, maxYparam
 }
 
 // VerticalZoom 拡張空間IDの垂直方向の精度変換関数

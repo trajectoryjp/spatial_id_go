@@ -2,12 +2,16 @@
 package transform
 
 import (
-	"github.com/trajectoryjp/spatial_id_go/v4/common/consts"
+	"fmt"
 	"reflect"
 	"sort"
 	"strconv"
+	"strings"
 	"testing"
 
+	"github.com/trajectoryjp/spatial_id_go/v4/common/consts"
+
+	"github.com/stretchr/testify/assert"
 	"github.com/trajectoryjp/spatial_id_go/v4/common/errors"
 	"github.com/trajectoryjp/spatial_id_go/v4/common/object"
 )
@@ -374,6 +378,489 @@ func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys_5(t *testing.T) {
 
 	if !reflect.DeepEqual(result, expected) {
 		t.Fatal(result)
+	}
+}
+
+func newTileXYZ(t *testing.T, hZoom int64, x int64, y int64, vZoom int64, z int64) *object.TileXYZ {
+	t.Helper()
+	xyz, err := object.NewTileXYZ(hZoom, x, y, vZoom, z)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return xyz
+}
+
+func newExtendedSpatialID(t *testing.T, id string) *object.ExtendedSpatialID {
+	t.Helper()
+	extendedSpatialId, err := object.NewExtendedSpatialID(id)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return extendedSpatialId
+}
+
+func TestConvertTileXYZsToSpatialIDs(t *testing.T) {
+	type argSet struct {
+		tile          []*object.TileXYZ
+		zBaseExponent int64
+		zBaseOffset   int64
+		outputVZoom   int64
+	}
+	testCases := []struct {
+		expected []string
+		request  argSet
+	}{
+		{
+			// z/f/x/y
+			[]string{"23/-2/85263/65423"},
+			argSet{
+				[]*object.TileXYZ{newTileXYZ(
+					t,
+					23,
+					85263,
+					65423,
+					23,
+					0,
+				)},
+				23,
+				8,
+				23,
+			},
+		},
+		{
+			[]string{"25/1/170526/130846", "25/1/170526/130847", "25/1/170527/130846", "25/1/170527/130847"},
+			argSet{
+				[]*object.TileXYZ{newTileXYZ(
+					t,
+					24,
+					85263,
+					65423,
+					25,
+					3,
+				)},
+				25,
+				2,
+				25,
+			},
+		},
+		{
+			[]string{"4/0/63/23", "4/1/63/23"},
+			argSet{
+				[]*object.TileXYZ{newTileXYZ(
+					t,
+					4,
+					63,
+					23,
+					3,
+					3,
+				)},
+				3,
+				2,
+				3,
+			},
+		},
+		{
+			[]string{"23/-2/85263/65423", "23/-1/85263/65423"},
+			argSet{
+				[]*object.TileXYZ{newTileXYZ(
+					t,
+					23,
+					85263,
+					65423,
+					23,
+					0,
+				)},
+				25,
+				7,
+				23,
+			},
+		},
+		{
+			[]string{"26/6/85263/65423", "26/7/85263/65423"},
+			argSet{
+				[]*object.TileXYZ{newTileXYZ(
+					t,
+					26,
+					85263,
+					65423,
+					26,
+					3,
+				)},
+				25,
+				-2,
+				26,
+			},
+		},
+		{
+			[]string{
+				"23/0/170526/130846",
+				"23/1/170526/130846",
+				"23/2/170526/130846",
+				"23/0/170526/130847",
+				"23/1/170526/130847",
+				"23/2/170526/130847",
+				"23/0/170527/130846",
+				"23/1/170527/130846",
+				"23/2/170527/130846",
+				"23/0/170527/130847",
+				"23/1/170527/130847",
+				"23/2/170527/130847",
+			},
+			argSet{
+				[]*object.TileXYZ{
+					newTileXYZ(
+						t,
+						22,
+						85263,
+						65423,
+						23,
+						0,
+					),
+					newTileXYZ(
+						t,
+						22,
+						85263,
+						65423,
+						23,
+						1,
+					)},
+				25,
+				-1,
+				23,
+			},
+		},
+	}
+	for _, testCase := range testCases {
+		result, err := ConvertTileXYZsToSpatialIDs(testCase.request.tile, testCase.request.zBaseExponent, testCase.request.zBaseOffset, testCase.request.outputVZoom)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if assert.ElementsMatch(t, testCase.expected, result) == false {
+			// t.Error(result):
+			t.Errorf("expected: %v result: %v", testCase.expected, result)
+		} else {
+			t.Log("Success", result)
+		}
+	}
+
+}
+
+func ExampleConvertTileXYZsToSpatialIDs() {
+	inputData := []struct {
+		hZoom int64
+		x     int64
+		y     int64
+		vZoom int64
+		z     int64
+	}{
+		{
+			22,
+			85263,
+			65423,
+			23,
+			0,
+		},
+		{
+			22,
+			85263,
+			65423,
+			23,
+			1,
+		},
+	}
+	var inputXYZ []*object.TileXYZ
+	for _, in := range inputData {
+		tile, err := object.NewTileXYZ(in.hZoom, in.x, in.y, in.vZoom, in.z)
+		if err != nil {
+			panic(err)
+		}
+		inputXYZ = append(inputXYZ, tile)
+	}
+	outputData, err := ConvertTileXYZsToSpatialIDs(
+		inputXYZ,
+		25,
+		-1,
+		23,
+	)
+	if err != nil {
+		panic(err)
+	}
+	for _, out := range outputData {
+		fmt.Println(out)
+	}
+	// Unordered output:
+	// 23/0/170526/130846
+	// 23/0/170527/130846
+	// 23/0/170526/130847
+	// 23/0/170527/130847
+	// 23/1/170526/130846
+	// 23/1/170526/130847
+	// 23/1/170527/130846
+	// 23/1/170527/130847
+	// 23/2/170526/130846
+	// 23/2/170526/130847
+	// 23/2/170527/130846
+	// 23/2/170527/130847
+}
+
+func TestConvertTileXYZsToExtendedSpatialIDs(t *testing.T) {
+	type argSet struct {
+		tile          []*object.TileXYZ
+		zBaseExponent int64
+		zBaseOffset   int64
+		outputVZoom   int64
+	}
+	testCases := []struct {
+		expected []string
+		request  argSet
+	}{
+		{
+			// hZoom/x/y/vZoom/z
+			[]string{"20/85263/65423/23/-2"},
+			argSet{
+				[]*object.TileXYZ{newTileXYZ(
+					t,
+					20,
+					85263,
+					65423,
+					23,
+					0,
+				)},
+				23,
+				8,
+				23,
+			},
+		},
+		{
+			[]string{"20/85263/65423/25/1"},
+			argSet{
+				[]*object.TileXYZ{newTileXYZ(
+					t,
+					20,
+					85263,
+					65423,
+					25,
+					3,
+				)},
+				25,
+				2,
+				25,
+			},
+		},
+		{
+			[]string{"20/85263/65423/3/0"},
+			argSet{
+				[]*object.TileXYZ{newTileXYZ(
+					t,
+					20,
+					85263,
+					65423,
+					3,
+					3,
+				)},
+				3,
+				2,
+				3,
+			},
+		},
+		{
+			[]string{"20/85263/65423/23/-2"},
+			argSet{
+				[]*object.TileXYZ{newTileXYZ(
+					t,
+					20,
+					85263,
+					65423,
+					23,
+					0,
+				)},
+				25,
+				8,
+				23,
+			},
+		},
+		{
+			[]string{"20/85263/65423/23/-2", "20/85263/65423/23/-1"},
+			argSet{
+				[]*object.TileXYZ{newTileXYZ(
+					t,
+					20,
+					85263,
+					65423,
+					23,
+					0,
+				)},
+				25,
+				7,
+				23,
+			},
+		},
+		{
+			[]string{"20/85263/65423/26/6", "20/85263/65423/26/7"},
+			argSet{
+				[]*object.TileXYZ{newTileXYZ(
+					t,
+					20,
+					85263,
+					65423,
+					26,
+					3,
+				)},
+				25,
+				-2,
+				26,
+			},
+		},
+		{
+			[]string{"20/85263/65423/23/0", "20/85263/65423/23/1", "20/85263/65423/23/2"},
+			argSet{
+				[]*object.TileXYZ{
+					newTileXYZ(
+						t,
+						20,
+						85263,
+						65423,
+						23,
+						0,
+					),
+					newTileXYZ(
+						t,
+						20,
+						85263,
+						65423,
+						23,
+						1,
+					)},
+				25,
+				-1,
+				23,
+			},
+		},
+	}
+	for _, testCase := range testCases {
+		expectedData := []object.ExtendedSpatialID{}
+		for i := 0; i < len(testCase.expected); i++ {
+			extendedSpatialId := newExtendedSpatialID(t, testCase.expected[i])
+			expectedData = append(expectedData, *extendedSpatialId)
+		}
+		result, err := ConvertTileXYZsToExtendedSpatialIDs(testCase.request.tile, testCase.request.zBaseExponent, testCase.request.zBaseOffset, testCase.request.outputVZoom)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if assert.ElementsMatch(t, expectedData, result) == false {
+			// t.Error(result):
+			t.Errorf("expected: %v result: %v", expectedData, result)
+		} else {
+			t.Log("Success", result)
+		}
+	}
+
+}
+
+func TestErrorConvertTileXYZsToExtendedSpatialIDs(t *testing.T) {
+	type argSet struct {
+		tile          []*object.TileXYZ
+		zBaseExponent int64
+		zBaseOffset   int64
+		outputVZoom   int64
+	}
+	testCases := []struct {
+		expected string
+		request  argSet
+	}{
+		{
+			"input index does not exist",
+			argSet{
+				[]*object.TileXYZ{newTileXYZ(
+					t,
+					20,
+					85263,
+					65423,
+					25,
+					(1<<consts.ZOriginValue)+1,
+				)},
+				25,
+				8,
+				25,
+			},
+		},
+		{
+			"output index does not exist",
+			argSet{
+				[]*object.TileXYZ{newTileXYZ(
+					t,
+					20,
+					85263,
+					65423,
+					25,
+					(1<<consts.ZOriginValue)-1,
+				)},
+				25,
+				-1,
+				25,
+			},
+		},
+		{
+			"extendSpatialID zoom level must be in 0-35",
+			argSet{
+				[]*object.TileXYZ{newTileXYZ(
+					t,
+					20,
+					85263,
+					65423,
+					23,
+					0,
+				)},
+				23,
+				8,
+				230,
+			},
+		},
+	}
+	for _, testCase := range testCases {
+		_, err := ConvertTileXYZsToExtendedSpatialIDs(testCase.request.tile, testCase.request.zBaseExponent, testCase.request.zBaseOffset, testCase.request.outputVZoom)
+		if err == nil {
+			t.Fatal(err)
+		}
+		if strings.Contains(err.Error(), testCase.expected) == false {
+			t.Errorf("expected: %v result: %v", testCase.expected, err)
+		} else {
+			t.Log("Success", err)
+		}
+	}
+}
+
+func TestConvertExtendedSpatialIDsToSpatialIDs(t *testing.T) {
+	testCases := []struct {
+		expected []string
+		id       *object.ExtendedSpatialID
+	}{
+		{
+			// 水平精度の方が低い場合
+			[]string{"7/0/48/106", "7/0/48/107", "7/0/49/106", "7/0/49/107"},
+			newExtendedSpatialID(t, "6/24/53/7/0"),
+		},
+		{
+			// 水平精度の方が低い場合
+			[]string{"7/0/48/98", "7/0/48/99", "7/0/49/98", "7/0/49/99"},
+			newExtendedSpatialID(t, "6/24/49/7/0"),
+		},
+		{
+			// 垂直精度の方が低い場合
+			[]string{"7/48/24/53", "7/49/24/53"},
+			newExtendedSpatialID(t, "7/24/53/6/24"),
+		},
+		{
+			// 水平精度、垂直精度に差がない場合
+			[]string{"6/0/24/49"},
+			newExtendedSpatialID(t, "6/24/49/6/0"),
+		},
+	}
+	for _, testCase := range testCases {
+		result := ConvertExtendedSpatialIDToSpatialIDs(testCase.id)
+		if !assert.ElementsMatch(t, testCase.expected, result) {
+			t.Errorf("expected: %v result: %v", testCase.expected, result)
+		}
 	}
 }
 
@@ -896,86 +1383,87 @@ func TestSpatialIDCheckZoom(t *testing.T) {
 
 }
 
-func TestConvertZToAltitudekey_1(t *testing.T) {
-	expected := []int64{400, 401, 402, 403}
+type argSetForConvertZToMinMaxAltitudekey struct {
+	inputIndex    int64
+	inputZoom     int64
+	outputZoom    int64
+	zBaseExponent int64
+	zBaseOffset   int64
+}
 
-	result, error := ConvertZToAltitudekey(
+func assertConvertZToMinMaxAltitudekey(t *testing.T, expectedMin int64, expectedMax int64, testInput argSetForConvertZToMinMaxAltitudekey) {
+	resultMin, resultMax, err := ConvertZToMinMaxAltitudekey(
+		testInput.inputIndex,
+		testInput.inputZoom,
+		testInput.outputZoom,
+		testInput.zBaseExponent,
+		testInput.zBaseOffset,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if resultMin != expectedMin || resultMax != expectedMax {
+		t.Errorf("expected=[%v, %v], result=[%v, %v], input=%+v", expectedMin, expectedMax, resultMin, resultMax, testInput)
+	}
+}
+
+func TestConvertZToMinMaxAltitudekey_1(t *testing.T) {
+	var expectedMin int64 = 400
+	var expectedMax int64 = 403
+	args := argSetForConvertZToMinMaxAltitudekey{
 		100,
 		25,
 		27,
 		25,
 		0,
-	)
-	if error != nil {
-		t.Fatal(error)
 	}
-
-	if !reflect.DeepEqual(result, expected) {
-		t.Fatal(result)
-	}
+	assertConvertZToMinMaxAltitudekey(t, expectedMin, expectedMax, args)
 }
 
-func TestConvertZToAltitudekey_2(t *testing.T) {
-	expected := []int64{50}
-
-	result, error := ConvertZToAltitudekey(
+func TestConvertZToMinMaxAltitudekey_2(t *testing.T) {
+	var expectedMin int64 = 50
+	expectedMax := expectedMin
+	args := argSetForConvertZToMinMaxAltitudekey{
 		100,
 		25,
 		24,
 		25,
 		0,
-	)
-	if error != nil {
-		t.Fatal(error)
 	}
-
-	if !reflect.DeepEqual(result, expected) {
-		t.Fatal(result)
-	}
+	assertConvertZToMinMaxAltitudekey(t, expectedMin, expectedMax, args)
 }
 
-func TestConvertZToAltitudekey_3(t *testing.T) {
-	expected := []int64{100}
-
-	result, error := ConvertZToAltitudekey(
+func TestConvertZToMinMaxAltitudekey_3(t *testing.T) {
+	var expectedMin int64 = 100
+	expectedMax := expectedMin
+	args := argSetForConvertZToMinMaxAltitudekey{
 		100,
 		25,
 		25,
 		25,
 		0,
-	)
-	if error != nil {
-		t.Fatal(error)
 	}
-
-	if !reflect.DeepEqual(result, expected) {
-		t.Fatal(result)
-	}
+	assertConvertZToMinMaxAltitudekey(t, expectedMin, expectedMax, args)
 }
 
-func TestConvertZToAltitudekey_4(t *testing.T) {
-	expected := []int64{53}
-
-	result, error := ConvertZToAltitudekey(
+func TestConvertZToMinMaxAltitudekey_4(t *testing.T) {
+	var expectedMin int64 = 53
+	expectedMax := expectedMin
+	args := argSetForConvertZToMinMaxAltitudekey{
 		100,
 		25,
 		25,
 		25,
 		-47,
-	)
-	if error != nil {
-		t.Fatal(error)
 	}
-
-	if !reflect.DeepEqual(result, expected) {
-		t.Fatal(result)
-	}
+	assertConvertZToMinMaxAltitudekey(t, expectedMin, expectedMax, args)
 }
 
-func TestConvertZToAltitudekey_5(t *testing.T) {
+func TestConvertZToMinMaxAltitudekey_5(t *testing.T) {
 	expectedError := errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset")
 
-	result, error := ConvertZToAltitudekey(
+	result, _, error := ConvertZToMinMaxAltitudekey(
 		100,
 		25,
 		21,
@@ -987,10 +1475,10 @@ func TestConvertZToAltitudekey_5(t *testing.T) {
 	}
 }
 
-func TestConvertZToAltitudekey_6(t *testing.T) {
+func TestConvertZToMinMaxAltitudekey_6(t *testing.T) {
 	expectedError := errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset")
 
-	result, error := ConvertZToAltitudekey(
+	result, _, error := ConvertZToMinMaxAltitudekey(
 		100,
 		25,
 		25,
@@ -1002,61 +1490,43 @@ func TestConvertZToAltitudekey_6(t *testing.T) {
 	}
 }
 
-func TestConvertZToAltitudekey_7(t *testing.T) {
-	expected := []int64{1000}
-
-	result, error := ConvertZToAltitudekey(
+func TestConvertZToMinMaxAltitudekey_7(t *testing.T) {
+	var expectedMin int64 = 1000
+	expectedMax := expectedMin
+	args := argSetForConvertZToMinMaxAltitudekey{
 		28,
 		25,
 		14,
 		25,
 		2048000,
-	)
-	if error != nil {
-		t.Fatal(error)
 	}
-
-	if !reflect.DeepEqual(result, expected) {
-		t.Fatal(result)
-	}
+	assertConvertZToMinMaxAltitudekey(t, expectedMin, expectedMax, args)
 }
 
-func TestConvertZToAltitudekey_8(t *testing.T) {
-	expected := []int64{100}
-
-	result, error := ConvertZToAltitudekey(
+func TestConvertZToMinMaxAltitudekey_8(t *testing.T) {
+	var expectedMin int64 = 100
+	expectedMax := expectedMin
+	args := argSetForConvertZToMinMaxAltitudekey{
 		100,
 		25,
 		24,
 		24,
 		0,
-	)
-	if error != nil {
-		t.Fatal(error)
 	}
-
-	if !reflect.DeepEqual(result, expected) {
-		t.Fatal(result)
-	}
+	assertConvertZToMinMaxAltitudekey(t, expectedMin, expectedMax, args)
 }
 
-func TestConvertZToAltitudekey_9(t *testing.T) {
-	expected := []int64{800, 801, 802, 803, 804, 805, 806, 807}
-
-	result, error := ConvertZToAltitudekey(
+func TestConvertZToMinMaxAltitudekey_9(t *testing.T) {
+	var expectedMin int64 = 800
+	var expectedMax int64 = 807
+	args := argSetForConvertZToMinMaxAltitudekey{
 		100,
 		25,
 		27,
 		24,
 		0,
-	)
-	if error != nil {
-		t.Fatal(error)
 	}
-
-	if !reflect.DeepEqual(result, expected) {
-		t.Fatal(result)
-	}
+	assertConvertZToMinMaxAltitudekey(t, expectedMin, expectedMax, args)
 }
 
 func TestAddZBaseOffsetToZ(t *testing.T) {
@@ -1075,57 +1545,57 @@ func TestAddZBaseOffsetToZ(t *testing.T) {
 			false,
 		},
 		{
-			1 - (1 << consts.ZBaseExponent), // -33554431
-			consts.ZBaseExponent,
+			1 - (1 << consts.ZOriginValue), // -33554431
+			consts.ZOriginValue,
 			consts.ZBaseOffsetForNegativeFIndex,
 			-16777215,
 			false,
 		},
 		{
-			(1 << (consts.ZBaseExponent - 1)) - 1, // 16777215
-			consts.ZBaseExponent,
+			(1 << (consts.ZOriginValue - 1)) - 1, // 16777215
+			consts.ZOriginValue,
 			consts.ZBaseOffsetForNegativeFIndex,
 			33554431,
 			false,
 		},
 		{
-			-(1 << (consts.ZBaseExponent - 1)), // -16777216
-			consts.ZBaseExponent,
+			-(1 << (consts.ZOriginValue - 1)), // -16777216
+			consts.ZOriginValue,
 			consts.ZBaseOffsetForNegativeFIndex,
 			0,
 			false,
 		},
 		{
-			-1 - (1 << (consts.ZBaseExponent - 1)), // -16777217
-			consts.ZBaseExponent,
+			-1 - (1 << (consts.ZOriginValue - 1)), // -16777217
+			consts.ZOriginValue,
 			consts.ZBaseOffsetForNegativeFIndex,
 			-1,
 			false,
 		},
 		{
-			1 << (consts.ZBaseExponent - 1), // 16777216
-			consts.ZBaseExponent,
+			1 << (consts.ZOriginValue - 1), // 16777216
+			consts.ZOriginValue,
 			consts.ZBaseOffsetForNegativeFIndex,
 			0,
 			true,
 		},
 		{
-			1 - (1 << consts.ZBaseExponent), // -33554431
-			consts.ZBaseExponent,
+			1 - (1 << consts.ZOriginValue), // -33554431
+			consts.ZOriginValue,
 			-consts.ZBaseOffsetForNegativeFIndex,
 			0,
 			true,
 		},
 		{
-			(1 << consts.ZBaseExponent) - 1, // 33554431
-			consts.ZBaseExponent,
+			(1 << consts.ZOriginValue) - 1, // 33554431
+			consts.ZOriginValue,
 			consts.ZBaseOffsetForNegativeFIndex,
 			0,
 			true,
 		},
 		{
 			-10,
-			consts.ZBaseExponent + 1,
+			consts.ZOriginValue + 1,
 			consts.ZBaseOffsetForNegativeFIndex,
 			0,
 			true,
@@ -1350,5 +1820,79 @@ func TestConvertZToMinAltitudekey_11(t *testing.T) {
 	)
 	if error != expectedError {
 		t.Fatal(result, error)
+	}
+}
+
+type argsForConvertAltitudekeyToMinMaxZ struct {
+	altitudekey          int64
+	altitudekeyZoomLevel int64
+	outputZoomLevel      int64
+	zBaseExponent        int64
+	zBaseOffset          int64
+}
+
+func TestConvertAltitudekeyToMinMaxZ_OffseMustBeConverted(t *testing.T) {
+	var expectedMin int64 = -2
+	expectedMax := expectedMin
+	args := argsForConvertAltitudekeyToMinMaxZ{
+		altitudekey:          0,
+		altitudekeyZoomLevel: 23,
+		outputZoomLevel:      23,
+		zBaseExponent:        23,
+		zBaseOffset:          8,
+	}
+	assertConvertAltitudekeyToMinMaxZ(t, args, expectedMin, expectedMax, false)
+}
+
+func TestConvertAltitudekeyToMinMaxZ_ZoomLevelMustBeConverted(t *testing.T) {
+	var expectedMin int64 = 0
+	expectedMax := expectedMin
+	args := argsForConvertAltitudekeyToMinMaxZ{
+		altitudekey:          0,
+		altitudekeyZoomLevel: 23,
+		outputZoomLevel:      22,
+		zBaseExponent:        25,
+		zBaseOffset:          -2,
+	}
+	assertConvertAltitudekeyToMinMaxZ(t, args, expectedMin, expectedMax, false)
+}
+
+func TestConvertAltitudekeyToMinMaxZ_MinMaxDiffersWhenZBaseOffsetIsNotPowerOf2(t *testing.T) {
+	var expectedMin int64 = -2
+	var expectedMax int64 = -1
+	args := argsForConvertAltitudekeyToMinMaxZ{
+		altitudekey:          0,
+		altitudekeyZoomLevel: 23,
+		outputZoomLevel:      23,
+		zBaseExponent:        25,
+		zBaseOffset:          7,
+	}
+	assertConvertAltitudekeyToMinMaxZ(t, args, expectedMin, expectedMax, false)
+}
+
+func TestConvertAltitudekeyToMinMaxZ_MinMaxDiffersWhenZBaseExponentLessThanInputZoomLevelOrOutputZoomLevel(t *testing.T) {
+	var expectedMin int64 = 6
+	var expectedMax int64 = 7
+	args := argsForConvertAltitudekeyToMinMaxZ{
+		altitudekey:          3,
+		altitudekeyZoomLevel: 26,
+		outputZoomLevel:      26,
+		zBaseExponent:        25,
+		zBaseOffset:          -2,
+	}
+	assertConvertAltitudekeyToMinMaxZ(t, args, expectedMin, expectedMax, false)
+}
+
+func assertConvertAltitudekeyToMinMaxZ(t *testing.T, args argsForConvertAltitudekeyToMinMaxZ, expectedMin int64, expectedMax int64, wantError bool) {
+	gotMinZ, gotMaxZ, err := ConvertAltitudekeyToMinMaxZ(args.altitudekey, args.altitudekeyZoomLevel, args.outputZoomLevel, args.zBaseExponent, args.zBaseOffset)
+	if (err != nil) != wantError {
+		t.Errorf("ConvertAltitudekeyToMinMaxZ() error = %v, wantErr %v", err, wantError)
+		return
+	}
+	if gotMinZ != expectedMin {
+		t.Errorf("ConvertAltitudekeyToMinMaxZ() gotMinZ = %v, minZ %v", gotMinZ, expectedMin)
+	}
+	if gotMaxZ != expectedMax {
+		t.Errorf("ConvertAltitudekeyToMinMaxZ() gotMaxZ = %v, maxZ %v", gotMaxZ, expectedMax)
 	}
 }

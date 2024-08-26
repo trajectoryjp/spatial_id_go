@@ -3,10 +3,11 @@ package transform
 
 import (
 	"fmt"
-	"github.com/trajectoryjp/spatial_id_go/v4/common/consts"
 	"math"
 	"strconv"
 	"strings"
+
+	"github.com/trajectoryjp/spatial_id_go/v4/common/consts"
 
 	"github.com/trajectoryjp/spatial_id_go/v4/common"
 	"github.com/trajectoryjp/spatial_id_go/v4/common/errors"
@@ -17,8 +18,7 @@ import (
 
 // 宣言
 var (
-	alt25              = math.Pow(2, 25)
-	zOriginValue int64 = 25
+	alt25 = math.Pow(2, 25)
 )
 
 // ConvertQuadkeysAndVerticalIDsToExtendedSpatialIDs 内部形式IDを拡張空間IDに変換する。
@@ -382,7 +382,6 @@ func ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(extendedSpatialIDs []str
 	duplicate := map[[2]int64]interface{}{}
 
 	for _, idString := range extendedSpatialIDs {
-		var altitudeKeys []int64
 		quadkeys := []int64{}
 
 		currentID, err := object.NewExtendedSpatialID(idString)
@@ -403,7 +402,7 @@ func ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(extendedSpatialIDs []str
 		}
 
 		// B. convert vertical IDs to fit Output Vertical Zoom Level
-		altitudeKeys, err = ConvertZToAltitudekey(currentID.Z(), currentID.VZoom(), outputAltitudekeyZoom, zBaseExponent, zBaseOffset)
+		minAltitudeKey, maxAltitudeKey, err := ConvertZToMinMaxAltitudekey(currentID.Z(), currentID.VZoom(), outputAltitudekeyZoom, zBaseExponent, zBaseOffset)
 		if err != nil {
 			return nil, err
 		}
@@ -411,7 +410,7 @@ func ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(extendedSpatialIDs []str
 		// 水平方向と垂直方向の組み合わせを作成する
 		idList := [][2]int64{}
 		for _, quadkey := range quadkeys {
-			for _, altitudeKey := range altitudeKeys {
+			for altitudeKey := minAltitudeKey; altitudeKey <= maxAltitudeKey; altitudeKey++ {
 				newID := [2]int64{quadkey, altitudeKey}
 				if _, ok := duplicate[newID]; ok {
 					continue
@@ -438,6 +437,328 @@ func ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(extendedSpatialIDs []str
 
 	// 構造体のスライスを返却する。
 	return extendedSpatialIDToQuadkeyAndAltitudekey, nil
+}
+
+// ConvertExtendedSpatialIDToSpatialIDs 拡張空間IDを空間IDへ変換する
+//
+// 拡張空間IDの水平精度と垂直精度は変換によって高い方に揃えられる。
+// このため、出力空間ID配列の長さは拡張空間IDの水平ズームレベルと垂直ズームレベルの差に依存する
+//
+// 引数 :
+//
+//	extendedSpatialID : 変換対象の拡張空間ID構造体
+//
+// 戻り値 :
+//
+//	変換後の空間IDのスライス
+//
+// 補足事項：
+//
+//	入力拡張空間IDの垂直精度と水平精度の間で差がある場合、差が1増えるごとに4(垂直精度の方が低い場合)
+//	または2(垂直精度の方が低い場合)のべき乗で出力空間ID数が増加する。
+//	そのため、精度差が大きすぎると変換後の空間ID数は大幅に増大する。
+//	動作環境によってはメモリ不足となる可能性があるため、注意すること。
+//
+//	変換利用例：
+//	1. 水平精度の方が低い場合
+//	入力
+//	ExtendedSpatialID{
+//		hZoom: 6,
+//		x:     24,
+//		y:     49,
+//		vZoom: 7,
+//		z:     0,
+//	}
+//
+//	出力
+//	[]string{"7/0/48/98", "7/0/48/99", "7/0/49/98", "7/0/49/99"}
+//
+//	2. 垂直精度の方が低い場合
+//	入力
+//	ExtendedSpatialID{
+//		hZoom: 7,
+//		x:     24,
+//		y:     53,
+//		vZoom: 6,
+//		z:     24,
+//	}
+//
+//	出力
+//	[]string{"7/48/24/53", "7/49/24/53"}
+//
+//	3. 水平精度、垂直精度に差がない場合
+//	入力
+//	ExtendedSpatialID{
+//		hZoom: 6,
+//		x:     24,
+//		y:     49,
+//		vZoom: 6,
+//		z:     0,
+//	}
+//
+//	出力
+//	[]string{"6/0/24/49"}
+func ConvertExtendedSpatialIDToSpatialIDs(extendedSpatialID *object.ExtendedSpatialID) []string {
+	spatialIds := []string{}
+	// 精度が高い方へズームレベルを上げる
+	switch {
+	case extendedSpatialID.HZoom() < extendedSpatialID.VZoom():
+		targetZoomLevel := extendedSpatialID.VZoom()
+		xMin, yMin, xMax, yMax := integrate.HorizontalZoomMinMax(extendedSpatialID.HZoom(), extendedSpatialID.X(), extendedSpatialID.Y(), targetZoomLevel)
+		for x := xMin; x <= xMax; x++ {
+			for y := yMin; y <= yMax; y++ {
+				spatialId := strconv.FormatInt(targetZoomLevel, 10) + consts.SpatialIDDelimiter + strconv.FormatInt(extendedSpatialID.Z(), 10) + consts.SpatialIDDelimiter + strconv.FormatInt(x, 10) + consts.SpatialIDDelimiter + strconv.FormatInt(y, 10)
+				spatialIds = append(spatialIds, spatialId)
+			}
+		}
+	case extendedSpatialID.HZoom() > extendedSpatialID.VZoom():
+		targetZoomLevel := extendedSpatialID.HZoom()
+		verticalIds := integrate.VerticalZoom(extendedSpatialID.VZoom(), extendedSpatialID.Z(), targetZoomLevel)
+		for _, verticalId := range verticalIds {
+			// "z/f" + "x/y"
+			spatialId := verticalId + consts.SpatialIDDelimiter + strconv.FormatInt(extendedSpatialID.X(), 10) + consts.SpatialIDDelimiter + strconv.FormatInt(extendedSpatialID.Y(), 10)
+			spatialIds = append(spatialIds, spatialId)
+		}
+	// ズームレベルが等しい場合は直接変換可
+	case extendedSpatialID.HZoom() == extendedSpatialID.VZoom():
+		spatialId := strconv.FormatInt(extendedSpatialID.HZoom(), 10) + consts.SpatialIDDelimiter + strconv.FormatInt(extendedSpatialID.Z(), 10) + consts.SpatialIDDelimiter + strconv.FormatInt(extendedSpatialID.X(), 10) + consts.SpatialIDDelimiter + strconv.FormatInt(extendedSpatialID.Y(), 10)
+		spatialIds = append(spatialIds, spatialId)
+	}
+	return spatialIds
+}
+
+// ConvertTileXYZsToExtendedSpatialIDs
+// TileXYZ形式から拡張空間ID形式へ変換する
+//
+// TileXYZのx,yは同一の意味のまま拡張空間IDのX,Yに変換される。
+// このため出力の水平精度は入力のものが用いられる(ただし精度チェックは行われる)。
+// TileXYZのzから拡張空間ID垂直インデックス(f)へは高度変換が用いられ変化する。
+// 引数 :
+//
+//	request : 変換対象のTileXYZ構造体のスライス
+//	zBaseExponent： TileXYZのzの高さが1mとなるズームレベル
+//	zBaseOffset： ズームレベルがzBaseExponentのとき高度0mにおけるTileXYZのz
+//	outputVZoom : 入力値が変換後の拡張空間IDの高さの精度となる。拡張空間IDの精度の閾値である 0 ～ 35 の整数値を指定可能。
+//
+// 戻り値 :
+//
+//	変換後の拡張空間IDのスライス
+//
+// 戻り値(エラー) :
+//
+//	以下の条件に当てはまる場合、エラーインスタンスが返却される。
+//	 精度閾値超過(出力精度)：出力の水平方向精度、または高さ方向の精度に 0 ～ 35 の整数値以外が入力されていた場合。
+//	 z高度範囲外：変換前のzがその垂直ズームレベルにおける高度範囲外である場合。
+//	 拡張空間ID高度範囲外：変換後の拡張空間ID高度がその垂直ズームレベルにおける高度範囲外である場合。
+//
+// 補足事項：
+//
+//	高さについて：
+//	 TileXYZ形式のzと拡張空間ID形式垂直インデックスは高度基準が異なる(同じにすることも可能)
+//	 引数のzBaseExponentとzBaseOffsetで高度基準を定義する
+//	 TileXYZ内のデータもしくは引数が次の状態のとき、入力TileXYZ数に対して出力拡張空間ID垂直インデックス数が増加する
+//	 - vZoomがzBaseExponentまたは25(空間IDの高度基準におけるzBaseExponent)より大きい場合
+//	 - zBaseOffsetが2のべき乗でない場合
+//
+// 変換利用例：
+//
+// 1. 入力TileXYZのzが出力拡張空間ID垂直インデックスに対応する場合
+//
+//	[]TileXYZ{
+//	    {
+//	        hZoom : 20
+//	        x 85263
+//	        y 65423
+//	        vZoom 23
+//	        z 0
+//	    }
+//	},
+//	zBaseExponent 25,
+//	zBaseOffset 8,
+//	outputVZoom 23
+//
+//	extendedSpatialIDs :["20/85263/65423/23/-2"]
+//
+// 2. vZoomが25より大きい場合
+//
+//	[]TileXYZ{
+//	    {
+//	        hZoom : 20
+//	        x 85263
+//	        y 65423
+//	        vZoom 26
+//	        z 3
+//	    }
+//	},
+//	zBaseExponent 25,
+//	zBaseOffset -2,
+//	outputVZoom 26
+//
+//	extendedSpatialIDs :["20/85263/65423/26/7", "20/85263/65423/26/7]
+//
+// 3. zBaseOffsetが2のべき乗でない場合
+//
+//	[]TileXYZ{
+//	    {
+//	        hZoom : 20
+//	        x 85263
+//	        y 65423
+//	        vZoom 23
+//	        z 0
+//	    }
+//	},
+//	zBaseExponent 25,
+//	zBaseOffset 7,
+//	outputVZoom 23
+//
+//	extendedSpatialIDs :["20/85263/65423/23/-2", "20/85263/65423/23/-1"]
+func ConvertTileXYZsToExtendedSpatialIDs(request []*object.TileXYZ, zBaseExponent int64, zBaseOffset int64, outputVZoom int64) ([]object.ExtendedSpatialID, error) {
+
+	extendedSpatialIDsMap := make(map[int64]object.ExtendedSpatialID)
+
+	for _, r := range request {
+		if !extendedSpatialIDCheckZoom(r.HZoom(), outputVZoom) {
+			return nil, errors.NewSpatialIdError(errors.InputValueErrorCode, fmt.Sprintf("extendSpatialID zoom level must be in 0-35: hZoom=%v, vZoom=%v", r.HZoom(), outputVZoom))
+		}
+
+		zMin, zMax, err := ConvertAltitudekeyToMinMaxZ(r.Z(), r.VZoom(), outputVZoom, zBaseExponent, zBaseOffset)
+		if err != nil {
+			return nil, err
+		}
+
+		for z := zMin; z <= zMax; z++ {
+			// 重複排除
+			if _, exists := extendedSpatialIDsMap[z]; exists {
+				continue
+			}
+			extendedSpatialID := new(object.ExtendedSpatialID)
+			extendedSpatialID.SetX(r.X())
+			extendedSpatialID.SetY(r.Y())
+			extendedSpatialID.SetZ(z)
+			extendedSpatialID.SetZoom(r.HZoom(), outputVZoom)
+			extendedSpatialIDsMap[z] = *extendedSpatialID
+		}
+	}
+	extendedSpatialIDs := make([]object.ExtendedSpatialID, 0, len(extendedSpatialIDsMap))
+	for _, extendedSpatialID := range extendedSpatialIDsMap {
+		extendedSpatialIDs = append(extendedSpatialIDs, extendedSpatialID)
+	}
+
+	return extendedSpatialIDs, nil
+}
+
+// ConvertTileXYZsToSpatialIDs
+// TileXYZ形式から空間ID形式へ変換する
+// ConvertTileXYZsToExtendedSpatialIDs と ConvertExtendedSpatialIDToSpatialIDs の組み合わせであるため、詳細はそちらを参照
+//
+// TileXYZのx,yは水平精度と垂直精度のうち高い方の空間IDのX,Yに変換される。
+// TileXYZのZから拡張空間ID垂直インデックス(f)へは高度変換が用いられ変化する。
+//
+// 引数 :
+//
+//	request : 変換対象のTileXYZ構造体のスライス
+//	zBaseExponent： zの高さが1mとなるズームレベル
+//	zBaseOffset： ズームレベルがzBaseExponentのとき高度0mにおけるvZoom
+//	extendedSpatialIdVZoom : 拡張空間ID変換中の拡張空間IDの高さの精度指定。空間ID変換時、水平精度の方が高い場合この値は使われない。拡張空間IDの精度の閾値である 0 ～ 35 の整数値を指定可能。
+//
+// 戻り値 :
+//
+//	変換後の空間IDのスライス
+//
+// 戻り値(エラー) :
+//
+//	以下の条件に当てはまる場合、エラーインスタンスが返却される。
+//	 精度閾値超過(出力精度)：出力の水平方向精度、または高さ方向の精度に 0 ～ 35 の整数値以外が入力されていた場合。
+//	 z高度範囲外：変換前のzがその垂直ズームレベルにおける高度範囲外である場合。
+//	 拡張空間ID高度範囲外：拡張空間ID変換時の拡張空間ID高度がその垂直ズームレベルにおける高度範囲外である場合。
+//
+// 補足事項：
+//
+//	入力のoutputVZoomは次の2項目と関係しており、出力空間ID数に影響を与える
+//	1. TileXYZの垂直精度, zBaseExponent, zBaseOffset: 条件により拡張空間ID変換後の拡張空間ID数が増加する(詳しくは ConvertTileXYZsToExtendedSpatialIDs の例を参照)
+//	2. TileXYZの水平精度の差: 差が1増えるごとに1で出力された拡張空間ID数の4のべき乗で出力空間ID数が増加する。
+//	そのため、これら2項目の値によっては変換後の空間ID数は大幅に増大する。
+//	動作環境によってはメモリ不足となる可能性があるため、注意すること。
+func ConvertTileXYZsToSpatialIDs(request []*object.TileXYZ, zBaseExponent int64, zBaseOffset int64, extendedSpatialIdVZoom int64) ([]string, error) {
+	var outputData []string
+	outputExtendedSpatialIds, err := ConvertTileXYZsToExtendedSpatialIDs(
+		request, zBaseExponent, zBaseOffset, extendedSpatialIdVZoom,
+	)
+	if err != nil {
+		return nil, err
+	}
+	for _, out := range outputExtendedSpatialIds {
+		spatialIds := ConvertExtendedSpatialIDToSpatialIDs(&out)
+		outputData = append(outputData, spatialIds...)
+	}
+	return outputData, nil
+}
+
+// ConvertAltitudekeyToMinMaxZ altitudekeyを(拡張)空間IDのz成分に高度変換する。
+//
+// 変換前と変換後の精度差によって出力されるaltitudekeyの個数は増減する。
+//
+// 引数 :
+//
+//	altitudekey : 変換前のaltitudekeyの値
+//
+//	altitudekeyZoom : 変換前のaltitudekeyの精度指定
+//
+//	outputZoom : 変換対象の拡張空間ID垂直精度の指定
+//
+//	zBaseExponent : 変換対象の拡張空間IDの高さが1mとなるズームレベル
+//
+//	zBaseOffset : ズームレベルがzBaseExponentのとき、高度0mにおける拡張空間IDの垂直インデックス値
+//
+// 戻り値 :
+//
+//	変換後のaltitudekeyの最小値と最大値
+//
+//	戻り値の順序:(最小altitudekey, 最大altitudekey)
+//
+// 戻り値(エラー) :
+//
+//	以下の条件に当てはまる場合、エラーインスタンスが返却される。
+//	 入力インデックス不正       ：inputIndexにそのズームレベル(inputZoom)で存在しないインデックス値が入力されていた場合。
+//	 出力インデックス不正       ：出力altitudekeyが出力ズームレベル(outputZoom)で存在しないインデックス値になった場合。
+func ConvertAltitudekeyToMinMaxZ(altitudekey int64, altitudekeyZoomLevel int64, outputZoom int64, zBaseExponent int64, zBaseOffset int64) (int64, int64, error) {
+	// 1. check that the input index exists in the input system
+	inputResolution := common.CalculateArithmeticShift(1, altitudekeyZoomLevel)
+
+	maxInputIndex := inputResolution - 1
+	minInputIndex := int64(0)
+
+	if altitudekey > maxInputIndex || altitudekey < minInputIndex {
+		return 0, 0, errors.NewSpatialIdError(errors.InputValueErrorCode, "input index does not exist")
+	}
+
+	// 2. Calculate internal index
+	zoomDifference := zBaseExponent - altitudekeyZoomLevel
+
+	internalMinIndex := common.CalculateArithmeticShift(altitudekey, zoomDifference)
+	internalMaxIndex := internalMinIndex
+	if zoomDifference > 0 {
+		internalMaxIndex = common.CalculateArithmeticShift(altitudekey+1, zoomDifference) - 1
+	}
+	// 3. Calculate outputMinIndex
+	outputZoomDifference := outputZoom - consts.ZOriginValue
+	outputMinIndex := common.CalculateArithmeticShift(internalMinIndex-zBaseOffset, outputZoomDifference)
+	outputMaxIndex := common.CalculateArithmeticShift(internalMaxIndex-zBaseOffset, outputZoomDifference)
+	if outputZoomDifference > 0 {
+		outputMaxIndex = common.CalculateArithmeticShift(internalMaxIndex-zBaseOffset+1, outputZoomDifference) - 1
+	}
+
+	// 4. Check to make sure outputMinIndex exists in the output system
+	outputResolution := common.CalculateArithmeticShift(1, outputZoom)
+
+	maxOutputIndex := outputResolution - 1
+	minOutputIndex := -outputResolution
+
+	if outputMaxIndex > maxOutputIndex || outputMinIndex < minOutputIndex {
+		return 0, 0, errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset")
+	}
+
+	return outputMinIndex, outputMaxIndex, nil
 }
 
 // ConvertSpatialIDsToQuadkeysAndVerticalIDs 空間IDを内部形式IDに変換する。
@@ -674,7 +995,7 @@ func convertVerticallIDToBit(vZoom int64, vIndex int64, outputZoom int64, maxHei
 
 }
 
-// ConvertZToAltitudekey (拡張)空間IDのz成分をaltitudekeyに高度変換する。
+// ConvertZToMinMaxAltitudekey (拡張)空間IDのz成分をaltitudekeyに高度変換する。
 //
 // 変換前と変換後の精度差によって出力されるaltitudekeyの個数は増減する。
 //
@@ -699,21 +1020,16 @@ func convertVerticallIDToBit(vZoom int64, vIndex int64, outputZoom int64, maxHei
 //	以下の条件に当てはまる場合、エラーインスタンスが返却される。
 //	 入力インデックス不正       ：inputIndexにそのズームレベル(inputZoom)で存在しないインデックス値が入力されていた場合。
 //	 出力インデックス不正       ：出力altitudekeyが出力ズームレベル(outputZoom)で存在しないインデックス値になった場合。
-func ConvertZToAltitudekey(inputIndex int64, inputZoom int64, outputZoom int64, zBaseExponent int64, zBaseOffset int64) ([]int64, error) {
-
-	var (
-		outputIndexes []int64
-		error         error
-	)
+func ConvertZToMinMaxAltitudekey(inputIndex int64, inputZoom int64, outputZoom int64, zBaseExponent int64, zBaseOffset int64) (minAltitudeKey int64, maxAltitudeKey int64, err error) {
 
 	// determine the upper and lower index bounds to search for matches in height solution space
-	lowerBound, error := convertZToMinAltitudekey(inputIndex, inputZoom, outputZoom, zBaseExponent, zBaseOffset)
-	if error != nil {
-		return nil, error
+	lowerBound, err := convertZToMinAltitudekey(inputIndex, inputZoom, outputZoom, zBaseExponent, zBaseOffset)
+	if err != nil {
+		return 0, 0, err
 	}
-	upperBound, error := convertZToMinAltitudekey(inputIndex+1, inputZoom, outputZoom, zBaseExponent, zBaseOffset)
-	if error != nil {
-		return nil, error
+	upperBound, err := convertZToMinAltitudekey(inputIndex+1, inputZoom, outputZoom, zBaseExponent, zBaseOffset)
+	if err != nil {
+		return 0, 0, err
 	}
 
 	// Determine the vertical index/indices to return.
@@ -721,15 +1037,14 @@ func ConvertZToAltitudekey(inputIndex int64, inputZoom int64, outputZoom int64, 
 	// mathematically the altitude associated with the lower bounds will always satisfy the solution set.
 	// b) cycle through indices from lowerBounds+1 to upperBounds with i to find any possible additional indexes
 	// that satisfy the solution set.
-	outputIndexes = append(outputIndexes, lowerBound)
-
-	for i := lowerBound + 1; i < upperBound; i++ {
-
-		outputIndexes = append(outputIndexes, int64(i))
+	// but only output (minimum key, maximum key) as (lowerBound, upperBound - 1)
+	minAltitudeKey = lowerBound
+	maxAltitudeKey = upperBound - 1
+	if minAltitudeKey > maxAltitudeKey {
+		return minAltitudeKey, minAltitudeKey, nil
+	} else {
+		return minAltitudeKey, maxAltitudeKey, nil
 	}
-
-	return outputIndexes, nil
-
 }
 
 func convertZToMinAltitudekey(inputIndex int64, inputZoom int64, outputZoom int64, zBaseExponent int64, zBaseOffset int64) (int64, error) {
@@ -741,7 +1056,7 @@ func convertZToMinAltitudekey(inputIndex int64, inputZoom int64, outputZoom int6
 	}
 
 	// 2. Calculate outputIndex
-	outputIndex := common.CalculateArithmeticShift(inputIndex, -(inputZoom - zOriginValue))
+	outputIndex := common.CalculateArithmeticShift(inputIndex, -(inputZoom - consts.ZOriginValue))
 	outputIndex += zBaseOffset
 	outputIndex = common.CalculateArithmeticShift(outputIndex, (outputZoom - zBaseExponent))
 
@@ -823,11 +1138,11 @@ func validateIndexExists(inputIndex int64, inputZoom int64, minValueIsNegative b
 //	 入力ズームレベル不正       ：zoomLevelが最大ズームレベルを超える場合(consts.zBaseExponent より上のズームレベルはサポートしない)。
 //	 出力インデックス不正       ：変換後のインデックスが入力ズームレベル(inputZoom)で存在しないインデックス値になった場合。
 func AddZBaseOffsetToZ(fIndex int64, zoomLevel uint8, zBaseOffset int64) (int64, error) {
-	if zoomLevel > consts.ZBaseExponent {
-		return 0, errors.NewSpatialIdError(errors.InputValueErrorCode, fmt.Sprintf("zoom level %v must be less than %v", zoomLevel, consts.ZBaseExponent))
+	if zoomLevel > consts.ZOriginValue {
+		return 0, errors.NewSpatialIdError(errors.InputValueErrorCode, fmt.Sprintf("zoom level %v must be less than %v", zoomLevel, consts.ZOriginValue))
 	}
-	// zBaseOffset * (2**(zoomLevel-ZBaseExponent))
-	offset := zBaseOffset >> (consts.ZBaseExponent - zoomLevel)
+	// zBaseOffset * (2**(zoomLevel-ZOriginValue))
+	offset := zBaseOffset >> (consts.ZOriginValue - zoomLevel)
 	outputIndex := offset + fIndex
 	_, ok := validateIndexExists(outputIndex, int64(zoomLevel), true)
 	if !ok {

@@ -1,6 +1,12 @@
 // 拡張空間IDパッケージ
 package object
 
+import (
+	"fmt"
+	"github.com/trajectoryjp/spatial_id_go/v4/common/consts"
+	"github.com/trajectoryjp/spatial_id_go/v4/common/errors"
+)
+
 // FromExtendedSpatialIDToQuadkeyAndAltitudekey 拡張空間IDから変換したquadkeyとaltitudekeyの組み合わせを管理する構造体
 type FromExtendedSpatialIDToQuadkeyAndAltitudekey struct {
 	// quadkeyの精度
@@ -506,4 +512,192 @@ func (qh QuadkeyAndVerticalID) MaxHeight() float64 {
 //	QuadkeyAndVerticalIDオブジェクトに設定されているminHeightの値
 func (qh QuadkeyAndVerticalID) MinHeight() float64 {
 	return qh.minHeight
+}
+
+// TileXYZ 水平方向TileKey(x,y)と垂直方向TileKey(z)の組み合わせを管理する構造体
+type TileXYZ struct {
+	// 水平精度 [0, consts.MaxTileXYZZoom]の整数
+	hZoom int64
+	// x 水平方向key x軸
+	x int64
+	// y 水平方向key y軸
+	y int64
+	// 垂直精度 [0, consts.MaxTileXYZZoom]の整数
+	vZoom int64
+	// 垂直方向key
+	z int64
+}
+
+// NewTileXYZ TileXYZ初期化関数
+//
+// quadkeyに数値以外が含まれていた場合エラーとなる。
+//
+// 引数：
+//
+//	hZoom： 水平ズームレベル
+//	x： 水平方向xインデックス
+//	y： 水平方向yインデックス
+//	vZoom： 垂直ズームレベル
+//	z： 高さ方向のインデックス
+//
+// 戻り値：
+//
+//	初期化したTileXYZオブジェクト
+//
+// 戻り値(エラー)：
+//
+//	以下の条件に当てはまる場合、エラーインスタンスが返却される。
+//	 ズームレベル不正：hZoomまたはvZoomに[0, consts.MaxTileXYZZoom]以外の数値が含まれていた場合
+func NewTileXYZ(hZoom int64, x int64, y int64, vZoom int64, z int64) (*TileXYZ, error) {
+	tile := &TileXYZ{}
+
+	// 水平精度設定
+	err := tile.SetHZoom(hZoom)
+	if err != nil {
+		return nil, err
+	}
+
+	// X設定
+	tile.SetX(x)
+	// Y設定
+	tile.SetY(y)
+
+	// 垂直精度設定
+	err = tile.SetVZoom(vZoom)
+	if err != nil {
+		return nil, err
+	}
+
+	// 高さのインデックス設定
+	tile.SetZ(z)
+
+	return tile, nil
+}
+
+// SetHZoom 水平精度設定関数
+//
+// TileXYZオブジェクトのhZoomを引数の入力値に設定する。
+//
+// input 引数：
+//
+//	hZoom：水平精度
+//
+// 戻り値(エラー)：
+//
+//	以下の条件に当てはまる場合、エラーインスタンスが返却される。
+//	 ズームレベル不正：hZoomに[0, consts.MaxTileXYZZoom]以外の数値が含まれていた場合
+func (a *TileXYZ) SetHZoom(hZoom int64) error {
+	if !(hZoom <= consts.MaxTileXYZZoom) {
+		return errors.NewSpatialIdError(errors.InputValueErrorCode, fmt.Sprintf("hZoom must be in 0-%v, but got %v", consts.MaxTileXYZZoom, hZoom))
+	}
+	a.hZoom = hZoom
+	return nil
+}
+
+// SetX xインデックス設定関数
+//
+// TileXYZオブジェクトのxを引数の入力値に設定する。
+//
+// input 引数：
+//
+//	x：xインデックス値
+func (a *TileXYZ) SetX(x int64) {
+	a.x = x
+}
+
+// SetY yインデックス設定関数
+//
+// TileXYZオブジェクトのyを引数の入力値に設定する。
+//
+// input 引数：
+//
+//	y：yインデックス値
+func (a *TileXYZ) SetY(y int64) {
+	a.y = y
+}
+
+// SetVZoom 垂直精度設定関数
+//
+// TileXYZオブジェクトのvZoomを引数の入力値に設定する。
+//
+// input 引数：
+//
+//	vZoom：垂直精度
+//
+// 戻り値(エラー)：
+//
+//	以下の条件に当てはまる場合、エラーインスタンスが返却される。
+//	 ズームレベル不正：はvZoomに0-35以外の数値が含まれていた場合
+func (a *TileXYZ) SetVZoom(vZoom int64) error {
+	if !(vZoom <= consts.MaxTileXYZZoom) {
+		return errors.NewSpatialIdError(errors.InputValueErrorCode, fmt.Sprintf("vZoom must be in 0-%v, but got %v", consts.MaxTileXYZZoom, vZoom))
+	}
+	a.vZoom = vZoom
+	return nil
+}
+
+// SetZ zインデックス設定関数
+//
+// TileXYZオブジェクトのzを引数の入力値に設定する。
+//
+// input 引数：
+//
+//	z：zインデックス値
+func (a *TileXYZ) SetZ(z int64) {
+	a.z = z
+}
+
+// HZoom HZoom設定値取得関数
+//
+// TileXYZオブジェクトに設定されているhZoomの値を取得する。
+//
+// output 戻り値：
+//
+//	TileXYZオブジェクトに設定されているHZoomの値
+func (a *TileXYZ) HZoom() int64 {
+	return a.hZoom
+}
+
+// X x設定値取得関数
+//
+// TileXYZオブジェクトに設定されているxの値を取得する。
+//
+// output 戻り値：
+//
+//	TileXYZオブジェクトに設定されているxの値
+func (a *TileXYZ) X() int64 {
+	return a.x
+}
+
+// Y y設定値取得関数
+//
+// TileXYZオブジェクトに設定されているyの値を取得する。
+//
+// output 戻り値：
+//
+//	TileXYZオブジェクトに設定されているyの値
+func (a *TileXYZ) Y() int64 {
+	return a.y
+}
+
+// VZoom vZoom設定値取得関数
+//
+// TileXYZオブジェクトに設定されているvZoomの値を取得する。
+//
+// output 戻り値：
+//
+//	TileXYZオブジェクトに設定されているvZoomの値
+func (a *TileXYZ) VZoom() int64 {
+	return a.vZoom
+}
+
+// Z z設定値取得関数
+//
+// TileXYZオブジェクトに設定されているzの値を取得する。
+//
+// output 戻り値：
+//
+//	TileXYZオブジェクトに設定されているzの値
+func (a *TileXYZ) Z() int64 {
+	return a.z
 }

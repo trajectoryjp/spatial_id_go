@@ -1,9 +1,10 @@
 package detector
 
 import (
-	"github.com/trajectoryjp/multidimensional-radix-tree/src/tree"
 	"reflect"
 	"testing"
+
+	"github.com/trajectoryjp/multidimensional-radix-tree/src/tree"
 )
 
 // TestCheckSpatialIdsOverlap01 空間IDの重複確認関数 正常系動作確認
