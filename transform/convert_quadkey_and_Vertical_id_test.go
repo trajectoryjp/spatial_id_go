@@ -736,6 +736,47 @@ func TestConvertTileXYZsToExtendedSpatialIDs(t *testing.T) {
 				23,
 			},
 		},
+		{
+			[]string{"20/85263/65423/23/0", "20/85263/65423/23/1", "20/85263/65423/23/2", "20/85264/65424/23/0", "20/85264/65424/23/1", "20/85264/65424/23/2"},
+			argSet{
+				[]*object.TileXYZ{
+					newTileXYZ(
+						t,
+						20,
+						85263,
+						65423,
+						23,
+						0,
+					),
+					newTileXYZ(
+						t,
+						20,
+						85263,
+						65423,
+						23,
+						1,
+					),
+					newTileXYZ(
+						t,
+						20,
+						85264,
+						65424,
+						23,
+						0,
+					),
+					newTileXYZ(
+						t,
+						20,
+						85264,
+						65424,
+						23,
+						1,
+					)},
+				25,
+				-1,
+				23,
+			},
+		},
 	}
 	for _, testCase := range testCases {
 		expectedData := []object.ExtendedSpatialID{}
@@ -828,6 +869,72 @@ func TestErrorConvertTileXYZsToExtendedSpatialIDs(t *testing.T) {
 			t.Log("Success", err)
 		}
 	}
+}
+
+func ExampleConvertTileXYZsToExtendedSpatialIDs() {
+	inputData := []struct {
+		hZoom int64
+		x     int64
+		y     int64
+		vZoom int64
+		z     int64
+	}{
+		{
+			22,
+			85263,
+			65423,
+			23,
+			0,
+		},
+		{
+			22,
+			85263,
+			65423,
+			23,
+			1,
+		},
+		{
+			22,
+			85264,
+			65424,
+			23,
+			0,
+		},
+		{
+			22,
+			85264,
+			65424,
+			23,
+			1,
+		},
+	}
+	var inputXYZ []*object.TileXYZ
+	for _, in := range inputData {
+		tile, err := object.NewTileXYZ(in.hZoom, in.x, in.y, in.vZoom, in.z)
+		if err != nil {
+			panic(err)
+		}
+		inputXYZ = append(inputXYZ, tile)
+	}
+	outputData, err := ConvertTileXYZsToExtendedSpatialIDs(
+		inputXYZ,
+		25,
+		-1,
+		23,
+	)
+	if err != nil {
+		panic(err)
+	}
+	for _, out := range outputData {
+		fmt.Println(out.ID())
+	}
+	// Unordered output:
+	// 22/85263/65423/23/0
+	// 22/85264/65424/23/0
+	// 22/85263/65423/23/1
+	// 22/85264/65424/23/1
+	// 22/85263/65423/23/2
+	// 22/85264/65424/23/2
 }
 
 func TestConvertExtendedSpatialIDsToSpatialIDs(t *testing.T) {
