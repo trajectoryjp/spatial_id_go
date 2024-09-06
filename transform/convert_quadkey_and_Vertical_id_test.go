@@ -529,6 +529,54 @@ func TestConvertTileXYZsToSpatialIDs(t *testing.T) {
 				23,
 			},
 		},
+		{
+			[]string{
+				"23/0/85263/65423",
+				"23/1/85263/65423",
+				"23/2/85263/65423",
+				"23/0/85264/65424",
+				"23/1/85264/65424",
+				"23/2/85264/65424",
+			},
+			argSet{
+				[]*object.TileXYZ{
+					newTileXYZ(
+						t,
+						23,
+						85263,
+						65423,
+						23,
+						0,
+					),
+					newTileXYZ(
+						t,
+						23,
+						85263,
+						65423,
+						23,
+						1,
+					),
+					newTileXYZ(
+						t,
+						23,
+						85264,
+						65424,
+						23,
+						0,
+					),
+					newTileXYZ(
+						t,
+						23,
+						85264,
+						65424,
+						23,
+						1,
+					)},
+				25,
+				-1,
+				23,
+			},
+		},
 	}
 	for _, testCase := range testCases {
 		result, err := ConvertTileXYZsToSpatialIDs(testCase.request.tile, testCase.request.zBaseExponent, testCase.request.zBaseOffset, testCase.request.outputVZoom)
