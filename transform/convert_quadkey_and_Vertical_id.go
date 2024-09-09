@@ -614,7 +614,7 @@ func ConvertExtendedSpatialIDToSpatialIDs(extendedSpatialID *object.ExtendedSpat
 //	extendedSpatialIDs :["20/85263/65423/23/-2", "20/85263/65423/23/-1"]
 func ConvertTileXYZsToExtendedSpatialIDs(request []*object.TileXYZ, zBaseExponent int64, zBaseOffset int64, outputVZoom int64) ([]object.ExtendedSpatialID, error) {
 
-	extendedSpatialIDsMap := make(map[int64]object.ExtendedSpatialID)
+	extendedSpatialIDsMap := make(map[object.ExtendedSpatialID]bool)
 
 	for _, r := range request {
 		if !extendedSpatialIDCheckZoom(r.HZoom(), outputVZoom) {
@@ -627,20 +627,20 @@ func ConvertTileXYZsToExtendedSpatialIDs(request []*object.TileXYZ, zBaseExponen
 		}
 
 		for z := zMin; z <= zMax; z++ {
-			// 重複排除
-			if _, exists := extendedSpatialIDsMap[z]; exists {
-				continue
-			}
 			extendedSpatialID := new(object.ExtendedSpatialID)
 			extendedSpatialID.SetX(r.X())
 			extendedSpatialID.SetY(r.Y())
 			extendedSpatialID.SetZ(z)
 			extendedSpatialID.SetZoom(r.HZoom(), outputVZoom)
-			extendedSpatialIDsMap[z] = *extendedSpatialID
+			// 重複排除
+			if _, exists := extendedSpatialIDsMap[*extendedSpatialID]; exists {
+				continue
+			}
+			extendedSpatialIDsMap[*extendedSpatialID] = true
 		}
 	}
 	extendedSpatialIDs := make([]object.ExtendedSpatialID, 0, len(extendedSpatialIDsMap))
-	for _, extendedSpatialID := range extendedSpatialIDsMap {
+	for extendedSpatialID := range extendedSpatialIDsMap {
 		extendedSpatialIDs = append(extendedSpatialIDs, extendedSpatialID)
 	}
 
