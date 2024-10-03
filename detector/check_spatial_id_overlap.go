@@ -79,36 +79,6 @@ func CheckSpatialIdsArrayOverlap(spatialIds1 []string, spatialIds2 []string) (bo
 		index1 := tree.Indexs{convertedFIndex, int64(x1), int64(y1)}
 		tr.Append(index1, tree.ZoomSetLevel(zoom1), spatialId1)
 	}
-	return CheckSpatialIdsArrayOverlapWithCache(tr, spatialIds2)
-}
-
-// CheckSpatialIdsArrayOverlapWithCache 2つの空間ID重複の判定関数 キャッシュ利用版
-//
-// CheckSpatialIdsArrayOverlap と同様に、比較対象として入力された2つの空間ID列の重複の判定を行う。
-// ただし比較元の空間ID(spatialIds1)は3次元バイナリツリーに格納した形式を用いる。
-//
-// 入力するバイナリツリーは必ず3次元形式(`Create3DTable`を利用した形式)でなければならない。
-// それ以外の場合にはpanicが発生する。
-//
-// 引数:
-//
-//	spatialIds1, spatialIds2: 重複判定対象の空間ID列。ズームレベルが異なっている入力も許容。
-//
-// ただし高度は16,777,216未満 〜 -16,777,216m以上に制限される(この範囲で高度変換を行う)
-//
-// 戻り値:
-//
-//	bool:
-//		重複の有無が返却される。true: 重複あり false: 重複なし
-//
-//	error:
-//		以下の条件に当てはまる場合、エラーインスタンスが返却される。このときbool値はfalseで返却される。
-//	 		空間IDフォーマット不正：空間IDのフォーマットに違反する値が"重複判定対象空間ID"に入力されていた場合。
-//	 		空間ID高度範囲外：高度範囲外の空間IDが入力されていた場合。
-//	panic:
-//		以下の条件に当てはまる場合、panicが発生する。
-//	 		バイナリツリー次元数不正：次元数がマッチしないバイナリツリーが入力されていた場合。
-func CheckSpatialIdsArrayOverlapWithCache(spatialIds1 tree.TreeInterface, spatialIds2 []string) (bool, error) {
 	// spatialIds2から各要素の取り出し
 	for indexSpatialId2, spatialId2 := range spatialIds2 {
 		zoom2, f2, x2, y2, err := getSpatialIdAttrs(spatialId2)
@@ -124,7 +94,7 @@ func CheckSpatialIdsArrayOverlapWithCache(spatialIds1 tree.TreeInterface, spatia
 		if errAltConversion != nil {
 			return false, fmt.Errorf("%w @spatialId2[%v] = %v", errAltConversion, indexSpatialId2, spatialId2)
 		}
-		result := spatialIds1.IsOverlap(tree.Indexs{convertedFIndex2, int64(x2), int64(y2)}, tree.ZoomSetLevel(zoom2))
+		result := tr.IsOverlap(tree.Indexs{convertedFIndex2, int64(x2), int64(y2)}, tree.ZoomSetLevel(zoom2))
 		if result {
 			// 重複判定時、trueとnilを返却
 			return result, nil
