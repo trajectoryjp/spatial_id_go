@@ -9,6 +9,8 @@ import (
 )
 
 const MaxZ = 35
+const ZBaseExponent int8 = 25
+const ZBaseOffset int64 = 0
 
 const delimiter = "/"
 
