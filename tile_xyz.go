@@ -1,4 +1,4 @@
-package tileXYZ
+package spatialID
 
 import (
 	"github.com/trajectoryjp/spatial_id_go/v4/common/errors"
@@ -6,8 +6,8 @@ import (
 
 const MaxQuadkeyZoomLevel = 35
 const MaxAltitudekeyZoomLevel = 35
-var ZBaseExponent int8 = 14
-var ZBaseOffset int64 = 512
+var TileXYZZBaseExponent int8 = 14
+var TileXYZZBaseOffset int64 = 512
 
 type TileXYZ struct {
 	quadkeyZoomLevel int8

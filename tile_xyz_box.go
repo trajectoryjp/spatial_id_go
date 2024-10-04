@@ -1,13 +1,11 @@
-package tileXYZ
+package spatialID
 
-import spatialID "github.com/trajectoryjp/spatial_id_go/v4"
-
-type Box struct {
+type TileXYZBox struct {
 	min TileXYZ
 	max TileXYZ
 }
 
-func NewBox(min TileXYZ, max TileXYZ) (*Box, error) {
+func NewTileXYZBox(min TileXYZ, max TileXYZ) (*TileXYZBox, error) {
 	quadDelta := max.GetQuadkeyZoomLevel() - min.GetQuadkeyZoomLevel()
 	altitudeDelta := max.GetAltitudekeyZoomLevel() - min.GetAltitudekeyZoomLevel()
 	if quadDelta < 0 || altitudeDelta < 0 {
@@ -26,13 +24,13 @@ func NewBox(min TileXYZ, max TileXYZ) (*Box, error) {
 		min = *newMin
 	}
 
-	return &Box{
+	return &TileXYZBox{
 		min: min,
 		max: max,
 	}, nil
 }
 
-func (box *Box) AddZoomLevel(quadDelta, altitudeDelta int8) error {
+func (box *TileXYZBox) AddZoomLevel(quadDelta, altitudeDelta int8) error {
 	if quadDelta < 0 || altitudeDelta < 0 {
 		newMin, error := box.min.NewParent(-quadDelta, -altitudeDelta)
 		if error != nil {
@@ -66,15 +64,15 @@ func (box *Box) AddZoomLevel(quadDelta, altitudeDelta int8) error {
 	return nil
 }
 
-func (box Box) GetMin() TileXYZ {
+func (box TileXYZBox) GetMin() TileXYZ {
 	return box.min
 }
 
-func (box Box) GetMax() TileXYZ {
+func (box TileXYZBox) GetMax() TileXYZ {
 	return box.max
 }
 
-func (box Box) ForXYZ(function func(TileXYZ) TileXYZ) {
+func (box TileXYZBox) ForXYZ(function func(TileXYZ) TileXYZ) {
 	current := TileXYZ{}
 
 	for current.SetX(box.GetMin().GetX()); current.GetX() != box.GetMax().GetX(); current.SetX(current.GetX() + 1) {
@@ -108,16 +106,17 @@ func (box Box) ForXYZ(function func(TileXYZ) TileXYZ) {
 	current = function(current)
 }
 
-func NewBoxFromSpatialIDBox(spatialIDBox spatialID.Box) (*Box, error) {
-	deltaZ := spatialIDBox.GetMin().GetZ() - spatialID.ZBaseExponent
-	spatialIDBox.AddZ(-deltaZ)
+func NewTileXYZBoxFromSpatialIDBox(spatialIDBox SpatialIDBox) (*TileXYZBox, error) {
+	deltaQuad := spatialIDBox.GetMin().GetZ() - SpatialIDZBaseExponent
+	deltaAltitude := spatialIDBox.GetMax().GetZ() - TileXYZZBaseExponent
+	spatialIDBox.AddZ(-deltaQuad)
 
 	baseMinTile, error := NewTileXYZ(
 		spatialIDBox.GetMin().GetZ(),
-		ZBaseExponent,
+		spatialIDBox.GetMin().GetZ(),
 		spatialIDBox.GetMin().GetX(),
 		spatialIDBox.GetMin().GetY(),
-		spatialIDBox.GetMin().GetF() >> (spatialID.ZBaseOffset - ZBaseOffset),
+		spatialIDBox.GetMin().GetF()-SpatialIDZBaseOffset+TileXYZZBaseOffset,
 	)
 	if error != nil {
 		return nil, error
@@ -125,21 +124,21 @@ func NewBoxFromSpatialIDBox(spatialIDBox spatialID.Box) (*Box, error) {
 
 	baseMaxTile, error := NewTileXYZ(
 		spatialIDBox.GetMax().GetZ(),
-		ZBaseExponent,
+		spatialIDBox.GetMin().GetZ(),
 		spatialIDBox.GetMax().GetX(),
 		spatialIDBox.GetMax().GetY(),
-		spatialIDBox.GetMax().GetF() >> (spatialID.ZBaseOffset - ZBaseOffset),
+		spatialIDBox.GetMax().GetF()-SpatialIDZBaseOffset+TileXYZZBaseOffset,
 	)
 	if error != nil {
 		return nil, error
 	}
 
-	box, error := NewBox(*baseMinTile, *baseMaxTile)
+	box, error := NewTileXYZBox(*baseMinTile, *baseMaxTile)
 	if error != nil {
 		return nil, error
 	}
 
-	error = box.AddZoomLevel(deltaZ, deltaZ)
+	error = box.AddZoomLevel(deltaQuad, deltaAltitude)
 	if error != nil {
 		return nil, error
 	}
