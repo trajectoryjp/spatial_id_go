@@ -113,6 +113,10 @@ func (id SpatialID) GetY() int64 {
 	return id.y
 }
 
+func (id SpatialID) GetMeasurement() Measurement {
+	
+}
+
 func (id SpatialID) String() string {
 	return strconv.FormatInt(int64(id.GetZ()), 10) + delimiter +
 	strconv.FormatInt(id.GetF(), 10) + delimiter +
