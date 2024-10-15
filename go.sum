@@ -1,3 +1,5 @@
+github.com/HarutakaMatsumoto/mathematics_go v1.0.1 h1:lkauHqxqm09UmuUQXyzBrfQiKqOjdeZ4ktU6hrJ4tkw=
+github.com/HarutakaMatsumoto/mathematics_go v1.0.1/go.mod h1:ujNDHTprrY8crifcPlJEkK8ikqf8eD21x1stu9u2Efw=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/go-gl/mathgl v1.1.0 h1:0lzZ+rntPX3/oGrDzYGdowSLC2ky8Osirvf5uAwfIEA=

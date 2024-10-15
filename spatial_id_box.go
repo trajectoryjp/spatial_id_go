@@ -1,5 +1,14 @@
 package spatialID
 
+import (
+	"math"
+
+	"github.com/HarutakaMatsumoto/mathematics_go/geometry/rectangular/solid"
+	"github.com/go-gl/mathgl/mgl64"
+	closest "github.com/trajectoryjp/closest_go"
+	"github.com/trajectoryjp/geodesy_go/coordinates"
+)
+
 type SpatialIDBox struct {
 	min SpatialID
 	max SpatialID
@@ -69,6 +78,50 @@ func (box SpatialIDBox) GetMin() SpatialID {
 
 func (box SpatialIDBox) GetMax() SpatialID {
 	return box.max
+}
+
+func (box SpatialIDBox) ForCollisionWithConvexHull(convexHull []*coordinates.Geodetic, clearance float64, function func(SpatialID) SpatialID) {
+	measure := closest.Measure{
+		ConvexHulls: [2][]*mgl64.Vec3{
+			make([]*mgl64.Vec3, len(convexHull)),
+			make([]*mgl64.Vec3, len(solid.VertexIntervals)),
+		},
+	}
+
+	for i, vertex := range convexHull {
+		measure.ConvexHulls[0][i] = (*mgl64.Vec3)(vertex)
+	}
+
+	oldDistance := math.Inf(1)
+	box.ForXYF(func(id SpatialID) SpatialID {
+		spatialIDBox, _ := NewSpatialIDBox(id, id)
+		geodeticBox := NewGeodeticBoxFromSpatialIDBox(*spatialIDBox)
+
+		for i, vertex := range geodeticBox.GetVertices() {
+			measure.ConvexHulls[1][i] = (*mgl64.Vec3)(vertex)
+		}
+
+		measure.MeasureNonnegativeDistance()
+
+		if measure.Distance > clearance {
+			if measure.Distance > oldDistance {
+				id.SetF(box.GetMax().GetF() - 1) // TODO: Consider
+				oldDistance = math.MaxFloat64
+			}
+
+			return id
+		}
+
+		id = function(id)
+
+		if id.GetF() == box.GetMax().GetF() {
+			oldDistance = math.Inf(1)
+		} else {
+			oldDistance = measure.Distance
+		}
+
+		return id
+	})
 }
 
 func (box SpatialIDBox) ForXYF(function func(SpatialID) SpatialID) {
