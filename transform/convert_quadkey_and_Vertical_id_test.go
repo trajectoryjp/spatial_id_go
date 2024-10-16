@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/trajectoryjp/spatial_id_go/v4/common/consts"
 
@@ -1757,13 +1758,25 @@ func TestAddZBaseOffsetToZ(t *testing.T) {
 		},
 	}
 
-	for _, testCase := range testCases {
+	for i, testCase := range testCases {
+		t.Logf("test case %d", i)
+
+		startTime := time.Now()
 		result, err := AddZBaseOffsetToZ(testCase.fIndex, testCase.zoomLevel, testCase.offset)
+		t.Log("elapsed time: ", time.Since(startTime))
 		if testCase.expectErr == (err == nil) {
 			t.Errorf("CalcAddZBaseOffsetToZ(%d, %d, %d) expected error existence: %v, result: %v", testCase.fIndex, testCase.zoomLevel, testCase.offset, testCase.expectErr, err)
-		}
-		if result != testCase.expected {
+		} else if result != testCase.expected {
 			t.Errorf("CalcAddZBaseOffsetToZ(%d, %d, %d) == %d, result: %d", testCase.fIndex, testCase.zoomLevel, testCase.offset, testCase.expected, result)
+		}
+
+		startTime = time.Now()
+		result, err = convertZToMinAltitudekey(testCase.fIndex, int64(testCase.zoomLevel), int64(testCase.zoomLevel), consts.ZOriginValue, consts.ZBaseOffsetForNegativeFIndex)
+		t.Log("elapsed time: ", time.Since(startTime))
+		if testCase.expectErr == (err == nil) {
+			t.Errorf("convertZToMinAltitudekey(%d, %d, %d) expected error existence: %v, result: %v", testCase.fIndex, testCase.zoomLevel, testCase.offset, testCase.expectErr, err)
+		} else if result != testCase.expected {
+			t.Errorf("convertZToMinAltitudekey(%d, %d, %d) == %d, result: %d", testCase.fIndex, testCase.zoomLevel, testCase.offset, testCase.expected, result)
 		}
 	}
 }
