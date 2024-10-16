@@ -3,9 +3,9 @@ package spatialID
 import (
 	"math"
 
+	mathematics "github.com/HarutakaMatsumoto/mathematics_go"
 	"github.com/HarutakaMatsumoto/mathematics_go/geometry/rectangular/solid"
 	"github.com/trajectoryjp/geodesy_go/coordinates"
-	"github.com/trajectoryjp/spatial_id_go/v4/mathematics"
 )
 
 type GeodeticBox struct {
@@ -76,4 +76,14 @@ func (box GeodeticBox) GetVertices() []*coordinates.Geodetic {
 	}
 
 	return vertices
+}
+
+func (box GeodeticBox) GetCenter() coordinates.Geodetic {
+	center := coordinates.Geodetic{}
+
+	*center.Longitude() = (*box.Min.Longitude() + *box.Max.Longitude()) / 2.0
+	*center.Latitude() = (*box.Min.Latitude() + *box.Max.Latitude()) / 2.0
+	*center.Altitude() = (*box.Min.Altitude() + *box.Max.Altitude()) / 2.0
+
+	return center
 }

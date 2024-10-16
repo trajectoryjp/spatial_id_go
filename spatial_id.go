@@ -1,9 +1,13 @@
 package spatialID
 
 import (
+	"math"
 	"strconv"
 	"strings"
 
+	mathematics "github.com/HarutakaMatsumoto/mathematics_go"
+	"github.com/trajectoryjp/geodesy_go/coordinates"
+	"github.com/trajectoryjp/spatial_id_go/v4/common"
 	"github.com/trajectoryjp/spatial_id_go/v4/common/consts"
 	"github.com/trajectoryjp/spatial_id_go/v4/common/errors"
 )
@@ -47,6 +51,25 @@ func NewSpatialIDFromString(string string) (*SpatialID, error) {
 	}
 
 	return NewSpatialID(int8(int64s[0]), int64s[1], int64s[2], int64s[3])
+}
+
+func NewSpatialIDFromGeodetic(geodetic coordinates.Geodetic, z int8) (*SpatialID, error) {
+	max := float64(int(1) << z)
+
+	// 経度方向のインデックスの計算
+	x := math.Floor(max * math.Mod(*geodetic.Longitude() + 180.0, 360.0))
+
+	radianLatitude := mathematics.RadianPerDegree * *geodetic.Latitude()
+
+	y := math.Floor(max * (1.0 - math.Log(math.Tan(radianLatitude)+(1.0/math.Cos(radianLatitude)))/math.Pi) / 2.0)
+
+	// 高さ全体の精度あたりの垂直方向の精度
+	altitudeResolution := float64(common.CalculateArithmeticShift(1, int64(SpatialIDZBaseExponent-z)))
+
+	// 垂直方向の位置を計算する
+	f := math.Floor(*geodetic.Altitude() / altitudeResolution)
+
+	return NewSpatialID(z, int64(f), int64(x), int64(y))
 }
 
 func NewSpatialID(

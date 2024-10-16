@@ -104,8 +104,12 @@ func (box TileXYZBox) ForCollisionWithConvexHull(convexHull []*coordinates.Geode
 
 		measure.MeasureNonnegativeDistance()
 
-		if measure.Distance > clearance {
-			if measure.Distance > oldDistance {
+		geocentric0 := coordinates.GeocentricFromGeodetic(coordinates.Geodetic(measure.Points[0]))
+		geocentric1 := coordinates.GeocentricFromGeodetic(coordinates.Geodetic(measure.Points[1]))
+		distance := mgl64.Vec3(geocentric0).Sub(mgl64.Vec3(geocentric1)).Len() // TODO: Embed
+
+		if distance > clearance {
+			if distance > oldDistance {
 				tile.SetZ(box.GetMax().GetZ() - 1) // TODO: Consider
 				oldDistance = math.MaxFloat64
 			}
@@ -118,7 +122,7 @@ func (box TileXYZBox) ForCollisionWithConvexHull(convexHull []*coordinates.Geode
 		if tile.GetZ() == box.GetMax().GetZ() {
 			oldDistance = math.Inf(1)
 		} else {
-			oldDistance = measure.Distance
+			oldDistance = distance
 		}
 
 		return tile

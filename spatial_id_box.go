@@ -103,8 +103,12 @@ func (box SpatialIDBox) ForCollisionWithConvexHull(convexHull []*coordinates.Geo
 
 		measure.MeasureNonnegativeDistance()
 
-		if measure.Distance > clearance {
-			if measure.Distance > oldDistance {
+		geocentric0 := coordinates.GeocentricFromGeodetic(coordinates.Geodetic(measure.Points[0]))
+		geocentric1 := coordinates.GeocentricFromGeodetic(coordinates.Geodetic(measure.Points[1]))
+		distance := mgl64.Vec3(geocentric0).Sub(mgl64.Vec3(geocentric1)).Len() // TODO: Embed
+
+		if distance > clearance {
+			if distance > oldDistance {
 				id.SetF(box.GetMax().GetF() - 1) // TODO: Consider
 				oldDistance = math.MaxFloat64
 			}
@@ -117,7 +121,7 @@ func (box SpatialIDBox) ForCollisionWithConvexHull(convexHull []*coordinates.Geo
 		if id.GetF() == box.GetMax().GetF() {
 			oldDistance = math.Inf(1)
 		} else {
-			oldDistance = measure.Distance
+			oldDistance = distance
 		}
 
 		return id
