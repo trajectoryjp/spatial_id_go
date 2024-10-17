@@ -1111,46 +1111,6 @@ func validateIndexExists(inputIndex int64, inputZoom int64, minValueIsNegative b
 	return nil, true
 }
 
-// AddZBaseOffsetToZ (拡張)空間IDz成分(fインデックス)にオフセット加算する
-// ConvertZToAltitudekey()でズームレベル変換を行わずオフセット変換のみ指定したもの
-//
-// したがって ConvertZToAltitudekey(f, z, z, consts.ZBaseExponent, zBaseOffset)と等価
-//
-// 引数 :
-//
-//	fIndex : (拡張)空間ID高さインデックス(f)
-//
-//	zoomLevel : (拡張)空間IDのズームレベル(z)
-//
-// ここで指定するズームレベルはconsts.ZBaseExponent以下の値でなければならない
-//
-//	offsetZoom : オフセット変換量。正のoffsetで上方向, 負のoffsetで下方向に変換される
-//
-// offsetZoomは2**(consts.ZBaseExponent - zoomLevel)より大きくするべき(除算時に切り捨てられるため)
-//
-// 戻り値 :
-//
-//	オフセット変換後のfインデックス
-//
-// 戻り値(エラー) :
-//
-//	以下の条件に当てはまる場合、エラーインスタンスが返却される。
-//	 入力ズームレベル不正       ：zoomLevelが最大ズームレベルを超える場合(consts.zBaseExponent より上のズームレベルはサポートしない)。
-//	 出力インデックス不正       ：変換後のインデックスが入力ズームレベル(inputZoom)で存在しないインデックス値になった場合。 なお出力が負数インデックスになる場合もサポートしないためこのエラーになる。
-func AddZBaseOffsetToZ(fIndex int64, zoomLevel uint8, zBaseOffset int64) (int64, error) {
-	if zoomLevel > consts.ZOriginValue {
-		return 0, errors.NewSpatialIdError(errors.InputValueErrorCode, fmt.Sprintf("zoom level %v must be less than %v", zoomLevel, consts.ZOriginValue))
-	}
-	// zBaseOffset * (2**(zoomLevel-ZOriginValue))
-	offset := zBaseOffset >> (consts.ZOriginValue - zoomLevel)
-	outputIndex := offset + fIndex
-	_, ok := validateIndexExists(outputIndex, int64(zoomLevel), false)
-	if !ok {
-		return 0, errors.NewSpatialIdError(errors.ValueConvertErrorCode, fmt.Sprintf("output index (%v) does not exist with given zoomLevel (%v)", outputIndex, zoomLevel))
-	}
-	return outputIndex, nil
-}
-
 // 高さのbit形式のインデックスを計算する。
 //
 // 引数 :

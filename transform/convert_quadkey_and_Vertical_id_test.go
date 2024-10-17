@@ -8,7 +8,6 @@ import (
 	"strconv"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/trajectoryjp/spatial_id_go/v4/common/consts"
 
@@ -1683,120 +1682,6 @@ func TestConvertZToMinMaxAltitudekey_9(t *testing.T) {
 		0,
 	}
 	assertConvertZToMinMaxAltitudekey(t, expectedMin, expectedMax, args)
-}
-
-func TestAddZBaseOffsetToZ(t *testing.T) {
-	testCases := []struct {
-		fIndex    int64
-		zoomLevel uint8
-		offset    int64
-		expected  int64
-		expectErr bool
-	}{
-		{ // "16/-10/58198/25804" (z=16,f=-10のみ使用)
-			-10,
-			16,
-			consts.ZBaseOffsetForNegativeFIndex,
-			(1 << (16 - 1)) - 10, // 32758
-			false,
-		},
-		{
-			1 - (1 << consts.ZOriginValue), // -33554431
-			consts.ZOriginValue,
-			consts.ZBaseOffsetForNegativeFIndex,
-			// 負数非許容
-			//-16777215,
-			0,
-			true,
-		},
-		{
-			(1 << (consts.ZOriginValue - 1)) - 1, // 16777215
-			consts.ZOriginValue,
-			consts.ZBaseOffsetForNegativeFIndex,
-			33554431,
-			false,
-		},
-		{
-			-(1 << (consts.ZOriginValue - 1)), // -16777216
-			consts.ZOriginValue,
-			consts.ZBaseOffsetForNegativeFIndex,
-			0,
-			false,
-		},
-		{
-			-1 - (1 << (consts.ZOriginValue - 1)), // -16777217
-			consts.ZOriginValue,
-			consts.ZBaseOffsetForNegativeFIndex,
-			// 負数非許容
-			//-1,
-			0,
-			true,
-		},
-		{
-			1 << (consts.ZOriginValue - 1), // 16777216
-			consts.ZOriginValue,
-			consts.ZBaseOffsetForNegativeFIndex,
-			0,
-			true,
-		},
-		{
-			1 - (1 << consts.ZOriginValue), // -33554431
-			consts.ZOriginValue,
-			-consts.ZBaseOffsetForNegativeFIndex,
-			0,
-			true,
-		},
-		{
-			(1 << consts.ZOriginValue) - 1, // 33554431
-			consts.ZOriginValue,
-			consts.ZBaseOffsetForNegativeFIndex,
-			0,
-			true,
-		},
-		// convertZToMinAltitudekey はz>25も扱えるが AddZBaseOffsetToZ ではそうでないため比較できない
-		//{
-		//	-10,
-		//	consts.ZOriginValue + 1,
-		//	consts.ZBaseOffsetForNegativeFIndex,
-		//	33554422,
-		//	false,
-		//},
-	}
-
-	for i, testCase := range testCases {
-		t.Logf("test case %d", i)
-
-		startTime := time.Now()
-		result, err := AddZBaseOffsetToZ(testCase.fIndex, testCase.zoomLevel, testCase.offset)
-		t.Log("elapsed time: ", time.Since(startTime))
-		if testCase.expectErr == (err == nil) {
-			t.Errorf("CalcAddZBaseOffsetToZ(%d, %d, %d) expected error existence: %v, result: %v", testCase.fIndex, testCase.zoomLevel, testCase.offset, testCase.expectErr, err)
-		} else if result != testCase.expected {
-			t.Errorf("CalcAddZBaseOffsetToZ(%d, %d, %d) == %d, result: %d", testCase.fIndex, testCase.zoomLevel, testCase.offset, testCase.expected, result)
-		}
-
-		startTime = time.Now()
-		result, err = convertZToMinAltitudekey(testCase.fIndex, int64(testCase.zoomLevel), int64(testCase.zoomLevel), consts.ZOriginValue, consts.ZBaseOffsetForNegativeFIndex)
-		t.Log("elapsed time: ", time.Since(startTime))
-		if testCase.expectErr == (err == nil) {
-			t.Errorf("convertZToMinAltitudekey(%d, %d, %d) expected error existence: %v, result: %v", testCase.fIndex, testCase.zoomLevel, testCase.offset, testCase.expectErr, err)
-		} else if result != testCase.expected {
-			t.Errorf("convertZToMinAltitudekey(%d, %d, %d) == %d, result: %d", testCase.fIndex, testCase.zoomLevel, testCase.offset, testCase.expected, result)
-		}
-	}
-}
-
-func FuzzAddZBaseOffsetToZAt18(f *testing.F) {
-	conditions := []int64{-131072, 131072} // (1 << 24) >> (abs(18-25))
-	for _, cond := range conditions {
-		f.Add(cond)
-	}
-	f.Fuzz(func(t *testing.T, cond int64) {
-		_, err := AddZBaseOffsetToZ(cond, 18, consts.ZBaseOffsetForNegativeFIndex)
-		if err != nil && cond > conditions[0] && cond < conditions[1] {
-			t.Error(err)
-		}
-	})
 }
 
 func TestConvertZToMinAltitudekey_1(t *testing.T) {
