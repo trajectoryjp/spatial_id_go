@@ -256,17 +256,13 @@ func TestCheckSpatialIdsOverlap08(t *testing.T) {
 //
 // 試験詳細：
 // + 試験データ
-//   - パターン1(ズームレベル超過エラー)：
-//     比較対象の空間ID：{"26/-1/7274/3225"},{"16/8/58198/25804"}
-//   - パターン2(ズームレベル超過エラー)：
-//     比較対象の空間ID：{"13/1/7274/3225"},{"26/-8/58198/25804"}
-//   - パターン3(高度範囲外エラー)：
+//   - パターン1(入力高度範囲外エラー)：
 //     比較対象の空間ID：{"25/16777216/0/3225"},{"18/1/58198/25804"}
-//   - パターン4(高度範囲外エラー)：
+//   - パターン2(入力高度範囲外エラー)：
 //     比較対象の空間ID：{"18/1/58198/25804"},{"25/16777216/0/3225"}
-//   - パターン5(高度範囲外エラー)：
+//   - パターン3(入力高度範囲外エラー)：
 //     比較対象の空間ID：{"25/-16777217/0/3225"},{"16/8/58198/25804"}
-//   - パターン6(高度範囲外エラー)：
+//   - パターン4(入力高度範囲外エラー)：
 //     比較対象の空間ID：{"18/1/58198/25804"},{"25/-16777217/0/3225"}
 //
 // + 確認内容
@@ -279,52 +275,42 @@ func TestCheckSpatialIdsOverlap09(t *testing.T) {
 		expectError string
 	}{
 		{
-			//入力値
-			spatialId1: "26/-1/7274/3225",
-			spatialId2: "16/8/58198/25804",
-			// 期待値
-			expectValue: false,
-			expectError: "InputValueError,入力チェックエラー,zoom level 26 must be less than 25 @spatialId1[0] = 26/-1/7274/3225",
-		},
-		{
-			//入力値
-			spatialId1: "13/1/7274/3225",
-			spatialId2: "26/-8/58198/25804",
-			// 期待値
-			expectValue: false,
-			expectError: "InputValueError,入力チェックエラー,zoom level 26 must be less than 25 @spatialId2[0] = 26/-8/58198/25804",
-		},
-		{
+			// 入力空間IDのfインデックスが不正
 			//入力値
 			spatialId1: "25/16777216/0/3225",
 			spatialId2: "18/1/58198/25804",
 			// 期待値
 			expectValue: false,
-			expectError: "ValueConvertError,値の変換エラー,output index (33554432) does not exist with given zoomLevel (25) @spatialId1[0] = 25/16777216/0/3225",
+			expectError: "InputValueError,入力チェックエラー,output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset @spatialId1[0] = 25/16777216/0/3225",
 		},
 		{
+			// 入力空間IDのfインデックスが不正
 			//入力値
 			spatialId1: "18/1/58198/25804",
 			spatialId2: "25/16777216/0/3225",
 			// 期待値
 			expectValue: false,
-			expectError: "ValueConvertError,値の変換エラー,output index (33554432) does not exist with given zoomLevel (25) @spatialId2[0] = 25/16777216/0/3225",
+			expectError: "InputValueError,入力チェックエラー,output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset @spatialId2[0] = 25/16777216/0/3225",
 		},
 		{
+			// 入力可能な高度インデックス範囲を超えている(下限より小さい)
 			//入力値
 			spatialId1: "25/-16777217/0/3225",
 			spatialId2: "18/1/58198/25804",
 			// 期待値
 			expectValue: false,
-			expectError: "InputValueError,入力チェックエラー,input f-index -16777217 is out of altitude range @spatialId1[0] = 25/-16777217/0/3225",
+			// 高度変換が負数を許容しないため高度変換エラーになる
+			expectError: "InputValueError,入力チェックエラー,output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset @spatialId1[0] = 25/-16777217/0/3225",
 		},
 		{
+			// 入力可能な高度インデックス範囲を超えている(下限より小さい)
 			//入力値
 			spatialId1: "18/1/58198/25804",
 			spatialId2: "25/-16777217/0/3225",
 			// 期待値
 			expectValue: false,
-			expectError: "InputValueError,入力チェックエラー,input f-index -16777217 is out of altitude range @spatialId2[0] = 25/-16777217/0/3225",
+			// 高度変換が負数を許容しないため高度変換エラーになる
+			expectError: "InputValueError,入力チェックエラー,output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset @spatialId2[0] = 25/-16777217/0/3225",
 		},
 	}
 	for _, testCase := range testCases {

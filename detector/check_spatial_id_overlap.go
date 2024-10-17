@@ -69,7 +69,9 @@ func CheckSpatialIdsArrayOverlap(spatialIds1 []string, spatialIds2 []string) (bo
 		if err != nil {
 			return false, fmt.Errorf("%w @spatialId1[%v]", err, indexSpatialId1)
 		}
-		convertedFIndex, errAltConversion := transform.AddZBaseOffsetToZ(int64(f1), uint8(zoom1), consts.ZBaseOffsetForNegativeFIndex)
+		// 高度インデックスをオフセット変換のみ実行して自然数にする
+		// minAltitudeKey == maxAltitudeKeyになるため結果は片方のみ利用する
+		convertedFIndex, _, errAltConversion := transform.ConvertZToMinMaxAltitudekey(int64(f1), int64(zoom1), int64(zoom1), consts.ZOriginValue, consts.ZBaseOffsetForNegativeFIndex)
 		if convertedFIndex < 0 {
 			return false, errors.NewSpatialIdError(errors.InputValueErrorCode, fmt.Sprintf("input f-index %v is out of altitude range @spatialId1[%v] = %v", f1, indexSpatialId1, spatialId1))
 		}
@@ -87,7 +89,8 @@ func CheckSpatialIdsArrayOverlap(spatialIds1 []string, spatialIds2 []string) (bo
 		}
 		// 取り出した要素の比較
 		// 高度インデックスをオフセット変換のみ実行して自然数にする
-		convertedFIndex2, errAltConversion := transform.AddZBaseOffsetToZ(int64(f2), uint8(zoom2), consts.ZBaseOffsetForNegativeFIndex)
+		// minAltitudeKey == maxAltitudeKeyになるため結果は片方のみ利用する
+		convertedFIndex2, _, errAltConversion := transform.ConvertZToMinMaxAltitudekey(int64(f2), int64(zoom2), int64(zoom2), consts.ZOriginValue, consts.ZBaseOffsetForNegativeFIndex)
 		if convertedFIndex2 < 0 {
 			return false, errors.NewSpatialIdError(errors.InputValueErrorCode, fmt.Sprintf("input f-index %v is out of altitude range @spatialId2[%v] = %v", f2, indexSpatialId2, spatialId2))
 		}
