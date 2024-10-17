@@ -1704,8 +1704,10 @@ func TestAddZBaseOffsetToZ(t *testing.T) {
 			1 - (1 << consts.ZOriginValue), // -33554431
 			consts.ZOriginValue,
 			consts.ZBaseOffsetForNegativeFIndex,
-			-16777215,
-			false,
+			// 負数非許容
+			//-16777215,
+			0,
+			true,
 		},
 		{
 			(1 << (consts.ZOriginValue - 1)) - 1, // 16777215
@@ -1725,8 +1727,10 @@ func TestAddZBaseOffsetToZ(t *testing.T) {
 			-1 - (1 << (consts.ZOriginValue - 1)), // -16777217
 			consts.ZOriginValue,
 			consts.ZBaseOffsetForNegativeFIndex,
-			-1,
-			false,
+			// 負数非許容
+			//-1,
+			0,
+			true,
 		},
 		{
 			1 << (consts.ZOriginValue - 1), // 16777216
@@ -1749,13 +1753,14 @@ func TestAddZBaseOffsetToZ(t *testing.T) {
 			0,
 			true,
 		},
-		{
-			-10,
-			consts.ZOriginValue + 1,
-			consts.ZBaseOffsetForNegativeFIndex,
-			0,
-			true,
-		},
+		// convertZToMinAltitudekey はz>25も扱えるが AddZBaseOffsetToZ ではそうでないため比較できない
+		//{
+		//	-10,
+		//	consts.ZOriginValue + 1,
+		//	consts.ZBaseOffsetForNegativeFIndex,
+		//	33554422,
+		//	false,
+		//},
 	}
 
 	for i, testCase := range testCases {

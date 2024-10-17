@@ -1136,7 +1136,7 @@ func validateIndexExists(inputIndex int64, inputZoom int64, minValueIsNegative b
 //
 //	以下の条件に当てはまる場合、エラーインスタンスが返却される。
 //	 入力ズームレベル不正       ：zoomLevelが最大ズームレベルを超える場合(consts.zBaseExponent より上のズームレベルはサポートしない)。
-//	 出力インデックス不正       ：変換後のインデックスが入力ズームレベル(inputZoom)で存在しないインデックス値になった場合。
+//	 出力インデックス不正       ：変換後のインデックスが入力ズームレベル(inputZoom)で存在しないインデックス値になった場合。 なお出力が負数インデックスになる場合もサポートしないためこのエラーになる。
 func AddZBaseOffsetToZ(fIndex int64, zoomLevel uint8, zBaseOffset int64) (int64, error) {
 	if zoomLevel > consts.ZOriginValue {
 		return 0, errors.NewSpatialIdError(errors.InputValueErrorCode, fmt.Sprintf("zoom level %v must be less than %v", zoomLevel, consts.ZOriginValue))
@@ -1144,7 +1144,7 @@ func AddZBaseOffsetToZ(fIndex int64, zoomLevel uint8, zBaseOffset int64) (int64,
 	// zBaseOffset * (2**(zoomLevel-ZOriginValue))
 	offset := zBaseOffset >> (consts.ZOriginValue - zoomLevel)
 	outputIndex := offset + fIndex
-	_, ok := validateIndexExists(outputIndex, int64(zoomLevel), true)
+	_, ok := validateIndexExists(outputIndex, int64(zoomLevel), false)
 	if !ok {
 		return 0, errors.NewSpatialIdError(errors.ValueConvertErrorCode, fmt.Sprintf("output index (%v) does not exist with given zoomLevel (%v)", outputIndex, zoomLevel))
 	}
