@@ -17,3 +17,8 @@ const (
 	// InnerIDAltitudekeyIndex altitudekeyはinnerID[1]
 	InnerIDAltitudekeyIndex = 1
 )
+
+// ZBaseOffsetForNegativeFIndex
+//
+// 元の最大高さを保ったまま正方向と負方向でfインデックスを半数ずつ導入するためのzBaseOffset
+const ZBaseOffsetForNegativeFIndex = 1 << (ZOriginValue - 1)
