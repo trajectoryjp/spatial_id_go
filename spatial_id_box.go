@@ -85,38 +85,47 @@ func ForSpatialIDsCollidedWithConvexHull(zoomLevel int8, convexHull []*coordinat
 		return nil
 	}
 
-	geocentricMin := coordinates.GeocentricFromGeodetic(*convexHull[0])
-	geocentricMax := geocentricMin
-	geocentricConvexHull := make([]*mgl64.Vec3, len(convexHull))
+	geodeticMin := *convexHull[0]
+	geodeticMax := geodeticMin
 	for _, vertex := range convexHull {
-		geocentric := coordinates.GeocentricFromGeodetic(*vertex)
-		geocentricConvexHull = append(geocentricConvexHull, (*mgl64.Vec3)(&geocentric))
-
-		if *geocentric.X() < *geocentricMin.X() {
-			*geocentricMin.X() = *geocentric.X()
-		} else if *geocentric.X() > *geocentricMax.X() {
-			*geocentricMax.X() = *geocentric.X()
+		if *vertex.Longitude() < *geodeticMin.Longitude() {
+			*geodeticMin.Longitude() = *vertex.Longitude()
+		} else if *vertex.Longitude() > *geodeticMax.Longitude() {
+			*geodeticMax.Longitude() = *vertex.Longitude()
 		}
 
-		if *geocentric.Y() < *geocentricMin.Y() {
-			*geocentricMin.Y() = *geocentric.Y()
-		} else if *geocentric.Y() > *geocentricMax.Y() {
-			*geocentricMax.Y() = *geocentric.Y()
+		if *vertex.Latitude() < *geodeticMin.Latitude() {
+			*geodeticMin.Latitude() = *vertex.Latitude()
+		} else if *vertex.Latitude() > *geodeticMax.Latitude() {
+			*geodeticMax.Latitude() = *vertex.Latitude()
 		}
 
-		if *geocentric.Z() < *geocentricMin.Z() {
-			*geocentricMin.Z() = *geocentric.Z()
-		} else if *geocentric.Z() > *geocentricMax.Z() {
-			*geocentricMax.Z() = *geocentric.Z()
+		if *vertex.Altitude() < *geodeticMin.Altitude() {
+			*geodeticMin.Altitude() = *vertex.Altitude()
+		} else if *vertex.Altitude() > *geodeticMax.Altitude() {
+			*geodeticMax.Altitude() = *vertex.Altitude()
 		}
 	}
 
-	*geocentricMin.X() -= clearance
-	*geocentricMin.Y() -= clearance
-	*geocentricMin.Z() -= clearance
-	*geocentricMax.X() += clearance
-	*geocentricMax.Y() += clearance
-	*geocentricMax.Z() += clearance
+	localFromGeocentric := geodeticMin.GenerateLocalFromGeocentric()
+	geocentricFromLocal := geodeticMin.GenerateGeocentricFromLocal()
+
+	geocentricMin := coordinates.GeocentricFromGeodetic(geodeticMin)
+	geocentricMax := coordinates.GeocentricFromGeodetic(geodeticMax)
+	localMin := localFromGeocentric(geocentricMin)
+	localMax := localFromGeocentric(geocentricMax)
+	
+	localMin[0] -= clearance
+	localMin[1] -= clearance
+	localMin[2] -= clearance
+	localMax[0] += clearance
+	localMax[1] += clearance
+	localMax[2] += clearance
+
+	geocentricMin = geocentricFromLocal(localMin)
+	geocentricMax = geocentricFromLocal(localMax)
+	geodeticMin = coordinates.GeodeticFromGeocentric(geocentricMin)
+	geodeticMax = coordinates.GeodeticFromGeocentric(geocentricMax)
 
 	minSpatialID, error := NewSpatialIDFromGeodetic(coordinates.GeodeticFromGeocentric(geocentricMin), zoomLevel)
 	if error != nil {
@@ -126,6 +135,7 @@ func ForSpatialIDsCollidedWithConvexHull(zoomLevel int8, convexHull []*coordinat
 	if error != nil {
 		return error
 	}
+
 	spatialIDBox, error := NewSpatialIDBox(*minSpatialID, *maxSpatialID)
 	if error != nil {
 		return error
@@ -133,9 +143,13 @@ func ForSpatialIDsCollidedWithConvexHull(zoomLevel int8, convexHull []*coordinat
 
 	measure := closest.Measure{
 		ConvexHulls: [2][]*mgl64.Vec3{
-			geocentricConvexHull,
+            make([]*mgl64.Vec3, len(convexHull)),
 			make([]*mgl64.Vec3, len(solid.VertexIntervals)),
 		},
+	}
+
+	for i, vertex := range convexHull {
+		measure.ConvexHulls[0][i] = (*mgl64.Vec3)(vertex)
 	}
 
 	oldDistance := math.Inf(1)
@@ -144,19 +158,22 @@ func ForSpatialIDsCollidedWithConvexHull(zoomLevel int8, convexHull []*coordinat
 		geodeticBox := NewGeodeticBoxFromSpatialIDBox(*spatialIDBox)
 
 		for i, vertex := range geodeticBox.GetVertices() {
-			geocentric := coordinates.GeocentricFromGeodetic(*vertex)
-			measure.ConvexHulls[1][i] = (*mgl64.Vec3)(&geocentric)
+			measure.ConvexHulls[1][i] = (*mgl64.Vec3)(vertex)
 		}
 
 		measure.MeasureNonnegativeDistance()
 
-		if measure.Distance > clearance {
-			if measure.Distance > oldDistance {
+		geocentric0 := coordinates.GeocentricFromGeodetic(coordinates.Geodetic(measure.Points[0]))
+		geocentric1 := coordinates.GeocentricFromGeodetic(coordinates.Geodetic(measure.Points[1]))
+		distance := mgl64.Vec3(geocentric0).Sub(mgl64.Vec3(geocentric1)).Len() // TODO: Embed
+
+		if distance > clearance {
+			if distance > oldDistance {
 				id.SetF(spatialIDBox.GetMax().GetF())
 				oldDistance = math.MaxFloat64
 			} else {
 				deltaAltitude := *geodeticBox.Max.Altitude() - *geodeticBox.Min.Altitude()
-				newF := int64(measure.Distance / deltaAltitude) + id.GetF()
+				newF := int64(distance / deltaAltitude) + id.GetF()
 				if newF >= spatialIDBox.GetMax().GetF() {
 					id.SetF(spatialIDBox.GetMax().GetF())
 				} else {
@@ -170,7 +187,7 @@ func ForSpatialIDsCollidedWithConvexHull(zoomLevel int8, convexHull []*coordinat
 		if id.GetF() == spatialIDBox.GetMax().GetF() {
 			oldDistance = math.Inf(1)
 		} else {
-			oldDistance = measure.Distance
+			oldDistance = distance
 		}
 	})
 
