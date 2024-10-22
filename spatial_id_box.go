@@ -80,86 +80,125 @@ func (box SpatialIDBox) GetMax() SpatialID {
 	return box.max
 }
 
-func (box SpatialIDBox) ForCollisionWithConvexHull(convexHull []*coordinates.Geodetic, clearance float64, function func(SpatialID) SpatialID) {
+func ForSpatialIDsCollidedWithConvexHull(zoomLevel int8, convexHull []*coordinates.Geodetic, clearance float64, function func(id *SpatialID)) error {
+	if len(convexHull) == 0 {
+		return nil
+	}
+
+	geocentricMin := coordinates.GeocentricFromGeodetic(*convexHull[0])
+	geocentricMax := geocentricMin
+	geocentricConvexHull := make([]*mgl64.Vec3, len(convexHull))
+	for _, vertex := range convexHull {
+		geocentric := coordinates.GeocentricFromGeodetic(*vertex)
+		geocentricConvexHull = append(geocentricConvexHull, (*mgl64.Vec3)(&geocentric))
+
+		if *geocentric.X() < *geocentricMin.X() {
+			*geocentricMin.X() = *geocentric.X()
+		} else if *geocentric.X() > *geocentricMax.X() {
+			*geocentricMax.X() = *geocentric.X()
+		}
+
+		if *geocentric.Y() < *geocentricMin.Y() {
+			*geocentricMin.Y() = *geocentric.Y()
+		} else if *geocentric.Y() > *geocentricMax.Y() {
+			*geocentricMax.Y() = *geocentric.Y()
+		}
+
+		if *geocentric.Z() < *geocentricMin.Z() {
+			*geocentricMin.Z() = *geocentric.Z()
+		} else if *geocentric.Z() > *geocentricMax.Z() {
+			*geocentricMax.Z() = *geocentric.Z()
+		}
+	}
+
+	*geocentricMin.X() -= clearance
+	*geocentricMin.Y() -= clearance
+	*geocentricMin.Z() -= clearance
+	*geocentricMax.X() += clearance
+	*geocentricMax.Y() += clearance
+	*geocentricMax.Z() += clearance
+
+	minSpatialID, error := NewSpatialIDFromGeodetic(coordinates.GeodeticFromGeocentric(geocentricMin), zoomLevel)
+	if error != nil {
+		return error
+	}
+	maxSpatialID, error := NewSpatialIDFromGeodetic(coordinates.GeodeticFromGeocentric(geocentricMax), zoomLevel)
+	if error != nil {
+		return error
+	}
+	spatialIDBox, error := NewSpatialIDBox(*minSpatialID, *maxSpatialID)
+	if error != nil {
+		return error
+	}
+
 	measure := closest.Measure{
 		ConvexHulls: [2][]*mgl64.Vec3{
-			make([]*mgl64.Vec3, len(convexHull)),
+			geocentricConvexHull,
 			make([]*mgl64.Vec3, len(solid.VertexIntervals)),
 		},
 	}
 
-	for i, vertex := range convexHull {
-		measure.ConvexHulls[0][i] = (*mgl64.Vec3)(vertex)
-	}
-
 	oldDistance := math.Inf(1)
-	box.ForXYF(func(id SpatialID) SpatialID {
-		spatialIDBox, _ := NewSpatialIDBox(id, id)
+	spatialIDBox.ForXYF(func(id *SpatialID) {
+		spatialIDBox, _ := NewSpatialIDBox(*id, *id)
 		geodeticBox := NewGeodeticBoxFromSpatialIDBox(*spatialIDBox)
 
 		for i, vertex := range geodeticBox.GetVertices() {
-			measure.ConvexHulls[1][i] = (*mgl64.Vec3)(vertex)
+			geocentric := coordinates.GeocentricFromGeodetic(*vertex)
+			measure.ConvexHulls[1][i] = (*mgl64.Vec3)(&geocentric)
 		}
 
 		measure.MeasureNonnegativeDistance()
 
-		geocentric0 := coordinates.GeocentricFromGeodetic(coordinates.Geodetic(measure.Points[0]))
-		geocentric1 := coordinates.GeocentricFromGeodetic(coordinates.Geodetic(measure.Points[1]))
-		distance := mgl64.Vec3(geocentric0).Sub(mgl64.Vec3(geocentric1)).Len() // TODO: Embed
-
-		if distance > clearance {
-			if distance > oldDistance {
-				id.SetF(box.GetMax().GetF() - 1) // TODO: Consider
+		if measure.Distance > clearance {
+			if measure.Distance > oldDistance {
+				id.SetF(spatialIDBox.GetMax().GetF())
 				oldDistance = math.MaxFloat64
+			} else {
+				deltaAltitude := *geodeticBox.Max.Altitude() - *geodeticBox.Min.Altitude()
+				newF := int64(measure.Distance / deltaAltitude) + id.GetF()
+				if newF >= spatialIDBox.GetMax().GetF() {
+					id.SetF(spatialIDBox.GetMax().GetF())
+				} else {
+					id.SetF(newF)
+				}
 			}
-
-			return id
 		}
 
-		id = function(id)
+		function(id)
 
-		if id.GetF() == box.GetMax().GetF() {
+		if id.GetF() == spatialIDBox.GetMax().GetF() {
 			oldDistance = math.Inf(1)
 		} else {
-			oldDistance = distance
+			oldDistance = measure.Distance
 		}
-
-		return id
 	})
+
+	return nil
 }
 
-func (box SpatialIDBox) ForXYF(function func(SpatialID) SpatialID) {
+func (box SpatialIDBox) ForXYF(function func(id *SpatialID)) {
 	current := SpatialID{}
 
-	for current.SetX(box.GetMin().GetX()); current.GetX() != box.GetMax().GetX(); current.SetX(current.GetX() + 1) {
-		for current.SetY(box.GetMin().GetY()); current.GetY() != box.GetMax().GetY(); current.SetY(current.GetY() + 1) {
-			for current.SetF(box.GetMin().GetF()); current.GetF() != box.GetMax().GetF(); current.SetF(current.GetF() + 1) {
-				current = function(current)
+	for current.SetX(box.GetMin().GetX()); ; current.SetX(current.GetX() + 1) {
+		for current.SetY(box.GetMin().GetY()); ; current.SetY(current.GetY() + 1) {
+			for current.SetF(box.GetMin().GetF()); ; current.SetF(current.GetF() + 1) {
+				function(&current)
+
+				if current.GetF() == box.GetMax().GetF() {
+					break
+				}
 			}
 
-			current = function(current)
+			if current.GetY() == box.GetMax().GetY() {
+				break
+			}
 		}
 
-		for current.SetF(box.GetMin().GetF()); current.GetF() != box.GetMax().GetF(); current.SetF(current.GetF() + 1) {
-			current = function(current)
+		if current.GetX() == box.GetMax().GetX() {
+			break
 		}
-
-		current = function(current)
 	}
-
-	for current.SetY(box.GetMin().GetY()); current.GetY() != box.GetMax().GetY(); current.SetY(current.GetY() + 1) {
-		for current.SetF(box.GetMin().GetF()); current.GetF() != box.GetMax().GetF(); current.SetF(current.GetF() + 1) {
-			current = function(current)
-		}
-
-		current = function(current)
-	}
-
-	for current.SetF(box.GetMin().GetF()); current.GetF() != box.GetMax().GetF(); current.SetF(current.GetF() + 1) {
-		current = function(current)
-	}
-
-	current = function(current)
 }
 
 func NewSpatialIDBoxFromTileXYZBox(tileXYZBox TileXYZBox) (*SpatialIDBox, error) {

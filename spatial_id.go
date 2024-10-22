@@ -99,7 +99,7 @@ func (id *SpatialID) SetX(x int64) {
 	}
 }
 
-func (id *SpatialID) SetY(y int64) {
+func (id *SpatialID) SetY(y int64) { // TODO: Fix
 	id.y = y%(1 << id.GetZ())
 	if id.y < 0 {
 		id.y += 1 << id.GetZ()
