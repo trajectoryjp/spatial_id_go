@@ -12,8 +12,6 @@ github.com/trajectoryjp/closest_go v1.0.2 h1:dWm5u43/xsP7IKMzrUO+NEbXnS4GBIPXj7o
 github.com/trajectoryjp/closest_go v1.0.2/go.mod h1:+iTxW7/pOi0dIqo2/GcqGqWh/fAj2gMjDIiZ+BFDXIc=
 github.com/trajectoryjp/geodesy_go v1.0.2 h1:wh0RcZDZOQ6Q38evg6YJJ8gAC6+GKSVJgEFI4yusKZE=
 github.com/trajectoryjp/geodesy_go v1.0.2/go.mod h1:eJuX+ds+t3MKxHG9dhobqNjUbUsYlpTT9XDO0mbc0LU=
-github.com/trajectoryjp/multidimensional-radix-tree/src v0.0.0-20240723082158-f3916a674d95 h1:M+XVwjY8llZ0bRaGHI3V0GKktgehxZI/GxoZ91f1qhA=
-github.com/trajectoryjp/multidimensional-radix-tree/src v0.0.0-20240723082158-f3916a674d95/go.mod h1:dDSriNaS7E5bvwmmXxF62rqb1FfgzgB7IDdMEsm8O9A=
 github.com/trajectoryjp/multidimensional-radix-tree/src v0.0.0-20240725143308-c304415df20d h1:K2EBr4rnKcca/DjrMI779x2nJ1U3UuFyZsFPh/uR52I=
 github.com/trajectoryjp/multidimensional-radix-tree/src v0.0.0-20240725143308-c304415df20d/go.mod h1:dDSriNaS7E5bvwmmXxF62rqb1FfgzgB7IDdMEsm8O9A=
 github.com/wroge/wgs84 v1.1.7 h1:8WVUUrpjysYxrn0ssWX7z90SOUKCuHt9NQ5tg9ovjIY=

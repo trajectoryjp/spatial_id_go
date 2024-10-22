@@ -23,4 +23,5 @@ require (
 	github.com/stretchr/testify v1.9.0
 	github.com/trajectoryjp/closest_go v1.0.2
 	github.com/trajectoryjp/multidimensional-radix-tree/src v0.0.0-20240725143308-c304415df20d
+	golang.org/x/exp v0.0.0-20231110203233-9a3e6036ecaa
 )

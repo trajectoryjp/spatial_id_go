@@ -2,6 +2,7 @@ package spatialID
 
 import (
 	"math"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -17,6 +18,62 @@ const SpatialIDZBaseExponent int8 = 25
 const SpatialIDZBaseOffset int64 = 0
 
 const delimiter = "/"
+
+func MergeSpatialIDs (spatialIDs []*SpatialID) []*SpatialID {
+	zooms := [MaxZ + 1][]*SpatialID{}
+	for _, spatialID := range spatialIDs {
+		zooms[spatialID.GetZ()] = append(zooms[spatialID.GetZ()], spatialID)
+	}
+
+	for _, zoom := range zooms {
+		slices.SortFunc(zoom, CompareSpatialIDs)
+	}
+
+	for i := MaxZ; i >= 0; i -= 1 {
+		for j := 0; j < len(zooms[i]); j += 1 {
+			if zooms[i][j].GetZ() % 2 == 1 {
+				continue
+			}
+
+			
+	}
+
+	// 空間IDのマージ
+	mergedSpatialIDs := []*SpatialID{}
+	for _, spatialID := range spatialIDs {
+		mergedSpatialIDs = append(mergedSpatialIDs, spatialID)
+	}
+
+	return mergedSpatialIDs
+}
+
+func CompareSpatialIDs (a, b *SpatialID) int {
+	if a.GetZ() < b.GetZ() {
+		return -1
+	} else if a.GetZ() > b.GetZ() {
+		return 1
+	}
+
+	if a.GetF() < b.GetF() {
+		return -1
+	} else if a.GetF() > b.GetF() {
+		return 1
+	}
+
+	if a.GetX() < b.GetX() {
+		return -1
+	} else if a.GetX() > b.GetX() {
+		return 1
+	}
+
+	if a.GetY() < b.GetY() {
+		return -1
+	} else if a.GetY() > b.GetY() {
+		return 1
+	}
+
+	return 0
+}
 
 // SpatialID 空間IDクラス
 type SpatialID struct {
