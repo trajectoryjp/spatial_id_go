@@ -281,7 +281,7 @@ func TestCheckSpatialIdsOverlap09(t *testing.T) {
 			spatialId2: "18/1/58198/25804",
 			// 期待値
 			expectValue: false,
-			expectError: "InputValueError,入力チェックエラー,output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset @spatialId1[0] = 25/16777216/0/3225",
+			expectError: "InputValueError,入力チェックエラー,outputIndex=33554432 is out of range at outputZoom=25 @spatialId1[0] = 25/16777216/0/3225",
 		},
 		{
 			// 入力空間IDのfインデックスが不正
@@ -290,7 +290,7 @@ func TestCheckSpatialIdsOverlap09(t *testing.T) {
 			spatialId2: "25/16777216/0/3225",
 			// 期待値
 			expectValue: false,
-			expectError: "InputValueError,入力チェックエラー,output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset @spatialId2[0] = 25/16777216/0/3225",
+			expectError: "InputValueError,入力チェックエラー,outputIndex=33554432 is out of range at outputZoom=25 @spatialId2[0] = 25/16777216/0/3225",
 		},
 		{
 			// 入力可能な高度インデックス範囲を超えている(下限より小さい)
@@ -300,7 +300,7 @@ func TestCheckSpatialIdsOverlap09(t *testing.T) {
 			// 期待値
 			expectValue: false,
 			// 高度変換が負数を許容しないため高度変換エラーになる
-			expectError: "InputValueError,入力チェックエラー,output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset @spatialId1[0] = 25/-16777217/0/3225",
+			expectError: "InputValueError,入力チェックエラー,outputIndex=-1 is out of range at outputZoom=25 @spatialId1[0] = 25/-16777217/0/3225",
 		},
 		{
 			// 入力可能な高度インデックス範囲を超えている(下限より小さい)
@@ -310,7 +310,7 @@ func TestCheckSpatialIdsOverlap09(t *testing.T) {
 			// 期待値
 			expectValue: false,
 			// 高度変換が負数を許容しないため高度変換エラーになる
-			expectError: "InputValueError,入力チェックエラー,output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset @spatialId2[0] = 25/-16777217/0/3225",
+			expectError: "InputValueError,入力チェックエラー,outputIndex=-1 is out of range at outputZoom=25 @spatialId2[0] = 25/-16777217/0/3225",
 		},
 	}
 	for _, testCase := range testCases {
