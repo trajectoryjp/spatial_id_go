@@ -2,7 +2,7 @@ package spatialID
 
 import (
 	"math"
-	"slices"
+	// "slices"
 	"strconv"
 	"strings"
 
@@ -22,83 +22,83 @@ const delimiter = "/"
 
 var SpatialIDZoomSetTable = tree.Create3DTable()
 
-func MergeSpatialIDs (spatialIDs []*SpatialID) []*SpatialID {
-	type element struct {
-		id SpatialID
-		isExprored bool
-	}
-	compare := func(a, b *element) int {
-		return CompareSpatialIDs(&a.id, &b.id)
-	}
+// func MergeSpatialIDs (spatialIDs []*SpatialID) []*SpatialID {
+// 	type element struct {
+// 		id SpatialID
+// 		isExprored bool
+// 	}
+// 	compare := func(a, b *element) int {
+// 		return CompareSpatialIDs(&a.id, &b.id)
+// 	}
 
-	zooms := [MaxZ + 1][]*element{}
-	for _, spatialID := range spatialIDs {
-		zooms[spatialID.GetZ()] = append(zooms[spatialID.GetZ()], &element{
-			id: *spatialID,
-			isExprored: false,
-		})
-	}
+// 	zooms := [MaxZ + 1][]*element{}
+// 	for _, spatialID := range spatialIDs {
+// 		zooms[spatialID.GetZ()] = append(zooms[spatialID.GetZ()], &element{
+// 			id: *spatialID,
+// 			isExprored: false,
+// 		})
+// 	}
 
-	for _, zoom := range zooms {
-		slices.SortFunc(zoom, compare)
-	}
+// 	for _, zoom := range zooms {
+// 		slices.SortFunc(zoom, compare)
+// 	}
 
-	for i := MaxZ; i >= 0; i -= 1 {
-		zoom := zooms[i]
-		for j := len(zoom) - 1; j >= 0; j -= 1 {
-			// {0, 0, 0}
-			element0 := zoom[j]
-			if element0.isExprored {
-				continue
-			}
-			element0.isExprored = true
+// 	for i := MaxZ; i >= 0; i -= 1 {
+// 		zoom := zooms[i]
+// 		for j := len(zoom) - 1; j >= 0; j -= 1 {
+// 			// {0, 0, 0}
+// 			element0 := zoom[j]
+// 			if element0.isExprored {
+// 				continue
+// 			}
+// 			element0.isExprored = true
 
-			if element0.id.GetF() % 2 == 0 {
-				continue
-			}
+// 			if element0.id.GetF() % 2 == 0 {
+// 				continue
+// 			}
 
-			// {1, 0, 0}
-			j -= 1
-			element1 := zoom[j]
-			if element1.isExprored {
-				continue
-			}
-			element1.isExprored = true
+// 			// {1, 0, 0}
+// 			j -= 1
+// 			element1 := zoom[j]
+// 			if element1.isExprored {
+// 				continue
+// 			}
+// 			element1.isExprored = true
 
-			for element1.id.GetF() != element0.id.GetF() {
-				j -= 1
-				element1 = zoom[j]
-				if element1.isExprored {
-					continue
-				}
-				element1.isExprored = true
-			}
-			if element1.id.GetF() != element0.id.GetF() + 1 {
-				continue
-			}
-			if element1.id.GetX() != element0.id.GetX() {
-				continue
-			}
-			if element1.id.GetY() != element0.id.GetY() {
-				continue
-			}
+// 			for element1.id.GetF() != element0.id.GetF() {
+// 				j -= 1
+// 				element1 = zoom[j]
+// 				if element1.isExprored {
+// 					continue
+// 				}
+// 				element1.isExprored = true
+// 			}
+// 			if element1.id.GetF() != element0.id.GetF() + 1 {
+// 				continue
+// 			}
+// 			if element1.id.GetX() != element0.id.GetX() {
+// 				continue
+// 			}
+// 			if element1.id.GetY() != element0.id.GetY() {
+// 				continue
+// 			}
 
-			// {0, 1, 0}
-			slices.BinarySearchFunc(zoom, &element{
-				id
-			})
-		}
+// 			// {0, 1, 0}
+// 			slices.BinarySearchFunc(zoom, &element{
+// 				id
+// 			})
+// 		}
 
-	}
+// 	}
 
-	// 空間IDのマージ
-	mergedSpatialIDs := []*SpatialID{}
-	for _, spatialID := range spatialIDs {
-		mergedSpatialIDs = append(mergedSpatialIDs, spatialID)
-	}
+// 	// 空間IDのマージ
+// 	mergedSpatialIDs := []*SpatialID{}
+// 	for _, spatialID := range spatialIDs {
+// 		mergedSpatialIDs = append(mergedSpatialIDs, spatialID)
+// 	}
 
-	return mergedSpatialIDs
-}
+// 	return mergedSpatialIDs
+// }
 
 func CompareSpatialIDs (a, b *SpatialID) int {
 	if a.GetZ() < b.GetZ() {
