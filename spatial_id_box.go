@@ -38,6 +38,20 @@ func NewSpatialIDBox(min SpatialID, max SpatialID) (*SpatialIDBox, error) {
 	}, nil
 }
 
+func NewSpatialIDBoxFromGeodeticBox(geodeticBox GeodeticBox, zoomLevel int8) (*SpatialIDBox, error) {
+	minSpatialID, error := NewSpatialIDFromGeodetic(geodeticBox.Min, zoomLevel)
+	if error != nil {
+		return nil, error
+	}
+
+	maxSpatialID, error := NewSpatialIDFromGeodetic(geodeticBox.Max, zoomLevel)
+	if error != nil {
+		return nil, error
+	}
+
+	return NewSpatialIDBox(*minSpatialID, *maxSpatialID)
+}
+
 func (box *SpatialIDBox) AddZ(delta int8) error {
 	if delta < 0 {
 		newMin, error := box.min.NewParent(-delta)
@@ -96,67 +110,7 @@ func (box SpatialIDBox) IsCollidedWith(another SpatialIDBox) bool {
 	return true
 }
 
-func ForSpatialIDsCollidedWithConvexHull(zoomLevel int8, convexHull []*coordinates.Geodetic, clearance float64, function func(id *SpatialID)) error {
-	if len(convexHull) == 0 {
-		return nil
-	}
-
-	geodeticMin := *convexHull[0]
-	geodeticMax := geodeticMin
-	for _, vertex := range convexHull {
-		if *vertex.Longitude() < *geodeticMin.Longitude() {
-			*geodeticMin.Longitude() = *vertex.Longitude()
-		} else if *vertex.Longitude() > *geodeticMax.Longitude() {
-			*geodeticMax.Longitude() = *vertex.Longitude()
-		}
-
-		if *vertex.Latitude() < *geodeticMin.Latitude() {
-			*geodeticMin.Latitude() = *vertex.Latitude()
-		} else if *vertex.Latitude() > *geodeticMax.Latitude() {
-			*geodeticMax.Latitude() = *vertex.Latitude()
-		}
-
-		if *vertex.Altitude() < *geodeticMin.Altitude() {
-			*geodeticMin.Altitude() = *vertex.Altitude()
-		} else if *vertex.Altitude() > *geodeticMax.Altitude() {
-			*geodeticMax.Altitude() = *vertex.Altitude()
-		}
-	}
-
-	localFromGeocentric := geodeticMin.GenerateLocalFromGeocentric()
-	geocentricFromLocal := geodeticMin.GenerateGeocentricFromLocal()
-
-	geocentricMin := coordinates.GeocentricFromGeodetic(geodeticMin)
-	geocentricMax := coordinates.GeocentricFromGeodetic(geodeticMax)
-	localMin := localFromGeocentric(geocentricMin)
-	localMax := localFromGeocentric(geocentricMax)
-	
-	localMin[0] -= clearance
-	localMin[1] -= clearance
-	localMin[2] -= clearance
-	localMax[0] += clearance
-	localMax[1] += clearance
-	localMax[2] += clearance
-
-	geocentricMin = geocentricFromLocal(localMin)
-	geocentricMax = geocentricFromLocal(localMax)
-	geodeticMin = coordinates.GeodeticFromGeocentric(geocentricMin)
-	geodeticMax = coordinates.GeodeticFromGeocentric(geocentricMax)
-
-	minSpatialID, error := NewSpatialIDFromGeodetic(coordinates.GeodeticFromGeocentric(geocentricMin), zoomLevel)
-	if error != nil {
-		return error
-	}
-	maxSpatialID, error := NewSpatialIDFromGeodetic(coordinates.GeodeticFromGeocentric(geocentricMax), zoomLevel)
-	if error != nil {
-		return error
-	}
-
-	spatialIDBox, error := NewSpatialIDBox(*minSpatialID, *maxSpatialID)
-	if error != nil {
-		return error
-	}
-
+func (spatialIDBox SpatialIDBox) ForCollidedWithConvexHull(convexHull []*coordinates.Geodetic, clearance float64, function func(id *SpatialID)) error {
 	measure := closest.Measure{
 		ConvexHulls: [2][]*mgl64.Vec3{
             make([]*mgl64.Vec3, len(convexHull)),

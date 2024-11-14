@@ -6,11 +6,63 @@ import (
 	mathematics "github.com/HarutakaMatsumoto/mathematics_go"
 	"github.com/HarutakaMatsumoto/mathematics_go/geometry/rectangular/solid"
 	"github.com/trajectoryjp/geodesy_go/coordinates"
+	"github.com/trajectoryjp/spatial_id_go/v4/common/errors"
 )
 
 type GeodeticBox struct {
 	Min coordinates.Geodetic
 	Max coordinates.Geodetic
+}
+
+func NewGeodeticBoxFromConvexHull(convexHull []*coordinates.Geodetic, clearance float64) (*GeodeticBox, error) {
+	if len(convexHull) == 0 {
+		return nil, errors.NewSpatialIdError(errors.InputValueErrorCode, "The convex hull is empty.")
+	}
+
+	geodeticMin := *convexHull[0]
+	geodeticMax := geodeticMin
+	for _, vertex := range convexHull {
+		if *vertex.Longitude() < *geodeticMin.Longitude() {
+			*geodeticMin.Longitude() = *vertex.Longitude()
+		} else if *vertex.Longitude() > *geodeticMax.Longitude() {
+			*geodeticMax.Longitude() = *vertex.Longitude()
+		}
+
+		if *vertex.Latitude() < *geodeticMin.Latitude() {
+			*geodeticMin.Latitude() = *vertex.Latitude()
+		} else if *vertex.Latitude() > *geodeticMax.Latitude() {
+			*geodeticMax.Latitude() = *vertex.Latitude()
+		}
+
+		if *vertex.Altitude() < *geodeticMin.Altitude() {
+			*geodeticMin.Altitude() = *vertex.Altitude()
+		} else if *vertex.Altitude() > *geodeticMax.Altitude() {
+			*geodeticMax.Altitude() = *vertex.Altitude()
+		}
+	}
+
+	localFromGeocentric := geodeticMin.GenerateLocalFromGeocentric()
+	geocentricFromLocal := geodeticMin.GenerateGeocentricFromLocal()
+
+	geocentricMin := coordinates.GeocentricFromGeodetic(geodeticMin)
+	geocentricMax := coordinates.GeocentricFromGeodetic(geodeticMax)
+	localMin := localFromGeocentric(geocentricMin)
+	localMax := localFromGeocentric(geocentricMax)
+	
+	localMin[0] -= clearance
+	localMin[1] -= clearance
+	localMin[2] -= clearance
+	localMax[0] += clearance
+	localMax[1] += clearance
+	localMax[2] += clearance
+
+	geocentricMin = geocentricFromLocal(localMin)
+	geocentricMax = geocentricFromLocal(localMax)
+
+	return &GeodeticBox{
+		Min: coordinates.GeodeticFromGeocentric(geocentricMin),
+		Max: coordinates.GeodeticFromGeocentric(geocentricMax),
+	}, nil
 }
 
 func NewGeodeticBoxFromSpatialIDBox(spatialIDBox SpatialIDBox) *GeodeticBox {

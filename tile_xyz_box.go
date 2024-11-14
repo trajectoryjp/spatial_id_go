@@ -81,7 +81,7 @@ func (box TileXYZBox) GetMax() TileXYZ {
 	return box.max
 }
 
-func (box TileXYZBox) ForCollisionWithConvexHull(convexHull []*coordinates.Geodetic, clearance float64, function func(TileXYZ) TileXYZ) {
+func (box TileXYZBox) ForCollisionWithConvexHull(convexHull []*coordinates.Geodetic, clearance float64, function func(*TileXYZ)) {
 	measure := closest.Measure{
 		ConvexHulls: [2][]*mgl64.Vec3{
 			make([]*mgl64.Vec3, len(convexHull)),
@@ -94,8 +94,8 @@ func (box TileXYZBox) ForCollisionWithConvexHull(convexHull []*coordinates.Geode
 	}
 
 	oldDistance := math.Inf(1)
-	box.ForXYZ(func(tile TileXYZ) TileXYZ {
-		tileXYZBox, _ := NewTileXYZBox(tile, tile)
+	box.ForXYZ(func(tile *TileXYZ) {
+		tileXYZBox, _ := NewTileXYZBox(*tile, *tile)
 		geodeticBox := NewGeodeticBoxFromTileXYZBox(*tileXYZBox)
 
 		for i, vertex := range geodeticBox.GetVertices() {
@@ -110,57 +110,43 @@ func (box TileXYZBox) ForCollisionWithConvexHull(convexHull []*coordinates.Geode
 
 		if distance > clearance {
 			if distance > oldDistance {
-				tile.SetZ(box.GetMax().GetZ() - 1) // TODO: Consider
+				tile.SetZ(box.GetMax().GetZ())
 				oldDistance = math.MaxFloat64
 			}
-
-			return tile
 		}
 
-		tile = function(tile)
+		function(tile)
 
 		if tile.GetZ() == box.GetMax().GetZ() {
 			oldDistance = math.Inf(1)
 		} else {
 			oldDistance = distance
 		}
-
-		return tile
 	})
 }
 
-func (box TileXYZBox) ForXYZ(function func(TileXYZ) TileXYZ) {
+func (box TileXYZBox) ForXYZ(function func(*TileXYZ)) {
 	current := TileXYZ{}
 
-	for current.SetX(box.GetMin().GetX()); current.GetX() != box.GetMax().GetX(); current.SetX(current.GetX() + 1) {
-		for current.SetY(box.GetMin().GetY()); current.GetY() != box.GetMax().GetY(); current.SetY(current.GetY() + 1) {
-			for current.SetZ(box.GetMin().GetZ()); current.GetZ() != box.GetMax().GetZ(); current.SetZ(current.GetZ() + 1) {
-				current = function(current)
+	for current.SetX(box.GetMin().GetX()); ; current.SetX(current.GetX() + 1) {
+		for current.SetY(box.GetMin().GetY()); ; current.SetY(current.GetY() + 1) {
+			for current.SetZ(box.GetMin().GetZ()); ; current.SetZ(current.GetZ() + 1) {
+				function(&current)
+
+				if current.GetZ() == box.GetMax().GetZ() {
+					break
+				}
 			}
 
-			current = function(current)
+			if current.GetY() == box.GetMax().GetY() {
+				break
+			}
 		}
 
-		for current.SetZ(box.GetMin().GetZ()); current.GetZ() != box.GetMax().GetZ(); current.SetZ(current.GetZ() + 1) {
-			current = function(current)
+		if current.GetX() == box.GetMax().GetX() {
+			break
 		}
-
-		current = function(current)
 	}
-
-	for current.SetY(box.GetMin().GetY()); current.GetY() != box.GetMax().GetY(); current.SetY(current.GetY() + 1) {
-		for current.SetZ(box.GetMin().GetZ()); current.GetZ() != box.GetMax().GetZ(); current.SetZ(current.GetZ() + 1) {
-			current = function(current)
-		}
-
-		current = function(current)
-	}
-
-	for current.SetZ(box.GetMin().GetZ()); current.GetZ() != box.GetMax().GetZ(); current.SetZ(current.GetZ() + 1) {
-		current = function(current)
-	}
-
-	current = function(current)
 }
 
 func NewTileXYZBoxFromSpatialIDBox(spatialIDBox SpatialIDBox) (*TileXYZBox, error) {
