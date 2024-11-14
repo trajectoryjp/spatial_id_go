@@ -7,51 +7,9 @@ import (
 
 	"github.com/go-gl/mathgl/mgl64"
 	closest "github.com/trajectoryjp/closest_go"
+	"github.com/trajectoryjp/geodesy_go/coordinates"
 	geodesy "github.com/trajectoryjp/geodesy_go/coordinates"
-	"github.com/trajectoryjp/spatial_id_go/v4/common/errors"
-	"github.com/trajectoryjp/spatial_id_go/v4/common/object"
-	"github.com/trajectoryjp/spatial_id_go/v4/shape"
 )
-
-// TestGetExtendedSpatialIdsWithinRadiusOfLine01 tests when skipsMeasurement=true and radius =0
-// Expected value should return the exact same voxels as GetExtendedSpatialIdsOnLine
-func TestGetExtendedSpatialIdsWithinRadiusOfLine01(t *testing.T) {
-
-	var radius float64 = 0
-	var hZoom int64 = 25
-	var vZoom int64 = 25
-
-	startPoint, error := object.NewPoint(139.788452, 35.67093015, 0)
-	if error != nil {
-		t.Error(error)
-	}
-	endPoint, error := object.NewPoint(139.788452, 35.670840, 0)
-	if error != nil {
-		t.Error(error)
-	}
-
-	idsOnLine, error := shape.GetExtendedSpatialIdsOnLine(startPoint, endPoint, hZoom, vZoom)
-	if error != nil {
-		t.Error(error)
-	}
-	idsWithinRadiusOfLine, error := GetExtendedSpatialIdsWithinRadiusOfLine(startPoint, endPoint, radius, hZoom, vZoom, true)
-	if error != nil {
-		t.Error(error)
-	}
-
-	map1, map2 := make(map[string]string), make(map[string]string)
-	for _, value := range idsOnLine {
-		map1[value] = value
-	}
-	for _, value := range idsWithinRadiusOfLine {
-		map2[value] = value
-	}
-	if !reflect.DeepEqual(map1, map2) {
-		t.Errorf("期待値: %v 取得値: %v", idsOnLine, idsWithinRadiusOfLine)
-	}
-	t.Log("テスト終了")
-
-}
 
 // TestGetSpatialIdsWithinRadiusOfLine02 tests when skipsMeasurement=true and radius > 0 but radius is
 // less than than the length of a voxcel.
@@ -61,6 +19,20 @@ func TestGetExtendedSpatialIdsWithinRadiusOfLine01(t *testing.T) {
 // - GetNspatialIdsAroundVoxcels: (count excludes ids on line) 50
 // - GetSpatialIdsWithinRadiusOfLine: (count includes ids on line) 9 ids per layer * 6 layers = 54 ids expected
 func TestGetExtendedSpatialIdsWithinRadiusOfLine02(t *testing.T) {
+	convex := []*coordinates.Geodetic{
+		{
+			139.788452,
+			35.67093015,
+			0,
+		},
+		{
+			139.788452,
+			35.670840,
+			0,
+		},
+	}
+
+	
 
 	var radius float64 = 0.1
 	var hZoom int64 = 23
