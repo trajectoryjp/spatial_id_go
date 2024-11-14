@@ -19,7 +19,7 @@ import (
 // - GetNspatialIdsAroundVoxcels: (count excludes ids on line) 50
 // - GetSpatialIdsWithinRadiusOfLine: (count includes ids on line) 9 ids per layer * 6 layers = 54 ids expected
 func TestGetExtendedSpatialIdsWithinRadiusOfLine02(t *testing.T) {
-	convex := []*coordinates.Geodetic{
+	convexHull := []*coordinates.Geodetic{
 		{
 			139.788452,
 			35.67093015,
@@ -31,10 +31,15 @@ func TestGetExtendedSpatialIdsWithinRadiusOfLine02(t *testing.T) {
 			0,
 		},
 	}
+	clearance := 0.1
 
-	
+	geodeticBox, error := NewGeodeticBoxFromConvexHull(convexHull, clearance)
+	if error != nil {
+		t.Error(error)
+	}
 
-	var radius float64 = 0.1
+	NewTileXYZBoxFromGeodeticBox(geodeticBox, 25, 25)
+
 	var hZoom int64 = 23
 	var vZoom int64 = 23
 
