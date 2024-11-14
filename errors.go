@@ -1,5 +1,4 @@
-// errors エラー管理パッケージ
-package errors
+package spatialID
 
 import (
 	"fmt"

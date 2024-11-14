@@ -10,8 +10,6 @@ import (
 	"github.com/trajectoryjp/geodesy_go/coordinates"
 	"github.com/trajectoryjp/multidimensional-radix-tree/src/tree"
 	"github.com/trajectoryjp/spatial_id_go/v4/common"
-	"github.com/trajectoryjp/spatial_id_go/v4/common/consts"
-	"github.com/trajectoryjp/spatial_id_go/v4/common/errors"
 )
 
 const MaxZ = 35
@@ -138,11 +136,11 @@ type SpatialID struct {
 
 func NewSpatialIDFromString(string string) (*SpatialID, error) {
 	// 空間IDを区切り文字で分割
-	attributes := strings.Split(string, consts.SpatialIDDelimiter)
+	attributes := strings.Split(string, delimiter)
 
 	if len(attributes) != 4 {
 		// 区切り文字数がフォーマットに従っていない場合エラーインスタンスを返却
-		return nil, errors.NewSpatialIdError(errors.InputValueErrorCode, "")
+		return nil, NewSpatialIdError(InputValueErrorCode, "")
 	}
 
 	// 整数型変換後のフィールド値格納用
@@ -154,7 +152,7 @@ func NewSpatialIDFromString(string string) (*SpatialID, error) {
 
 		if error != nil {
 			// int64変換時にエラーが発生した場合エラーインスタンスを返却
-			return nil, errors.NewSpatialIdError(errors.InputValueErrorCode, "")
+			return nil, NewSpatialIdError(InputValueErrorCode, "")
 		}
 
 		int64s = append(int64s, int64_)
@@ -191,7 +189,7 @@ func NewSpatialID(
 	id := &SpatialID{}
 
 	if z < 0 || MaxZ < z {
-		return nil, errors.NewSpatialIdError(errors.InputValueErrorCode, "")
+		return nil, NewSpatialIdError(InputValueErrorCode, "")
 	}
 	id.z = z
 

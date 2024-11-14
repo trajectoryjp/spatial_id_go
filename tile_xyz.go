@@ -6,7 +6,6 @@ import (
 	mathematics "github.com/HarutakaMatsumoto/mathematics_go"
 	"github.com/trajectoryjp/geodesy_go/coordinates"
 	"github.com/trajectoryjp/spatial_id_go/v4/common"
-	"github.com/trajectoryjp/spatial_id_go/v4/common/errors"
 )
 
 const MaxQuadkeyZoomLevel = 35
@@ -51,12 +50,12 @@ func NewTileXYZ(
 	tile := &TileXYZ{}
 
 	if quadkeyZoomLevel < 0 || MaxQuadkeyZoomLevel < quadkeyZoomLevel {
-		return nil, errors.NewSpatialIdError(errors.InputValueErrorCode, "")
+		return nil, NewSpatialIdError(InputValueErrorCode, "")
 	}
 	tile.quadkeyZoomLevel = quadkeyZoomLevel
 
 	if altitudekeyZoomLevel < 0 || MaxAltitudekeyZoomLevel < altitudekeyZoomLevel {
-		return nil, errors.NewSpatialIdError(errors.InputValueErrorCode, "")
+		return nil, NewSpatialIdError(InputValueErrorCode, "")
 	}
 	tile.altitudekeyZoomLevel = altitudekeyZoomLevel
 

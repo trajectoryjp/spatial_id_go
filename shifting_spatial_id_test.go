@@ -1,4 +1,4 @@
-package operated
+package spatialID
 
 import (
 	"reflect"

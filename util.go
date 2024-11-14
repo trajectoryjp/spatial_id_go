@@ -1,5 +1,5 @@
 // Package common 共通処理パッケージ。
-package common
+package spatialID
 
 import (
 	"math"

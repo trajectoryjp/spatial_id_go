@@ -1,4 +1,4 @@
-package integrate
+package spatialID
 
 import (
 	"reflect"

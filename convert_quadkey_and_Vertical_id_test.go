@@ -1,5 +1,5 @@
 // 空間IDパッケージ
-package transform
+package spatialID
 
 import (
 	"fmt"

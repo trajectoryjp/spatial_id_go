@@ -1,5 +1,5 @@
 // object ライブラリ内で共通的に使用するオブジェクトを管理するパッケージ。
-package object
+package spatialID
 
 import (
 	"reflect"
