@@ -80,6 +80,22 @@ func (box SpatialIDBox) GetMax() SpatialID {
 	return box.max
 }
 
+func (box SpatialIDBox) IsCollidedWith(another SpatialIDBox) bool {
+	another.AddZ(box.GetMin().GetZ() - another.GetMin().GetZ())
+
+	if box.GetMin().GetF() > another.GetMax().GetF() || box.GetMax().GetF() < another.GetMin().GetF() {
+		return false
+	}
+	if box.GetMin().GetX() > another.GetMax().GetX() || box.GetMax().GetX() < another.GetMin().GetX() {
+		return false
+	}
+	if box.GetMin().GetY() > another.GetMax().GetY() || box.GetMax().GetY() < another.GetMin().GetY() {
+		return false
+	}
+
+	return true
+}
+
 func ForSpatialIDsCollidedWithConvexHull(zoomLevel int8, convexHull []*coordinates.Geodetic, clearance float64, function func(id *SpatialID)) error {
 	if len(convexHull) == 0 {
 		return nil
