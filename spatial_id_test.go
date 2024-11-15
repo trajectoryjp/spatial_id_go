@@ -10,28 +10,17 @@ import (
 // 試験詳細：
 // + 試験データ
 //   - パターン1：
-//     拡張空間ID："18/232837/103222/25/0"
+//     拡張空間ID："18/232837/103222/0"
 //
 // + 確認内容
 //   - 入力値から初期化した拡張空間IDオブジェクトを取得できること
 func TestNewExtendedSpatialID01(t *testing.T) {
-	//入力値
-	id := "18/232837/103222/25/0"
-	resultVal, resultErr := NewExtendedSpatialID(id)
-
-	//期待値
-	expectVal := &ExtendedSpatialID{18, 232837, 103222, 25, 0}
-
-	// 始点から終点へのベクトルと期待値の比較
-	if !reflect.DeepEqual(resultVal, expectVal) {
-		t.Errorf("拡張空間IDオブジェクト - 期待値：%v, 取得値：%v", expectVal, resultVal)
-	}
-	if resultErr != nil {
-		// 戻り値のエラーインスタンスが期待値と異なる場合Errorをログに出力
-		t.Errorf("error - 期待値：nil, 取得値：%s", resultErr)
-	}
-
-	t.Log("テスト終了")
+	testNewSpatialIDFromString(
+		t,
+		"18/232837/103222/0",
+		&SpatialID{18, 232837, 103222, 0},
+		nil,
+	)
 }
 
 // TestNewExtendedSpatialID02 拡張空間ID初期化関数 異常系動作確認
@@ -39,88 +28,27 @@ func TestNewExtendedSpatialID01(t *testing.T) {
 // 試験詳細：
 // + 試験データ
 //   - パターン1：
-//     拡張空間ID："18/232837/103222/25"
+//     拡張空間ID："18/232837/103222"
 //
 // + 確認内容
 //   - 入力値から入力チェックエラーを取得できること
 func TestNewExtendedSpatialID02(t *testing.T) {
 	//入力値
-	id := "18/232837/103222/25"
-	resultVal, resultErr := NewExtendedSpatialID(id)
+	string := "18/232837/103222"
+	spatialID, error := NewSpatialIDFromString(string)
 
 	//期待値
-	expectVal := &ExtendedSpatialID{0, 0, 0, 0, 0}
-	expectErr := "InputValueError,入力チェックエラー"
+	expectedSpatialID := (*SpatialID)(nil)
+	expectErrorString := "InputValueError,入力チェックエラー"
 
 	// 始点から終点へのベクトルと期待値の比較
-	if !reflect.DeepEqual(resultVal, expectVal) {
-		t.Errorf("拡張空間IDオブジェクト - 期待値：%v, 取得値：%v", expectVal, resultVal)
+	if !reflect.DeepEqual(spatialID, expectedSpatialID) {
+		t.Errorf("拡張空間IDオブジェクト - 期待値：%v, 取得値：%v", expectedSpatialID, spatialID)
 	}
-	if resultErr.Error() != expectErr {
+	if error.Error() != expectErrorString {
 		// 戻り値のエラーインスタンスが期待値と異なる場合Errorをログに出力
-		t.Errorf("error - 期待値：%s, 取得値：%s\n", expectErr, resultErr.Error())
+		t.Errorf("error - 期待値：%s, 取得値：%s\n", expectErrorString, error.Error())
 	}
-
-	t.Log("テスト終了")
-}
-
-// TestResetExtendedSpatialID01 拡張空間ID再設定関数 正常系動作確認
-//
-// 試験詳細：
-// + 試験データ
-//   - パターン1：
-//     拡張空間ID："18/232837/103222/25/0"
-//
-// + 確認内容
-//   - 入力値から初期化した拡張空間IDオブジェクトを取得できること
-func TestResetExtendedSpatialID01(t *testing.T) {
-	//入力値
-	resultVal := &ExtendedSpatialID{}
-	resultErr := resultVal.ResetExtendedSpatialID("18/232837/103222/25/0")
-
-	//期待値
-	expectVal := &ExtendedSpatialID{18, 232837, 103222, 25, 0}
-
-	if !reflect.DeepEqual(resultVal, expectVal) {
-		t.Errorf("拡張空間IDオブジェクト - 期待値：%v, 取得値：%v", expectVal, resultVal)
-	}
-
-	if resultErr != nil {
-		// 戻り値のエラーインスタンスが期待値と異なる場合Errorをログに出力
-		t.Errorf("error - 期待値：nil, 取得値：%+v", resultErr)
-	}
-
-	t.Log("テスト終了")
-}
-
-// TestResetExtendedSpatialID02 拡張空間ID再設定関数 引数にExtendedSpatialIDのフォーマットに違反した値が入力された場合
-//
-// 試験詳細：
-// + 試験データ
-//   - パターン1：
-//     拡張空間ID："18/232837/103222/25"
-//
-// + 確認内容
-//   - 入力値から入力チェックエラーを取得できること
-func TestResetExtendedSpatialID02(t *testing.T) {
-	//入力値
-	resultVal := &ExtendedSpatialID{}
-	resultErr := resultVal.ResetExtendedSpatialID("18/232837/103222/25")
-
-	//期待値
-	expectVal := &ExtendedSpatialID{0, 0, 0, 0, 0}
-	expectErr := "InputValueError,入力チェックエラー"
-
-	if !reflect.DeepEqual(resultVal, expectVal) {
-		t.Errorf("拡張空間IDオブジェクト - 期待値：%v, 取得値：%v", expectVal, resultVal)
-	}
-
-	if resultErr.Error() != expectErr {
-		// 戻り値のエラーインスタンスが期待値と異なる場合Errorをログに出力
-		t.Errorf("error - 期待値：%s, 取得値：%s\n", expectErr, resultErr.Error())
-	}
-
-	t.Log("テスト終了")
 }
 
 // TestResetExtendedSpatialID03 拡張空間ID再設定関数 入力された拡張空間IDの水平精度がしきい値を超過していた場合(境界値)
@@ -135,23 +63,12 @@ func TestResetExtendedSpatialID02(t *testing.T) {
 // 備考：
 //  対象関数内では精度の値で判定が変わらないため、値が返せていることを確認。
 func TestResetExtendedSpatialID03(t *testing.T) {
-	//入力値
-	resultVal := &ExtendedSpatialID{}
-	resultErr := resultVal.ResetExtendedSpatialID("36/232837/103222/25/0")
-
-	//期待値
-	expectVal := &ExtendedSpatialID{36, 232837, 103222, 25, 0}
-
-	if !reflect.DeepEqual(resultVal, expectVal) {
-		t.Errorf("拡張空間IDオブジェクト - 期待値：%v, 取得値：%v", expectVal, resultVal)
-	}
-
-	if resultErr != nil {
-		// 戻り値のエラーインスタンスが期待値と異なる場合Errorをログに出力
-		t.Errorf("error - 期待値：nil, 取得値：%+v", resultErr)
-	}
-
-	t.Log("テスト終了")
+	testNewSpatialIDFromString(
+		t,
+		"36/232837/103222/0",
+		nil,
+		NewSpatialIdError(InputValueErrorCode, ""),
+	)
 }
 
 // TestResetExtendedSpatialID04 拡張空間ID再設定関数 入力された拡張空間IDの水平精度がしきい値より小さい場合(境界値)
@@ -166,23 +83,12 @@ func TestResetExtendedSpatialID03(t *testing.T) {
 // 備考：
 //  対象関数内では精度の値で判定が変わらないため、値が返せていることを確認。
 func TestResetExtendedSpatialID04(t *testing.T) {
-	//入力値
-	resultVal := &ExtendedSpatialID{}
-	resultErr := resultVal.ResetExtendedSpatialID("-1/232837/103222/25/0")
-
-	//期待値
-	expectVal := &ExtendedSpatialID{-1, 232837, 103222, 25, 0}
-
-	if !reflect.DeepEqual(resultVal, expectVal) {
-		t.Errorf("拡張空間IDオブジェクト - 期待値：%v, 取得値：%v", expectVal, resultVal)
-	}
-
-	if resultErr != nil {
-		// 戻り値のエラーインスタンスが期待値と異なる場合Errorをログに出力
-		t.Errorf("error - 期待値：nil, 取得値：%+v", resultErr)
-	}
-
-	t.Log("テスト終了")
+	testNewSpatialIDFromString(
+		t,
+		"-1/232837/103222/0",
+		nil,
+		NewSpatialIdError(InputValueErrorCode, ""),
+	)
 }
 
 // TestResetExtendedSpatialID05 拡張空間ID再設定関数 正常系動作確認(水平精度境界値)
@@ -195,23 +101,12 @@ func TestResetExtendedSpatialID04(t *testing.T) {
 // + 確認内容
 //   - 入力値から初期化した拡張空間IDオブジェクトを取得できること
 func TestResetExtendedSpatialID05(t *testing.T) {
-	//入力値
-	resultVal := &ExtendedSpatialID{}
-	resultErr := resultVal.ResetExtendedSpatialID("35/232837/103222/25/0")
-
-	//期待値
-	expectVal := &ExtendedSpatialID{35, 232837, 103222, 25, 0}
-
-	if !reflect.DeepEqual(resultVal, expectVal) {
-		t.Errorf("拡張空間IDオブジェクト - 期待値：%v, 取得値：%v", expectVal, resultVal)
-	}
-
-	if resultErr != nil {
-		// 戻り値のエラーインスタンスが期待値と異なる場合Errorをログに出力
-		t.Errorf("error - 期待値：nil, 取得値：%+v", resultErr)
-	}
-
-	t.Log("テスト終了")
+	testNewSpatialIDFromString(
+		t,
+		"35/232837/103222/0",
+		&SpatialID{35, 232837, 103222, 25},
+		nil,
+	)
 }
 
 // TestResetExtendedSpatialID06 拡張空間ID再設定関数 正常系動作確認(水平精度境界値)
@@ -389,6 +284,24 @@ func TestResetExtendedSpatialID11(t *testing.T) {
 	}
 
 	t.Log("テスト終了")
+}
+
+func testNewSpatialIDFromString(
+	t *testing.T,
+	spatialIDString string,
+	expectedSpatialID *SpatialID,
+	expectedError error,
+	) {
+	spatialID, error := NewSpatialIDFromString(spatialIDString)
+
+	// 始点から終点へのベクトルと期待値の比較
+	if !reflect.DeepEqual(spatialID, expectedSpatialID) {
+		t.Errorf("拡張空間IDオブジェクト - 期待値：%v, 取得値：%v", expectedSpatialID, spatialID)
+	}
+	if !reflect.DeepEqual(error, expectedError) {
+		// 戻り値のエラーインスタンスが期待値と異なる場合Errorをログに出力
+		t.Errorf("error - 期待値：%s, 取得値：%s\n", expectedError.Error, error.Error())
+	}
 }
 
 // TestSetX01 位置設定関数 正常系動作確認
