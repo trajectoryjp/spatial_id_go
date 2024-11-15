@@ -75,16 +75,28 @@ func (tile *TileXYZ) SetX(x int64) {
 }
 
 func (tile *TileXYZ) SetY(y int64) {
-	tile.y = y%(1 << tile.GetQuadkeyZoomLevel())
-	if tile.y < 0 {
-		tile.y += 1 << tile.GetQuadkeyZoomLevel()
+	max := int64(1 << tile.GetQuadkeyZoomLevel()) -  1
+	min := int64(0)
+
+	if y > max {
+		tile.y = max
+	} else if y < min {
+		tile.y = min
+	} else {
+		tile.y = y
 	}
 }
 
 func (tile *TileXYZ) SetZ(z int64) {
-	tile.z = z%(1 << tile.GetAltitudekeyZoomLevel())
-	if tile.z < 0 {
-		tile.z += 1 << tile.GetAltitudekeyZoomLevel()
+	max := int64(1 << tile.GetAltitudekeyZoomLevel()) - 1
+	min := int64(0)
+
+	if z > max {
+		tile.z = max
+	} else if z < min {
+		tile.z = min
+	} else {
+		tile.z = z
 	}
 }
 

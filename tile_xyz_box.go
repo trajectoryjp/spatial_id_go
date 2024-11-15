@@ -95,6 +95,22 @@ func (box TileXYZBox) GetMax() TileXYZ {
 	return box.max
 }
 
+func (box TileXYZBox) IsCollidedWith(another TileXYZBox) bool {
+	another.AddZoomLevel(box.GetMin().GetQuadkeyZoomLevel()-another.GetMin().GetQuadkeyZoomLevel(), box.GetMin().GetAltitudekeyZoomLevel()-another.GetMin().GetAltitudekeyZoomLevel())
+
+	if box.GetMin().GetX() > another.GetMax().GetX() || box.GetMax().GetX() < another.GetMin().GetX() {
+		return false
+	}
+	if box.GetMin().GetY() > another.GetMax().GetY() || box.GetMax().GetY() < another.GetMin().GetY() {
+		return false
+	}
+	if box.GetMin().GetZ() > another.GetMax().GetZ() || box.GetMax().GetZ() < another.GetMin().GetZ() {
+		return false
+	}
+
+	return true
+}
+
 func (box TileXYZBox) ForCollisionWithConvexHull(convexHull []*coordinates.Geodetic, clearance float64, function func(*TileXYZ)) {
 	measure := closest.Measure{
 		ConvexHulls: [2][]*mgl64.Vec3{

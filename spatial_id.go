@@ -209,10 +209,16 @@ func (id *SpatialID) SetX(x int64) {
 	}
 }
 
-func (id *SpatialID) SetY(y int64) { // TODO: Fix
-	id.y = y%(1 << id.GetZ())
-	if id.y < 0 {
-		id.y += 1 << id.GetZ()
+func (id *SpatialID) SetY(y int64) {
+	max := int64(1 << id.GetZ()) -  1
+	min := int64(0)
+
+	if y > max {
+		id.y = max
+	} else if y < min {
+		id.y = min
+	} else {
+		id.y = y
 	}
 }
 
