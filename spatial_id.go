@@ -9,7 +9,6 @@ import (
 	mathematics "github.com/HarutakaMatsumoto/mathematics_go"
 	"github.com/trajectoryjp/geodesy_go/coordinates"
 	"github.com/trajectoryjp/multidimensional-radix-tree/src/tree"
-	"github.com/trajectoryjp/spatial_id_go/v4/common"
 )
 
 const MaxZ = 35
@@ -172,7 +171,7 @@ func NewSpatialIDFromGeodetic(geodetic coordinates.Geodetic, z int8) (*SpatialID
 	y := math.Floor(max * (1.0 - math.Log(math.Tan(radianLatitude)+(1.0/math.Cos(radianLatitude)))/math.Pi) / 2.0)
 
 	// 高さ全体の精度あたりの垂直方向の精度
-	altitudeResolution := float64(common.CalculateArithmeticShift(1, int64(SpatialIDZBaseExponent-z)))
+	altitudeResolution := float64(CalculateArithmeticShift(1, int64(SpatialIDZBaseExponent-z)))
 
 	// 垂直方向の位置を計算する
 	f := math.Floor(*geodetic.Altitude() / altitudeResolution)
