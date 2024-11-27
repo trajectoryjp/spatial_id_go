@@ -148,7 +148,7 @@ func GetNspatialIdsAroundVoxcels(spatialIDs []string, hLayers, vLayers int64) ([
 	// Loop through each X, Y, Z shift index and each SpatialID
 	for xShiftIndex = -hLayers; xShiftIndex < hLayers+1; xShiftIndex += 1 {
 		for yShiftIndex = -hLayers; yShiftIndex < hLayers+1; yShiftIndex += 1 {
-			for vShiftIndex = -vLayers; vShiftIndex < vLayers+1; vShiftIndex += 1 {
+			for vShiftIndex = -vLayers; vShiftIndex < vLayers; vShiftIndex += 1 {
 
 				if xShiftIndex == 0 && yShiftIndex == 0 && vShiftIndex == 0 {
 					continue
