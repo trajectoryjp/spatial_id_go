@@ -311,18 +311,18 @@ func TestSetZ01(t *testing.T) {
 // + 確認内容
 //   - 入力値に対して、経度の値を取得できること。
 func TestX01(t *testing.T) {
-	//入力値
-	EXSpatialID := ExtendedSpatialID{1, 2, 3, 4, 5}
-	resultVal := EXSpatialID.X()
+	expected := int64(3)
 
-	//期待値
-	var expectVal int64 = 2
-
-	if !reflect.DeepEqual(resultVal, expectVal) {
-		t.Errorf("経度 - 期待値：%v, 取得値：%v", expectVal, resultVal)
+	spatialID, error := NewSpatialID(5, 2, 3, 4)
+	if error != nil {
+		t.Errorf("空間IDオブジェクト - 期待値：nil, 取得値：%v", error)
 	}
 
-	t.Log("テスト終了")
+	result := spatialID.GetX()
+
+	if !reflect.DeepEqual(result, expected) {
+		t.Errorf("経度ID - 期待値：%v, 取得値：%v", expected, result)
+	}
 }
 
 // TestY01 緯度ID取得関数 正常系動作確認
@@ -335,18 +335,18 @@ func TestX01(t *testing.T) {
 // + 確認内容
 //   - 入力値に対して、緯度の値を取得できること。
 func TestY01(t *testing.T) {
-	//入力値
-	EXSpatialID := ExtendedSpatialID{1, 2, 3, 4, 5}
-	resultVal := EXSpatialID.Y()
+	expected := int64(4)
 
-	//期待値
-	var expectVal int64 = 3
-
-	if !reflect.DeepEqual(resultVal, expectVal) {
-		t.Errorf("緯度 - 期待値：%v, 取得値：%v", expectVal, resultVal)
+	spatialID, error := NewSpatialID(5, 2, 3, 4)
+	if error != nil {
+		t.Errorf("空間IDオブジェクト - 期待値：nil, 取得値：%v", error)
 	}
 
-	t.Log("テスト終了")
+	result := spatialID.GetY()
+
+	if !reflect.DeepEqual(result, expected) {
+		t.Errorf("緯度ID - 期待値：%v, 取得値：%v", expected, result)
+	}
 }
 
 // TestZ01 高さID取得関数 正常系動作確認
@@ -359,18 +359,18 @@ func TestY01(t *testing.T) {
 // + 確認内容
 //   - 入力値に対して、高さの値を取得できること。
 func TestZ01(t *testing.T) {
-	//入力値
-	EXSpatialID := ExtendedSpatialID{1, 2, 3, 4, 5}
-	resultVal := EXSpatialID.Z()
+	expected := int64(2)
 
-	//期待値
-	var expectVal int64 = 5
-
-	if !reflect.DeepEqual(resultVal, expectVal) {
-		t.Errorf("高さ - 期待値：%v, 取得値：%v", expectVal, resultVal)
+	spatialID, error := NewSpatialID(5, 2, 3, 4)
+	if error != nil {
+		t.Errorf("空間IDオブジェクト - 期待値：nil, 取得値：%v", error)
 	}
 
-	t.Log("テスト終了")
+	result := spatialID.GetF()
+
+	if !reflect.DeepEqual(result, expected) {
+		t.Errorf("高さID - 期待値：%v, 取得値：%v", expected, result)
+	}
 }
 
 // TestHZoom01 水平精度取得関数 正常系動作確認
@@ -383,66 +383,18 @@ func TestZ01(t *testing.T) {
 // + 確認内容
 //   - 入力値に対して、水平精度の値を取得できること。
 func TestHZoom01(t *testing.T) {
-	//入力値
-	EXSpatialID := ExtendedSpatialID{1, 2, 3, 4, 5}
-	resultVal := EXSpatialID.HZoom()
+	expected := int8(5)
 
-	//期待値
-	var expectVal int64 = 1
-
-	if !reflect.DeepEqual(resultVal, expectVal) {
-		t.Errorf("水平精度 - 期待値：%v, 取得値：%v", expectVal, resultVal)
+	spatialID, error := NewSpatialID(5, 2, 3, 4)
+	if error != nil {
+		t.Errorf("空間IDオブジェクト - 期待値：nil, 取得値：%v", error)
 	}
 
-	t.Log("テスト終了")
-}
+	result := spatialID.GetZ()
 
-// TestVZoom01 垂直精度取得関数 正常系動作確認
-//
-// 試験詳細：
-// + 試験データ
-//   - パターン1：
-//     拡張空間IDクラス：{1, 2, 3, 4, 5}
-//
-// + 確認内容
-//   - 入力値に対して、垂直精度の値を取得できること。
-func TestVZoom01(t *testing.T) {
-	//入力値
-	EXSpatialID := ExtendedSpatialID{1, 2, 3, 4, 5}
-	resultVal := EXSpatialID.VZoom()
-
-	//期待値
-	var expectVal int64 = 4
-
-	if !reflect.DeepEqual(resultVal, expectVal) {
-		t.Errorf("垂直精度 - 期待値：%v, 取得値：%v", expectVal, resultVal)
+	if !reflect.DeepEqual(result, expected) {
+		t.Errorf("精度 - 期待値：%v, 取得値：%v", expected, result)
 	}
-
-	t.Log("テスト終了")
-}
-
-// TestFieldParams01 拡張空間ID成分取得関数 正常系動作確認
-//
-// 試験詳細：
-// + 試験データ
-//   - パターン1：
-//     拡張空間IDオブジェクト：{1, 2, 3, 4, 5}
-//
-// + 確認内容
-//   - 入力値に含まれる水平、垂直精度、X, Y, Z成分をint64配列で格納できること
-func TestFieldParams01(t *testing.T) {
-	//入力値
-	object := &ExtendedSpatialID{1, 2, 3, 4, 5}
-	resultVal := object.FieldParams()
-
-	//期待値
-	expectVal := []int64{1, 2, 3, 4, 5}
-
-	if !reflect.DeepEqual(resultVal, expectVal) {
-		t.Errorf("拡張空間ID配列 - 期待値：%v, 取得値：%v", expectVal, resultVal)
-	}
-
-	t.Log("テスト終了")
 }
 
 // TestID01 空間ID文字列返却関数 正常系動作確認
@@ -455,42 +407,16 @@ func TestFieldParams01(t *testing.T) {
 // + 確認内容
 //   - 入力値に対して、拡張空間ID文字列を取得できること。
 func TestID01(t *testing.T) {
-	//入力値
-	EXSpatialID := ExtendedSpatialID{1, 2, 3, 4, 5}
-	resultVal := EXSpatialID.ID()
+	expected := "5/2/3/4"
 
-	//期待値
-	expectVal := "1/2/3/4/5"
-
-	if !reflect.DeepEqual(resultVal, expectVal) {
-		t.Errorf("拡張空間ID - 期待値：%v, 取得値：%v", expectVal, resultVal)
+	spatialID, error := NewSpatialID(5, 2, 3, 4)
+	if error != nil {
+		t.Errorf("空間IDオブジェクト - 期待値：nil, 取得値：%v", error)
 	}
 
-	t.Log("テスト終了")
-}
+	result := spatialID.String()
 
-// TestHigher01 最適化後拡張空間ID化関数 正常系動作確認
-//
-// 試験詳細：
-// + 試験データ
-//   - パターン1：
-//     拡張空間IDクラス：{20, 1024, 2048, 20, 1024}
-//
-// + 確認内容
-//   - 入力値に対して、拡張空間IDを取得できること。
-func TestHigher01(t *testing.T) {
-	//入力値
-	EXSpatialID := ExtendedSpatialID{20, 1024, 2048, 20, 1024}
-	var hDiff int64 = 3
-	var vDiff int64 = 5
-	resultVal := EXSpatialID.Higher(hDiff, vDiff)
-
-	//期待値
-	expectVal := &ExtendedSpatialID{17, 128, 256, 15, 32}
-
-	if !reflect.DeepEqual(resultVal, expectVal) {
-		t.Errorf("最適化後拡張空間ID - 期待値：%v, 取得値：%v", expectVal, resultVal)
+	if !reflect.DeepEqual(result, expected) {
+		t.Errorf("空間ID文字列 - 期待値：%v, 取得値：%v", expected, result)
 	}
-
-	t.Log("テスト終了")
 }

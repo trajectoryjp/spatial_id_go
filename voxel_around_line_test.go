@@ -1,14 +1,9 @@
 package spatialID
 
 import (
-	"reflect"
 	"testing"
-	"time"
 
-	"github.com/go-gl/mathgl/mgl64"
-	closest "github.com/trajectoryjp/closest_go"
 	"github.com/trajectoryjp/geodesy_go/coordinates"
-	geodesy "github.com/trajectoryjp/geodesy_go/coordinates"
 )
 
 func TestGetExtendedSpatialIdsWithinRadiusOfLine02_1(t *testing.T) {
@@ -30,20 +25,24 @@ func TestGetExtendedSpatialIdsWithinRadiusOfLine02_1(t *testing.T) {
 
 	expectedCount := 4
 
-	geodeticBox, error := NewGeodeticBoxFromConvexHull(convexHull, clearance)
-	if error != nil {
-		t.Error(error)
+	geodeticBox, theError := NewGeodeticBoxFromConvexHull(convexHull, clearance)
+	if theError != nil {
+		t.Error(theError)
 	}
 
-	tileXYZBox, error := NewTileXYZBoxFromGeodeticBox(*geodeticBox, quadkeyZoomLevel, altitudekeyZoomLevel)
-	if error != nil {
-		t.Error(error)
+	tileXYZBox, theError := NewTileXYZBoxFromGeodeticBox(*geodeticBox, quadkeyZoomLevel, altitudekeyZoomLevel)
+	if theError != nil {
+		t.Error(theError)
 	}
 
 	count := 0
-	tileXYZBox.ForCollisionWithConvexHull(convexHull, clearance, func(tile *TileXYZ) {
+	theError = tileXYZBox.ForCollisionWithConvexHull(convexHull, clearance, func(tile TileXYZ) error { // TODO: Rename ForXYZCollisionWithConvexHull
 		count += 1
+		return nil
 	})
+	if theError != nil {
+		t.Error(theError)
+	}
 
 	if count != expectedCount {
 		t.Errorf("Expected %v voxels, but got %v", expectedCount, count)
@@ -69,19 +68,20 @@ func TestGetExtendedSpatialIdsWithinRadiusOfLine02_2(t *testing.T) {
 
 	expectedCount := 54
 
-	geodeticBox, error := NewGeodeticBoxFromConvexHull(convexHull, clearance)
-	if error != nil {
-		t.Error(error)
+	geodeticBox, theError := NewGeodeticBoxFromConvexHull(convexHull, clearance)
+	if theError != nil {
+		t.Error(theError)
 	}
 
-	tileXYZBox, error := NewTileXYZBoxFromGeodeticBox(*geodeticBox, quadkeyZoomLevel, altitudekeyZoomLevel)
-	if error != nil {
-		t.Error(error)
+	tileXYZBox, theError := NewTileXYZBoxFromGeodeticBox(*geodeticBox, quadkeyZoomLevel, altitudekeyZoomLevel)
+	if theError != nil {
+		t.Error(theError)
 	}
 
 	count := 0
-	tileXYZBox.ForCollisionWithConvexHull(convexHull, clearance, func(tile *TileXYZ) {
+	theError = tileXYZBox.ForCollisionWithConvexHull(convexHull, clearance, func(tile TileXYZ) error {
 		count += 1
+		return nil
 	})
 
 	if count != expectedCount {

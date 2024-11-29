@@ -5,7 +5,6 @@ import (
 
 	mathematics "github.com/HarutakaMatsumoto/mathematics_go"
 	"github.com/trajectoryjp/geodesy_go/coordinates"
-	"github.com/trajectoryjp/spatial_id_go/v4/common"
 )
 
 const MaxQuadkeyZoomLevel = 35
@@ -32,7 +31,7 @@ func NewTileXYZFromGeodetic(geodetic coordinates.Geodetic, quadkeyZoomLevel int8
 	y := int64(math.Floor(quadMax * (1.0 - math.Log(math.Tan(radianLatitude)+(1.0/math.Cos(radianLatitude)))/math.Pi) / 2.0))
 
 	// 高さ全体の精度あたりの垂直方向の精度
-	altitudeResolution := float64(common.CalculateArithmeticShift(1, int64(TileXYZZBaseExponent-altitudeZoomLevel)))
+	altitudeResolution := float64(CalculateArithmeticShift(1, int64(TileXYZZBaseExponent-altitudeZoomLevel)))
 
 	// 垂直方向の位置を計算する
 	z := int64(math.Floor(*geodetic.Altitude() / altitudeResolution))+TileXYZZBaseOffset
