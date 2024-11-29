@@ -1616,7 +1616,7 @@ func TestConvertZToMinMaxAltitudekey_4(t *testing.T) {
 }
 
 func TestConvertZToMinMaxAltitudekey_5(t *testing.T) {
-	expectedError := errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset")
+	expectedError := errors.NewSpatialIdError(errors.InputValueErrorCode, "outputIndex=-11 is out of range at outputZoom=21")
 
 	result, _, error := ConvertZToMinMaxAltitudekey(
 		100,
@@ -1631,7 +1631,7 @@ func TestConvertZToMinMaxAltitudekey_5(t *testing.T) {
 }
 
 func TestConvertZToMinMaxAltitudekey_6(t *testing.T) {
-	expectedError := errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset")
+	expectedError := errors.NewSpatialIdError(errors.InputValueErrorCode, "outputIndex=-412 is out of range at outputZoom=25")
 
 	result, _, error := ConvertZToMinMaxAltitudekey(
 		100,
@@ -1682,6 +1682,35 @@ func TestConvertZToMinMaxAltitudekey_9(t *testing.T) {
 		0,
 	}
 	assertConvertZToMinMaxAltitudekey(t, expectedMin, expectedMax, args)
+}
+
+func TestConvertZToMinMaxAltitudekey_10(t *testing.T) {
+	testCases := []struct {
+		expectedError error
+		inputIndex    int64
+	}{
+		{
+			errors.NewSpatialIdError(errors.InputValueErrorCode, "outputIndex=-1 is out of range at outputZoom=0"),
+			-1,
+		},
+		{
+			errors.NewSpatialIdError(errors.InputValueErrorCode, "outputIndex=1 is out of range at outputZoom=0"),
+			0,
+		},
+	}
+
+	for _, tc := range testCases {
+		result, _, error := ConvertZToMinMaxAltitudekey(
+			tc.inputIndex,
+			0,
+			0,
+			consts.ZOriginValue,
+			consts.ZBaseOffsetForNegativeFIndex,
+		)
+		if error != tc.expectedError {
+			t.Fatal(result, error)
+		}
+	}
 }
 
 func TestConvertZToMinAltitudekey_1(t *testing.T) {
@@ -1780,7 +1809,7 @@ func TestConvertZToMinAltitudekey_5(t *testing.T) {
 }
 
 func TestConvertZToMinAltitudekey_6(t *testing.T) {
-	expectedError := errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset")
+	expectedError := errors.NewSpatialIdError(errors.InputValueErrorCode, "outputIndex=-1 is out of range at outputZoom=25")
 
 	result, error := convertZToMinAltitudekey(
 		100,
@@ -1852,7 +1881,7 @@ func TestConvertZToMinAltitudekey_9(t *testing.T) {
 }
 
 func TestConvertZToMinAltitudekey_10(t *testing.T) {
-	expectedError := errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset")
+	expectedError := errors.NewSpatialIdError(errors.InputValueErrorCode, "outputIndex=-1 is out of range at outputZoom=25")
 
 	result, error := convertZToMinAltitudekey(
 		-1,
@@ -1867,7 +1896,7 @@ func TestConvertZToMinAltitudekey_10(t *testing.T) {
 }
 
 func TestConvertZToMinAltitudekey_11(t *testing.T) {
-	expectedError := errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset")
+	expectedError := errors.NewSpatialIdError(errors.InputValueErrorCode, "outputIndex=-196 is out of range at outputZoom=26")
 
 	result, error := convertZToMinAltitudekey(
 		-100,

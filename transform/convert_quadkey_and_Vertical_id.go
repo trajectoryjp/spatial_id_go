@@ -1022,6 +1022,15 @@ func convertVerticallIDToBit(vZoom int64, vIndex int64, outputZoom int64, maxHei
 //	 出力インデックス不正       ：出力altitudekeyが出力ズームレベル(outputZoom)で存在しないインデックス値になった場合。
 func ConvertZToMinMaxAltitudekey(inputIndex int64, inputZoom int64, outputZoom int64, zBaseExponent int64, zBaseOffset int64) (minAltitudeKey int64, maxAltitudeKey int64, err error) {
 
+	// check that the input index exists in the input system
+	if !validateIndexExists(inputIndex, inputZoom, true) {
+		err = errors.NewSpatialIdError(
+			errors.InputValueErrorCode,
+			fmt.Sprintf("inputIndex=%v is out of range at inputZoom=%v", inputIndex, inputZoom),
+		)
+		return 0, 0, err
+	}
+
 	// determine the upper and lower index bounds to search for matches in height solution space
 	lowerBound, err := convertZToMinAltitudekey(inputIndex, inputZoom, outputZoom, zBaseExponent, zBaseOffset)
 	if err != nil {
@@ -1047,28 +1056,23 @@ func ConvertZToMinMaxAltitudekey(inputIndex int64, inputZoom int64, outputZoom i
 	}
 }
 
-func convertZToMinAltitudekey(inputIndex int64, inputZoom int64, outputZoom int64, zBaseExponent int64, zBaseOffset int64) (int64, error) {
+func convertZToMinAltitudekey(inputIndex int64, inputZoom int64, outputZoom int64, zBaseExponent int64, zBaseOffset int64) (outputIndex int64, err error) {
 
-	// 1. check that the input index exists in the input system
-	err, ok := validateIndexExists(inputIndex, inputZoom, true)
-	if !ok {
-		return 0, err
-	}
-
-	// 2. Calculate outputIndex
-	outputIndex := common.CalculateArithmeticShift(inputIndex, -(inputZoom - consts.ZOriginValue))
+	// Calculate outputIndex
+	outputIndex = common.CalculateArithmeticShift(inputIndex, -(inputZoom - consts.ZOriginValue))
 	outputIndex += zBaseOffset
 	outputIndex = common.CalculateArithmeticShift(outputIndex, (outputZoom - zBaseExponent))
 
-	// 3. Check to make sure outputIndex exists in the output system
-	_, ok = validateIndexExists(outputIndex, outputZoom, false)
-
-	if !ok {
-		return 0, errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset")
+	// Check to make sure outputIndex exists in the output system
+	if !validateIndexExists(outputIndex, outputZoom, false) {
+		err = errors.NewSpatialIdError(
+			errors.InputValueErrorCode,
+			fmt.Sprintf("outputIndex=%v is out of range at outputZoom=%v", outputIndex, outputZoom),
+		)
+		return
 	}
 
-	return outputIndex, nil
-
+	return
 }
 
 // validateIndexExists 指定した(拡張)空間IDインデックスが指定ズームレベルにおいて存在するか確認する
@@ -1088,13 +1092,7 @@ func convertZToMinAltitudekey(inputIndex int64, inputZoom int64, outputZoom int6
 // 戻り値 :
 //
 //	インデックスが存在すればtrue,しなければfalse
-//
-// 戻り値(エラー) :
-//
-//	戻り値がfalseの場合、同時に以下の内容のエラーインスタンスが返却される。
-//	 入力インデックス不正       ：inputIndexにそのズームレベル(inputZoom)で存在しないインデックス値が入力されていた場合。
-//	 出力インデックス不正       ：変換後のインデックスが入力ズームレベル(inputZoom)で存在しないインデックス値になった場合。
-func validateIndexExists(inputIndex int64, inputZoom int64, minValueIsNegative bool) (error, bool) {
+func validateIndexExists(inputIndex int64, inputZoom int64, minValueIsNegative bool) bool {
 	inputResolution := common.CalculateArithmeticShift(1, inputZoom)
 
 	maxInputIndex := inputResolution - 1
@@ -1106,9 +1104,9 @@ func validateIndexExists(inputIndex int64, inputZoom int64, minValueIsNegative b
 	}
 
 	if inputIndex > maxInputIndex || inputIndex < minInputIndex {
-		return errors.NewSpatialIdError(errors.InputValueErrorCode, "input index does not exist"), false
+		return false
 	}
-	return nil, true
+	return true
 }
 
 // 高さのbit形式のインデックスを計算する。
