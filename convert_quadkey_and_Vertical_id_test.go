@@ -3,6 +3,7 @@ package spatialID
 
 import (
 	"fmt"
+	"mime/quotedprintable"
 	"reflect"
 	"sort"
 	"strconv"
@@ -16,639 +17,221 @@ import (
 	"github.com/trajectoryjp/spatial_id_go/v4/common/object"
 )
 
-func TestConvertQuadkeysAndVerticalIDsToExtendedSpatialIDs(t *testing.T) {
-	// データの作成
-	quadkeyAndVerticalIDList := []*object.QuadkeyAndVerticalID{}
-	newQuadkeyAndVerticalID := object.NewQuadkeyAndVerticalID(6, 2914, 7, 74, 500, 0) // 231202 6/24/53/5/0
-	quadkeyAndVerticalIDList = append(quadkeyAndVerticalIDList, newQuadkeyAndVerticalID)
-	newQuadkeyAndVerticalID = object.NewQuadkeyAndVerticalID(6, 2882, 25, 0, 0, 0) // 231002 "7/48/58/2/0","7/49/58/2/0","7/48/59/2/0","7/49/59/2/0"
-	quadkeyAndVerticalIDList = append(quadkeyAndVerticalIDList, newQuadkeyAndVerticalID)
+func TestConvertTileXYZsToSpatialIDs_01(t *testing.T) {
+	testNewSpatialIDBoxFromTileXYZBox(
+		t,
+		[]string{"23/-2/85263/65423"},
 
-	quadkeyAndVerticalIDList2 := []*object.QuadkeyAndVerticalID{}
-	newQuadkeyAndVerticalID = object.NewQuadkeyAndVerticalID(9, 451739, 25, 0, 0, 0) // 123210212 "9/338/229/2/0"
-	quadkeyAndVerticalIDList2 = append(quadkeyAndVerticalIDList2, newQuadkeyAndVerticalID)
+		23, 23, 85263, 65423, 0,
 
-	quadkeyAndVerticalIDListE := []*object.QuadkeyAndVerticalID{}
-	newQuadkeyAndVerticalIDE := object.NewQuadkeyAndVerticalID(6, 2882, 25, 0, -500, 0) // 231002
-	quadkeyAndVerticalIDListE = append(quadkeyAndVerticalIDListE, newQuadkeyAndVerticalIDE)
+		23, 8,
 
-	quadkeyAndVerticalIDListE2 := []*object.QuadkeyAndVerticalID{}
-	newQuadkeyAndVerticalIDE = object.NewQuadkeyAndVerticalID(6, 2882, 2, 10, 500, 0) // 231002
-	quadkeyAndVerticalIDListE2 = append(quadkeyAndVerticalIDListE2, newQuadkeyAndVerticalIDE)
-
-	quadkeyAndVerticalIDListE3 := []*object.QuadkeyAndVerticalID{}
-	newQuadkeyAndVerticalIDE = object.NewQuadkeyAndVerticalID(32, 2882, 2, 10, 500, 0) // 231002
-	quadkeyAndVerticalIDListE3 = append(quadkeyAndVerticalIDListE3, newQuadkeyAndVerticalIDE)
-
-	quadkeyAndVerticalIDListE4 := []*object.QuadkeyAndVerticalID{}
-	newQuadkeyAndVerticalIDE = object.NewQuadkeyAndVerticalID(31, 2882, 36, 10, 500, 0) // 231002
-	quadkeyAndVerticalIDListE4 = append(quadkeyAndVerticalIDListE4, newQuadkeyAndVerticalIDE)
-
-	quadkeyAndVerticalIDListE5 := []*object.QuadkeyAndVerticalID{}
-	newQuadkeyAndVerticalIDE = object.NewQuadkeyAndVerticalID(31, 4611686018427388065, 25, 0, 500, 0) // 231002
-	quadkeyAndVerticalIDListE5 = append(quadkeyAndVerticalIDListE5, newQuadkeyAndVerticalIDE)
-
-	datas := []struct {
-		quadkeyAndVerticalIDs []*object.QuadkeyAndVerticalID
-		ToHZoom               int64
-		ToVZoom               int64
-		result                []string
-		pattern               int64
-		e                     error
-	}{
-		{quadkeyAndVerticalIDs: quadkeyAndVerticalIDList, ToHZoom: 6, ToVZoom: 20, pattern: 0, result: []string{"6/24/53/20/9", "6/24/49/20/0"}},
-		{quadkeyAndVerticalIDs: quadkeyAndVerticalIDList, ToHZoom: 7, ToVZoom: 2, pattern: 0, result: []string{"7/48/107/2/0", "7/49/107/2/0", "7/48/98/2/0", "7/49/98/2/0", "7/48/99/2/0", "7/49/99/2/0", "7/48/106/2/0", "7/49/106/2/0"}},
-		{quadkeyAndVerticalIDs: quadkeyAndVerticalIDList, ToHZoom: 5, ToVZoom: 8, pattern: 0, result: []string{"5/12/26/8/0", "5/12/24/8/0"}},
-		{quadkeyAndVerticalIDs: quadkeyAndVerticalIDList2, ToHZoom: 9, ToVZoom: 2, pattern: 0, result: []string{"9/338/229/2/0"}},
-		// 異常系(精度エラー)
-		{quadkeyAndVerticalIDs: quadkeyAndVerticalIDListE, ToHZoom: 0, ToVZoom: 35, pattern: 1, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "")},
-		{quadkeyAndVerticalIDs: quadkeyAndVerticalIDListE, ToHZoom: 5, ToVZoom: 36, pattern: 1, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "")},
-		{quadkeyAndVerticalIDs: quadkeyAndVerticalIDListE2, ToHZoom: 5, ToVZoom: 35, pattern: 1, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "")},
-		{quadkeyAndVerticalIDs: quadkeyAndVerticalIDListE3, ToHZoom: 5, ToVZoom: 35, pattern: 1, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "")},
-		{quadkeyAndVerticalIDs: quadkeyAndVerticalIDListE4, ToHZoom: 5, ToVZoom: 35, pattern: 1, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "")},
-		{quadkeyAndVerticalIDs: quadkeyAndVerticalIDListE5, ToHZoom: 5, ToVZoom: 35, pattern: 1, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "")},
-	}
-
-	for _, p := range datas {
-		result, e := ConvertQuadkeysAndVerticalIDsToExtendedSpatialIDs(p.quadkeyAndVerticalIDs, p.ToHZoom, p.ToVZoom)
-		sort.Strings(result)
-		sort.Strings(p.result)
-		if p.pattern == 0 && !reflect.DeepEqual(result, p.result) {
-			t.Log(t.Name())
-			t.Errorf("ConvertQuadkeysAndVerticalIDsToExtendedSpatialIDs(%+v,%d,%d) == %s, result: %s", p.quadkeyAndVerticalIDs, p.ToHZoom, p.ToVZoom, p.result, result)
-			return
-		}
-		if p.pattern == 1 && e != p.e {
-			t.Log(t.Name())
-			t.Errorf("ConvertQuadkeysAndVerticalIDsToExtendedSpatialIDs(%+v,%d,%d) == %+v, result: %+v", p.quadkeyAndVerticalIDs, p.ToHZoom, p.ToVZoom, e, p.e)
-		}
-	}
-
-}
-
-func TestConvertQuadkeysAndVerticalIDsToSpatialIDs(t *testing.T) {
-	// データの作成
-	quadkeyAndVerticalIDList := []*object.QuadkeyAndVerticalID{}
-	newQuadkeyAndVerticalID := object.NewQuadkeyAndVerticalID(6, 2914, 7, 74, 500, 0) // 231202 6/24/53/5/0
-	quadkeyAndVerticalIDList = append(quadkeyAndVerticalIDList, newQuadkeyAndVerticalID)
-	newQuadkeyAndVerticalID = object.NewQuadkeyAndVerticalID(6, 2882, 25, 0, 0, 0) // 231002 "7/48/58/2/0","7/49/58/2/0","7/48/59/2/0","7/49/59/2/0"
-	quadkeyAndVerticalIDList = append(quadkeyAndVerticalIDList, newQuadkeyAndVerticalID)
-
-	quadkeyAndVerticalIDList2 := []*object.QuadkeyAndVerticalID{}
-	newQuadkeyAndVerticalID = object.NewQuadkeyAndVerticalID(9, 451739, 25, 0, 0, 0) // 123210212 "9/338/229/2/0"
-	quadkeyAndVerticalIDList2 = append(quadkeyAndVerticalIDList2, newQuadkeyAndVerticalID)
-
-	quadkeyAndVerticalIDListE := []*object.QuadkeyAndVerticalID{}
-	newQuadkeyAndVerticalIDE := object.NewQuadkeyAndVerticalID(6, 2882, 25, 0, -500, 0) // 231002
-	quadkeyAndVerticalIDListE = append(quadkeyAndVerticalIDListE, newQuadkeyAndVerticalIDE)
-
-	quadkeyAndVerticalIDListE2 := []*object.QuadkeyAndVerticalID{}
-	newQuadkeyAndVerticalIDE = object.NewQuadkeyAndVerticalID(6, 2882, 2, 10, 500, 0) // 231002
-	quadkeyAndVerticalIDListE2 = append(quadkeyAndVerticalIDListE2, newQuadkeyAndVerticalIDE)
-
-	quadkeyAndVerticalIDListE3 := []*object.QuadkeyAndVerticalID{}
-	newQuadkeyAndVerticalIDE = object.NewQuadkeyAndVerticalID(32, 2882, 2, 10, 500, 0) // 231002
-	quadkeyAndVerticalIDListE3 = append(quadkeyAndVerticalIDListE3, newQuadkeyAndVerticalIDE)
-
-	quadkeyAndVerticalIDListE4 := []*object.QuadkeyAndVerticalID{}
-	newQuadkeyAndVerticalIDE = object.NewQuadkeyAndVerticalID(31, 2882, 36, 10, 500, 0) // 231002
-	quadkeyAndVerticalIDListE4 = append(quadkeyAndVerticalIDListE4, newQuadkeyAndVerticalIDE)
-
-	quadkeyAndVerticalIDListE5 := []*object.QuadkeyAndVerticalID{}
-	newQuadkeyAndVerticalIDE = object.NewQuadkeyAndVerticalID(31, 4611686018427388065, 25, 0, 500, 0) // 231002
-	quadkeyAndVerticalIDListE5 = append(quadkeyAndVerticalIDListE5, newQuadkeyAndVerticalIDE)
-
-	datas := []struct {
-		quadkeyAndVerticalIDs []*object.QuadkeyAndVerticalID
-		ToZoom                int64
-		result                []string
-		pattern               int64
-		e                     error
-	}{
-		{quadkeyAndVerticalIDs: quadkeyAndVerticalIDList, ToZoom: 6, pattern: 0, result: []string{"6/0/24/53", "6/0/24/49"}},
-		{quadkeyAndVerticalIDs: quadkeyAndVerticalIDList, ToZoom: 7, pattern: 0, result: []string{"7/0/48/107", "7/0/49/107", "7/0/48/98", "7/0/49/98", "7/0/48/99", "7/0/49/99", "7/0/48/106", "7/0/49/106"}},
-		{quadkeyAndVerticalIDs: quadkeyAndVerticalIDList, ToZoom: 5, pattern: 0, result: []string{"5/0/12/26", "5/0/12/24"}},
-		{quadkeyAndVerticalIDs: quadkeyAndVerticalIDList2, ToZoom: 9, pattern: 0, result: []string{"9/0/338/229"}},
-		// 異常系(精度エラー)
-		{quadkeyAndVerticalIDs: quadkeyAndVerticalIDListE, ToZoom: 0, pattern: 1, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "")},
-		{quadkeyAndVerticalIDs: quadkeyAndVerticalIDListE, ToZoom: 5, pattern: 1, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "")},
-		{quadkeyAndVerticalIDs: quadkeyAndVerticalIDListE2, ToZoom: 5, pattern: 1, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "")},
-		{quadkeyAndVerticalIDs: quadkeyAndVerticalIDListE3, ToZoom: 5, pattern: 1, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "")},
-		{quadkeyAndVerticalIDs: quadkeyAndVerticalIDListE4, ToZoom: 5, pattern: 1, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "")},
-		{quadkeyAndVerticalIDs: quadkeyAndVerticalIDListE5, ToZoom: 5, pattern: 1, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "")},
-	}
-
-	for _, p := range datas {
-		result, e := ConvertQuadkeysAndVerticalIDsToSpatialIDs(p.quadkeyAndVerticalIDs, p.ToZoom)
-		sort.Strings(result)
-		sort.Strings(p.result)
-		if p.pattern == 0 && !reflect.DeepEqual(result, p.result) {
-			t.Log(t.Name())
-			t.Errorf("ConvertQuadkeysAndVerticalIDsToSpatialIDs(%+v,%d) == %s, result: %s", p.quadkeyAndVerticalIDs, p.ToZoom, p.result, result)
-			return
-		}
-		if p.pattern == 1 && e != p.e {
-			t.Log(t.Name())
-			t.Errorf("ConvertQuadkeysAndVerticalIDsToExtendedSpatialIDs(%+v,%d) == %+v, result: %+v", p.quadkeyAndVerticalIDs, p.ToZoom, e, p.e)
-		}
-	}
-
-}
-
-func TestConvertExtendedSpatialIdsToQuadkeysAndVerticalIDs(t *testing.T) {
-	// 結果確認用の構造体を作成する
-	//"20/85263/65423"→ 00012322332320003333 →7432012031 21:29728048124,29728048125,29728048126,29728048127,
-	//horizontalID: "20/45621/43566", result: 3448507833},         //"00003031203000312321"
-	//horizontalID: "26/4562451/2343566", result: 26508024119725}, //"00012001233201113020012231"
-	//horizontalID: "26/1/2", result: 9},                          //"00000000000000000000000021"
-	//horizontalID: "26/2/1", result: 6},                          //"00000000000000000000000012"
-	//horizontalID: "5/4562451/2343566", result: 429},             //"12231"
-
-	quadkeyAndVerticalIDs := []*object.FromExtendedSpatialIDToQuadkeyAndVerticalID{}
-	newQuadkeyAndVerticalID := object.NewFromExtendedSpatialIDToQuadkeyAndVerticalID(21, [][2]int64{{29728048124, 58}, {29728048124, 57}, {29728048125, 58}, {29728048125, 57}, {29728048126, 58}, {29728048126, 57}, {29728048127, 58}, {29728048127, 57}}, 10, 500, 0)
-	quadkeyAndVerticalIDs = append(quadkeyAndVerticalIDs, newQuadkeyAndVerticalID)
-
-	quadkeyAndVerticalIDsSpatialIDs := []*object.FromExtendedSpatialIDToQuadkeyAndVerticalID{}
-	newQuadkeyAndVerticalID = object.NewFromExtendedSpatialIDToQuadkeyAndVerticalID(19, [][2]int64{{1858003007, 56}}, 26, 0, 0)
-	quadkeyAndVerticalIDsSpatialIDs = append(quadkeyAndVerticalIDsSpatialIDs, newQuadkeyAndVerticalID)
-
-	quadkeyAndVerticalIDsHBorders1 := []*object.FromExtendedSpatialIDToQuadkeyAndVerticalID{}
-	newQuadkeyAndVerticalID = object.NewFromExtendedSpatialIDToQuadkeyAndVerticalID(1, [][2]int64{{0, 56}}, 26, 0, 0)
-	quadkeyAndVerticalIDsHBorders1 = append(quadkeyAndVerticalIDsHBorders1, newQuadkeyAndVerticalID)
-	quadkeyAndVerticalIDsHBorders31 := []*object.FromExtendedSpatialIDToQuadkeyAndVerticalID{}
-	newQuadkeyAndVerticalID = object.NewFromExtendedSpatialIDToQuadkeyAndVerticalID(31, [][2]int64{{29031296, 1}, {29031296, 0}}, 10, 500, 0)
-	quadkeyAndVerticalIDsHBorders31 = append(quadkeyAndVerticalIDsHBorders31, newQuadkeyAndVerticalID)
-
-	// quadkeyAndVerticalIDsValueE := []*object.FromExtendedSpatialIDToQuadkeyAndVerticalID{}
-	// newQuadkeyAndVerticalID = object.NewFromExtendedSpatialIDToQuadkeyAndVerticalID(31, [][2]int64{{29031296, 1}, {29031296, 0}}, 10, 500, 0)
-	// quadkeyAndVerticalIDsValueE = append(quadkeyAndVerticalIDsValueE, newQuadkeyAndVerticalID)
-
-	_, err := strconv.ParseInt("test", 10, 64)
-	datas := []struct {
-		spatialIds   []string
-		ToHZoom      int64
-		ToVZoom      int64
-		maxHeight    float64
-		minHeight    float64
-		result       []*object.FromExtendedSpatialIDToQuadkeyAndVerticalID
-		resultLength int
-		pattern      int64 // 0:正常 1:異常 2:個数(水平) 3:個数(垂直)
-		e            error
-	}{
-		// 正常
-		{spatialIds: []string{"20/85263/65423/26/56"}, ToHZoom: 21, ToVZoom: 10, maxHeight: 500, minHeight: 0.0, result: quadkeyAndVerticalIDs, pattern: 0},
-		{spatialIds: []string{"20/85263/65423/26/56"}, ToHZoom: 19, ToVZoom: 26, maxHeight: 0, minHeight: 0.0, result: quadkeyAndVerticalIDsSpatialIDs, pattern: 0},
-
-		// 水平精度個数確認 低精度は1、高精度は精度差^4
-		{spatialIds: []string{"20/85263/65423/26/56"}, ToHZoom: 24, ToVZoom: 10, maxHeight: 500, minHeight: 0.0, result: quadkeyAndVerticalIDs, resultLength: 512, pattern: 2},
-		{spatialIds: []string{"20/85263/65423/26/56"}, ToHZoom: 2, ToVZoom: 10, maxHeight: 500, minHeight: 0.0, result: quadkeyAndVerticalIDs, resultLength: 2, pattern: 2},
-		// 水平精度境界値
-		{spatialIds: []string{"20/85263/65423/26/0"}, ToHZoom: 1, ToVZoom: 10, maxHeight: 500, minHeight: 0.0, result: quadkeyAndVerticalIDsHBorders1, resultLength: 2, pattern: 2},
-		{spatialIds: []string{"35/85263/65423/26/0"}, ToHZoom: 31, ToVZoom: 10, maxHeight: 500, minHeight: 0.0, result: quadkeyAndVerticalIDsHBorders31, pattern: 0},
-
-		// 垂直精度境界値
-		{spatialIds: []string{"20/85263/65423/26/0"}, ToHZoom: 21, ToVZoom: 0, maxHeight: 500, minHeight: 0.0, result: quadkeyAndVerticalIDs, resultLength: 4, pattern: 3},
-		{spatialIds: []string{"20/85263/65423/26/0"}, ToHZoom: 21, ToVZoom: 1, maxHeight: 500, minHeight: 0.0, result: quadkeyAndVerticalIDs, resultLength: 4, pattern: 3},
-
-		// 異常系(精度エラー)
-		{spatialIds: []string{"20/85263/65423/26/56"}, ToHZoom: 0, ToVZoom: 10, maxHeight: 0, minHeight: 0.0, pattern: 1, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "")},
-		{spatialIds: []string{"20/85263/65423/26/56"}, ToHZoom: 20, ToVZoom: -1, maxHeight: 0, minHeight: 0.0, pattern: 1, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "")},
-		{spatialIds: []string{"35/85263/65423/26/56"}, ToHZoom: 32, ToVZoom: 10, maxHeight: 0, minHeight: 0.0, pattern: 1, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "")},
-		{spatialIds: []string{"20/85263/65423/35/56"}, ToHZoom: 20, ToVZoom: 36, maxHeight: 0, minHeight: 0.0, pattern: 1, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "")},
-		{spatialIds: []string{"36/85263/65423/26/56"}, ToHZoom: 1, ToVZoom: 10, maxHeight: 500.0, minHeight: 0.0, pattern: 1, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "")},
-		{spatialIds: []string{"20/85263/65423/36/56"}, ToHZoom: 1, ToVZoom: 10, maxHeight: 500.0, minHeight: 0.0, pattern: 1, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "")},
-
-		// 異常系(高度エラー)
-		{spatialIds: []string{"20/85263/65423/26/56"}, ToHZoom: 1, ToVZoom: 10, maxHeight: -500.0, minHeight: 0.0, pattern: 1, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "")},
-		// 異常系(入力エラー)
-		{spatialIds: []string{"20/test/65423/26/56"}, ToHZoom: 1, ToVZoom: 10, maxHeight: 500.0, minHeight: 0.0, pattern: 1, e: errors.NewSpatialIdError(errors.InputValueErrorCode, err.Error())},
-	}
-	for _, p := range datas {
-
-		result, e := ConvertExtendedSpatialIDsToQuadkeysAndVerticalIDs(p.spatialIds, p.ToHZoom, p.ToVZoom, p.maxHeight, p.minHeight)
-		if p.pattern == 0 && !reflect.DeepEqual(result, p.result) {
-			t.Log(t.Name())
-			t.Errorf("ConvertExtendedSpatialIDsToQuadkeysAndVerticalIDs(%s,%d,%d,%f,%f) == %+v, result: %+v", p.spatialIds, p.ToHZoom, p.ToVZoom, p.maxHeight, p.minHeight, p.result[0], result[0])
-		}
-		if p.pattern == 1 && e != p.e {
-			t.Log(t.Name())
-			t.Errorf("ConvertExtendedSpatialIDsToQuadkeysAndVerticalIDs(%s,%d,%d,%f,%f) == %+v, result: %+v", p.spatialIds, p.ToHZoom, p.ToVZoom, p.maxHeight, p.minHeight, e, p.e)
-		}
-		if p.pattern == 2 && p.resultLength != len(result[0].InnerIDList()) {
-			t.Log(t.Name())
-			t.Errorf("ConvertExtendedSpatialIDsToQuadkeysAndVerticalIDs(%s,%d,%d,%f,%f) == %+v, result: %+v", p.spatialIds, p.ToHZoom, p.ToVZoom, p.maxHeight, p.minHeight, len(result[0].InnerIDList()), p.resultLength)
-		}
-		if p.pattern == 3 && p.resultLength != len(result[0].InnerIDList()) {
-			t.Log(t.Name())
-			t.Errorf("ConvertExtendedSpatialIDsToQuadkeysAndVerticalIDs(%s,%d,%d,%f,%f) == %+v, result: %+v", p.spatialIds, p.ToHZoom, p.ToVZoom, p.maxHeight, p.minHeight, len(result[0].InnerIDList()), p.resultLength)
-		}
-
-	}
-}
-
-func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys_1(t *testing.T) {
-	expected := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{
-		object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(
-			20,
-			[][2]int64{{7432012031, 56}},
-			26,
-			25,
-			0,
-		),
-	}
-
-	result, error := ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(
-		[]string{"20/85263/65423/26/56"},
-		20,
-		26,
-		25,
-		0,
-	)
-	if error != nil {
-		t.Fatal(error)
-	}
-
-	if !reflect.DeepEqual(result, expected) {
-		t.Fatal(result)
-	}
-}
-
-func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys_2(t *testing.T) {
-	expected := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{
-		object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(
-			21,
-			[][2]int64{{29728048124, 56}, {29728048125, 56}, {29728048126, 56}, {29728048127, 56}},
-			26,
-			25,
-			0,
-		),
-	}
-
-	result, error := ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(
-		[]string{"20/85263/65423/26/56"},
-		21,
-		26,
-		25,
-		0,
-	)
-	if error != nil {
-		t.Fatal(error)
-	}
-
-	if !reflect.DeepEqual(result, expected) {
-		t.Fatal(result)
-	}
-}
-
-func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys_3(t *testing.T) {
-	expected := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{
-		object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(
-			20,
-			[][2]int64{{7432012031, 7}},
-			12,
-			14, // 2^14
-			0,
-		),
-	}
-
-	result, error := ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(
-		[]string{"20/85263/65423/26/56"},
-		20,
-		12,
-		14,
-		0,
-	)
-	if error != nil {
-		t.Fatal(error)
-	}
-
-	if !reflect.DeepEqual(result, expected) {
-		t.Fatal(result)
-	}
-}
-
-func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys_4(t *testing.T) {
-	expected := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{
-		object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(
-			20,
-			[][2]int64{{7432012031, 54}},
-			12,
-			14,
-			188,
-		),
-	}
-
-	result, error := ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(
-		[]string{"20/85263/65423/26/56"},
-		20,
-		12,
-		14,
-		188,
-	)
-	if error != nil {
-		t.Fatal(error)
-	}
-
-	if !reflect.DeepEqual(result, expected) {
-		t.Fatal(result)
-	}
-}
-
-func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys_5(t *testing.T) {
-	expected := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{
-		object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(
-			21,
-			[][2]int64{{29728048124, 12}, {29728048124, 13}, {29728048125, 12}, {29728048125, 13}, {29728048126, 12}, {29728048126, 13}, {29728048127, 12}, {29728048127, 13}},
-			15,
-			14,
-			-50,
-		),
-	}
-
-	result, error := ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(
-		[]string{"20/85263/65423/25/56"},
-		21,
-		15,
-		14,
-		-50,
-	)
-	if error != nil {
-		t.Fatal(error)
-	}
-
-	if !reflect.DeepEqual(result, expected) {
-		t.Fatal(result)
-	}
-}
-
-func newTileXYZ(t *testing.T, hZoom int64, x int64, y int64, vZoom int64, z int64) *object.TileXYZ {
-	t.Helper()
-	xyz, err := object.NewTileXYZ(hZoom, x, y, vZoom, z)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return xyz
-}
-
-func newExtendedSpatialID(t *testing.T, id string) *object.ExtendedSpatialID {
-	t.Helper()
-	extendedSpatialId, err := object.NewExtendedSpatialID(id)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return extendedSpatialId
-}
-
-func TestConvertTileXYZsToSpatialIDs(t *testing.T) {
-	type argSet struct {
-		tile          []*object.TileXYZ
-		zBaseExponent int64
-		zBaseOffset   int64
-		outputVZoom   int64
-	}
-	testCases := []struct {
-		expected []string
-		request  argSet
-	}{
-		{
-			// z/f/x/y
-			[]string{"23/-2/85263/65423"},
-			argSet{
-				[]*object.TileXYZ{newTileXYZ(
-					t,
-					23,
-					85263,
-					65423,
-					23,
-					0,
-				)},
-				23,
-				8,
-				23,
-			},
-		},
-		{
-			[]string{"25/1/170526/130846", "25/1/170526/130847", "25/1/170527/130846", "25/1/170527/130847"},
-			argSet{
-				[]*object.TileXYZ{newTileXYZ(
-					t,
-					24,
-					85263,
-					65423,
-					25,
-					3,
-				)},
-				25,
-				2,
-				25,
-			},
-		},
-		{
-			[]string{"4/0/63/23", "4/1/63/23"},
-			argSet{
-				[]*object.TileXYZ{newTileXYZ(
-					t,
-					4,
-					63,
-					23,
-					3,
-					3,
-				)},
-				3,
-				2,
-				3,
-			},
-		},
-		{
-			[]string{"23/-2/85263/65423", "23/-1/85263/65423"},
-			argSet{
-				[]*object.TileXYZ{newTileXYZ(
-					t,
-					23,
-					85263,
-					65423,
-					23,
-					0,
-				)},
-				25,
-				7,
-				23,
-			},
-		},
-		{
-			[]string{"26/6/85263/65423", "26/7/85263/65423"},
-			argSet{
-				[]*object.TileXYZ{newTileXYZ(
-					t,
-					26,
-					85263,
-					65423,
-					26,
-					3,
-				)},
-				25,
-				-2,
-				26,
-			},
-		},
-		{
-			[]string{
-				"23/0/170526/130846",
-				"23/1/170526/130846",
-				"23/2/170526/130846",
-				"23/0/170526/130847",
-				"23/1/170526/130847",
-				"23/2/170526/130847",
-				"23/0/170527/130846",
-				"23/1/170527/130846",
-				"23/2/170527/130846",
-				"23/0/170527/130847",
-				"23/1/170527/130847",
-				"23/2/170527/130847",
-			},
-			argSet{
-				[]*object.TileXYZ{
-					newTileXYZ(
-						t,
-						22,
-						85263,
-						65423,
-						23,
-						0,
-					),
-					newTileXYZ(
-						t,
-						22,
-						85263,
-						65423,
-						23,
-						1,
-					)},
-				25,
-				-1,
-				23,
-			},
-		},
-		{
-			[]string{
-				"23/0/85263/65423",
-				"23/1/85263/65423",
-				"23/2/85263/65423",
-				"23/0/85264/65424",
-				"23/1/85264/65424",
-				"23/2/85264/65424",
-			},
-			argSet{
-				[]*object.TileXYZ{
-					newTileXYZ(
-						t,
-						23,
-						85263,
-						65423,
-						23,
-						0,
-					),
-					newTileXYZ(
-						t,
-						23,
-						85263,
-						65423,
-						23,
-						1,
-					),
-					newTileXYZ(
-						t,
-						23,
-						85264,
-						65424,
-						23,
-						0,
-					),
-					newTileXYZ(
-						t,
-						23,
-						85264,
-						65424,
-						23,
-						1,
-					)},
-				25,
-				-1,
-				23,
-			},
-		},
-	}
-	for _, testCase := range testCases {
-		result, err := ConvertTileXYZsToSpatialIDs(testCase.request.tile, testCase.request.zBaseExponent, testCase.request.zBaseOffset, testCase.request.outputVZoom)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if assert.ElementsMatch(t, testCase.expected, result) == false {
-			// t.Error(result):
-			t.Errorf("expected: %v result: %v", testCase.expected, result)
-		} else {
-			t.Log("Success", result)
-		}
-	}
-
-}
-
-func ExampleConvertTileXYZsToSpatialIDs() {
-	inputData := []struct {
-		hZoom int64
-		x     int64
-		y     int64
-		vZoom int64
-		z     int64
-	}{
-		{
-			22,
-			85263,
-			65423,
-			23,
-			0,
-		},
-		{
-			22,
-			85263,
-			65423,
-			23,
-			1,
-		},
-	}
-	var inputXYZ []*object.TileXYZ
-	for _, in := range inputData {
-		tile, err := object.NewTileXYZ(in.hZoom, in.x, in.y, in.vZoom, in.z)
-		if err != nil {
-			panic(err)
-		}
-		inputXYZ = append(inputXYZ, tile)
-	}
-	outputData, err := ConvertTileXYZsToSpatialIDs(
-		inputXYZ,
-		25,
-		-1,
 		23,
 	)
-	if err != nil {
-		panic(err)
+}
+
+func TestConvertTileXYZsToSpatialIDs_02(t *testing.T) {
+	testNewSpatialIDBoxFromTileXYZBox(
+		t,
+		[]string{"25/1/170526/130846", "25/1/170526/130847", "25/1/170527/130846", "25/1/170527/130847"},
+
+		24, 25, 85263, 65423, 3,
+
+		25, 2,
+
+		25,
+	)
+}
+
+func TestConvertTileXYZsToSpatialIDs_03(t *testing.T) {
+	testNewSpatialIDBoxFromTileXYZBox(
+		t,
+		[]string{"4/0/63/23", "4/1/63/23"},
+
+		4, 3, 63, 23, 3,
+
+		3, 2,
+
+		3,
+	)
+}
+
+func TestConvertTileXYZsToSpatialIDs_04(t *testing.T) {
+	testNewSpatialIDBoxFromTileXYZBox(
+		t,
+		[]string{"23/-2/85263/65423", "23/-1/85263/65423"},
+
+		23, 23, 85263, 65423, 0,
+
+		25, 7,
+
+		23,
+	)
+}
+
+func TestConvertTileXYZsToSpatialIDs_05(t *testing.T) {
+	testNewSpatialIDBoxFromTileXYZBox(
+		t,
+
+		[]string{"26/6/85263/65423", "26/7/85263/65423"},
+
+		26, 26, 85263, 65423, 3,
+
+		25, -2,
+
+		26,
+	)
+}
+
+func TestConvertTileXYZsToSpatialIDs_06_01(t *testing.T) {
+	testNewSpatialIDBoxFromTileXYZBox(
+		t,
+		[]string{
+			"23/0/170526/130846",
+			"23/1/170526/130846",
+			"23/2/170526/130846",
+			"23/0/170526/130847",
+			"23/1/170526/130847",
+			"23/2/170526/130847",
+		},
+
+		22, 23, 85263, 65423, 0,
+
+		25, -1,
+
+		23,
+	)
+}
+
+func TestConvertTileXYZsToSpatialIDs_06_02(t *testing.T) {
+	testNewSpatialIDBoxFromTileXYZBox(
+		t,
+		[]string{
+			"23/0/170527/130846",
+			"23/1/170527/130846",
+			"23/2/170527/130846",
+			"23/0/170527/130847",
+			"23/1/170527/130847",
+			"23/2/170527/130847",
+		},
+
+		22, 23, 85263, 65423, 1,
+
+		25, -1,
+
+		23,
+	)
+}
+
+func TestConvertTileXYZsToSpatialIDs_07_01(t *testing.T) {
+	testNewSpatialIDBoxFromTileXYZBox(
+		t,
+		[]string{
+			"23/0/85263/65423",
+			"23/1/85263/65423",
+		},
+
+		23, 23, 85263, 65423, 0,
+
+		25, -1,
+
+		23,
+	)
+}
+
+func TestConvertTileXYZsToSpatialIDs_07_02(t *testing.T) {
+	testNewSpatialIDBoxFromTileXYZBox(
+		t,
+		[]string{
+			"23/1/85263/65423",
+			"23/2/85263/65423",
+		},
+
+		23, 23, 85263, 65423, 1,
+
+		25, -1,
+
+		23,
+	)
+}
+
+func TestConvertTileXYZsToSpatialIDs_07_03(t *testing.T) {
+	testNewSpatialIDBoxFromTileXYZBox(
+		t,
+		[]string{
+			"23/0/85264/65424",
+			"23/1/85264/65424",
+		},
+
+		23, 23, 85264, 65424, 0,
+
+		25, -1,
+
+		23,
+	)
+}
+
+func TestConvertTileXYZsToSpatialIDs_07_04(t *testing.T) {
+	testNewSpatialIDBoxFromTileXYZBox(
+		t,
+		[]string{
+			"23/1/85264/65424",
+			"23/2/85264/65424",
+		},
+
+		23, 23, 85264, 65424, 1,
+
+		25, -1,
+
+		23,
+	)
+}
+
+func testNewSpatialIDBoxFromTileXYZBox(
+	t *testing.T,
+	expected []string,
+	quadkeyZoomLevel int8,
+	altitudekeyZoomLevel int8,
+	x int64,
+	y int64,
+	z int64,
+	tileXYZZBaseExponent int8,
+	tileXYZZBaseOffset int64,
+	spatialIDZoomLevel int8,
+	) {
+	tileXYZ, theError := NewTileXYZ(quadkeyZoomLevel, altitudekeyZoomLevel, x, y, z)
+
+	tileXYZBox, theError := NewTileXYZBox(*tileXYZ, *tileXYZ)
+	if theError != nil {
+		t.Fatal(theError)
 	}
-	for _, out := range outputData {
-		fmt.Println(out)
+
+	oldZBaseExponent := TileXYZZBaseExponent
+	oldZBaseOffset := TileXYZZBaseOffset
+	defer func() {
+		TileXYZZBaseExponent = oldZBaseExponent
+		TileXYZZBaseOffset = oldZBaseOffset
+	}()
+	TileXYZZBaseExponent = tileXYZZBaseExponent
+	TileXYZZBaseOffset = tileXYZZBaseOffset
+
+	spatialIDBox, theError := NewSpatialIDBoxFromTileXYZBox(*tileXYZBox)
+	if theError != nil {
+		t.Fatal(theError)
 	}
-	// Unordered output:
-	// 23/0/170526/130846
-	// 23/0/170527/130846
-	// 23/0/170526/130847
-	// 23/0/170527/130847
-	// 23/1/170526/130846
-	// 23/1/170526/130847
-	// 23/1/170527/130846
-	// 23/1/170527/130847
-	// 23/2/170526/130846
-	// 23/2/170526/130847
-	// 23/2/170527/130846
-	// 23/2/170527/130847
+	spatialIDBox.SetZ(spatialIDZoomLevel)
+
+	i := 0
+	theError = spatialIDBox.ForXYF(func(id SpatialID) error {
+		if id.String() != expected[i] {
+			t.Fatal(id)
+		}
+		i += 1
+		return nil
+	})
+	if theError != nil {
+		t.Fatal(theError)
+	}
 }
 
 func TestConvertTileXYZsToExtendedSpatialIDs(t *testing.T) {

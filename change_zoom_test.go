@@ -18,6 +18,7 @@ func TestChangeSpatialIdsZoom01(t *testing.T) {
 	testForXYF(
 		t,
 		[]string{"15/0/29104/12902"},
+		nil,
 		"25/0/29803148/13212522",
 		-10,
 	)
@@ -46,6 +47,7 @@ func TestChangeSpatialIdsZoom02_01(t *testing.T) {
 			"15/0/2049/4097",
 			"15/1/2049/4097",
 		},
+		nil,
 		"14/0/1024/2048",
 		1,
 	)
@@ -65,6 +67,7 @@ func TestChangeSpatialIdsZoom02_02(t *testing.T) {
 	testForXYF(
 		t,
 		[]string{"15/0/1024/2048"},
+		nil,
 		"15/0/1024/2048",
 		0,
 	)
@@ -81,27 +84,19 @@ func TestChangeSpatialIdsZoom02_02(t *testing.T) {
 // + 確認内容
 //   - 入力値から入力チェックエラーを取得できること
 func TestChangeSpatialIdsZoom04(t *testing.T) {
-	expectedError := NewSpatialIdError(InputValueErrorCode, "")
-
-	spatialID, theError := NewSpatialIDFromString("25/0/29803148/13212522")
-	if theError != nil {
-		t.Error(theError)
-	}
-
-	spatialIDBox, theError := NewSpatialIDBox(*spatialID, *spatialID)
-	if theError != nil {
-		t.Error(theError)
-	}
-
-	theError = spatialIDBox.AddZ(11)
-	if !reflect.DeepEqual(theError, expectedError) {
-		t.Errorf("error - 期待値：%v, 取得値：%v", expectedError, theError)
-	}
+	testForXYF(
+		t,
+		nil,
+		NewSpatialIdError(InputValueErrorCode, ""),
+		"25/0/29803148/13212522",
+		11,
+	)
 }
 
 func testForXYF(
 	t *testing.T,
 	expected []string,
+	expectedError error,
 	spatialIDString string,
 	differenceZ int8,
 ) {
@@ -116,8 +111,8 @@ func testForXYF(
 	}
 
 	theError = spatialIDBox.AddZ(differenceZ)
-	if theError != nil {
-		t.Error(theError)
+	if !reflect.DeepEqual(theError, expectedError) {
+		t.Errorf("error - 期待値：%v, 取得値：%v", expectedError, theError)
 	}
 
 	i := 0
@@ -412,26 +407,15 @@ func TestChangeExtendedSpatialIdsZoom07(t *testing.T) {
 // + 確認内容
 //   - 入力値から入力チェックエラーを取得できること
 func TestChangeExtendedSpatialIdsZoom08(t *testing.T) {
-	//入力値
-	SpatialIds := []string{"25/29803148/13212522/25/0"}
-	var hzoom int64 = 15
-	var vzoom int64 = 36
-	resultVal, resultErr := ChangeExtendedSpatialIdsZoom(SpatialIds, hzoom, vzoom)
+	testTileXYZBoxAddZoomLevel(
+		t,
+		nil,
+		NewSpatialIdError(InputValueErrorCode, ""),
 
-	//期待値
-	expectVal := []string{}
-	expectErr := "InputValueError,入力チェックエラー"
+		25, 25, 29803148, 13212522, 0,
 
-	// 空間IDと期待値の比較
-	if !reflect.DeepEqual(resultVal, expectVal) {
-		t.Errorf("空間ID - 期待値：%v, 取得値：%v", expectVal, resultVal)
-	}
-	if resultErr.Error() != expectErr {
-		// 戻り値のエラーインスタンスが期待値と異なる場合Errorをログに出力
-		t.Errorf("error - 期待値：%s, 取得値：%s\n", expectErr, resultErr.Error())
-	}
-
-	t.Log("テスト終了")
+		-10, 11,
+	)
 }
 
 // TestChangeExtendedSpatialIdsZoom09 拡張空間IDの精度変換関数 垂直精度閾値より小さい値(境界値)
@@ -444,26 +428,15 @@ func TestChangeExtendedSpatialIdsZoom08(t *testing.T) {
 // + 確認内容
 //   - 入力値から入力チェックエラーを取得できること
 func TestChangeExtendedSpatialIdsZoom09(t *testing.T) {
-	//入力値
-	SpatialIds := []string{"25/29803148/13212522/25/0"}
-	var hzoom int64 = 15
-	var vzoom int64 = -1
-	resultVal, resultErr := ChangeExtendedSpatialIdsZoom(SpatialIds, hzoom, vzoom)
+	testTileXYZBoxAddZoomLevel(
+		t,
+		nil,
+		NewSpatialIdError(InputValueErrorCode, ""),
 
-	//期待値
-	expectVal := []string{}
-	expectErr := "InputValueError,入力チェックエラー"
+		25, 25, 29803148, 13212522, 0,
 
-	// 空間IDと期待値の比較
-	if !reflect.DeepEqual(resultVal, expectVal) {
-		t.Errorf("空間ID - 期待値：%v, 取得値：%v", expectVal, resultVal)
-	}
-	if resultErr.Error() != expectErr {
-		// 戻り値のエラーインスタンスが期待値と異なる場合Errorをログに出力
-		t.Errorf("error - 期待値：%s, 取得値：%s\n", expectErr, resultErr.Error())
-	}
-
-	t.Log("テスト終了")
+		-10, -26,
+	)
 }
 
 // TestChangeExtendedSpatialIdsZoom10 拡張空間IDの精度変換関数 正常動作確認(境界値)
@@ -476,32 +449,30 @@ func TestChangeExtendedSpatialIdsZoom09(t *testing.T) {
 // + 確認内容
 //   - 入力値から全拡張空間IDを格納した配列を取得できること
 func TestChangeExtendedSpatialIdsZoom10(t *testing.T) {
-	//入力値
-	SpatialIds := []string{"34/1024/1024/34/0"}
-	var hzoom int64 = 15
-	var vzoom int64 = 35
-	resultVal, resultErr := ChangeExtendedSpatialIdsZoom(SpatialIds, hzoom, vzoom)
+	testTileXYZBoxAddZoomLevel(
+		t,
+		[]*TileXYZ{
+			{
+				quadkeyZoomLevel: 15,
+				altitudekeyZoomLevel: 35,
+				x: 0,
+				y: 0,
+				z: 0,
+			},
+			{
+				quadkeyZoomLevel: 15,
+				altitudekeyZoomLevel: 35,
+				x: 0,
+				y: 0,
+				z: 1,
+			},
+		},
+		nil,
 
-	//期待値
-	expectVal := []string{"15/0/0/35/0", "15/0/0/35/1"}
+		34, 34, 1024, 1024, 0,
 
-	//戻り値要素数と期待値の比較
-	if len(resultVal) != len(expectVal) {
-		t.Errorf("空間ID - 期待要素数：%v, 取得要素数：%v", len(expectVal), len(resultVal))
-	}
-
-	//戻り値の空間IDと期待値の比較
-	for _, exp := range expectVal {
-		if !contains(resultVal, exp) {
-			t.Errorf("空間ID - 期待値：%v, 取得値：%v", expectVal, resultVal)
-		}
-	}
-	if resultErr != nil {
-		// 戻り値のエラーインスタンスが期待値と異なる場合Errorをログに出力
-		t.Errorf("error - 期待値：nil, 取得値：%s", resultErr)
-	}
-
-	t.Log("テスト終了")
+		-19, 1,
+	)
 }
 
 // TestChangeExtendedSpatialIdsZoom11 拡張空間IDの精度変換関数 正常動作確認(境界値)
@@ -514,89 +485,23 @@ func TestChangeExtendedSpatialIdsZoom10(t *testing.T) {
 // + 確認内容
 //   - 入力値から全拡張空間IDを格納した配列を取得できること
 func TestChangeExtendedSpatialIdsZoom11(t *testing.T) {
-	//入力値
-	SpatialIds := []string{"34/1024/1024/34/0"}
-	var hzoom int64 = 15
-	var vzoom int64 = 0
-	resultVal, resultErr := ChangeExtendedSpatialIdsZoom(SpatialIds, hzoom, vzoom)
+	testTileXYZBoxAddZoomLevel(
+		t,
+		[]*TileXYZ{
+			{
+				quadkeyZoomLevel: 15,
+				altitudekeyZoomLevel: 0,
+				x: 0,
+				y: 0,
+				z: 0,
+			},
+		},
+		nil,
 
-	//期待値
-	expectVal := []string{"15/0/0/0/0"}
+		34, 34, 1024, 1024, 0,
 
-	// 空間IDと期待値の比較
-	if !reflect.DeepEqual(resultVal, expectVal) {
-		t.Errorf("空間ID - 期待値：%v, 取得値：%v", expectVal, resultVal)
-	}
-	if resultErr != nil {
-		// 戻り値のエラーインスタンスが期待値と異なる場合Errorをログに出力
-		t.Errorf("error - 期待値：nil, 取得値：%s", resultErr)
-	}
-
-	t.Log("テスト終了")
-}
-
-// TestChangeExtendedSpatialIdsZoom12 拡張空間IDの精度変換関数 区切り文字数がフォーマットに従っていない場合
-//
-// 試験詳細：
-// + 試験データ
-//   - パターン1：
-//     精度変換対象の拡張空間ID：{"34/1024/1024/34"}, 変換後の水平方向精度：15, 変換後の垂直方向精度：15
-//
-// + 確認内容
-//   - 入力値から入力チェックエラーを取得できること
-func TestChangeExtendedSpatialIdsZoom12(t *testing.T) {
-	//入力値
-	SpatialIds := []string{"34/1024/1024/34"}
-	var hzoom int64 = 15
-	var vzoom int64 = 15
-	resultVal, resultErr := ChangeExtendedSpatialIdsZoom(SpatialIds, hzoom, vzoom)
-
-	//期待値
-	expectVal := []string{}
-	expectErr := "InputValueError,入力チェックエラー"
-
-	// 空間IDと期待値の比較
-	if !reflect.DeepEqual(resultVal, expectVal) {
-		t.Errorf("空間ID - 期待値：%v, 取得値：%v", expectVal, resultVal)
-	}
-	if resultErr.Error() != expectErr {
-		// 戻り値のエラーインスタンスが期待値と異なる場合Errorをログに出力
-		t.Errorf("error - 期待値：%s, 取得値：%s\n", expectErr, resultErr.Error())
-	}
-
-	t.Log("テスト終了")
-}
-
-// TestChangeExtendedSpatialIdsZoom13 拡張空間IDの精度変換関数 int64変換時にエラーが発生した場合
-//
-// 試験詳細：
-// + 試験データ
-//   - パターン1：
-//     精度変換対象の拡張空間ID：{"34/1024A/1024/34/0"}, 変換後の水平方向精度：15, 変換後の垂直方向精度：15
-//
-// + 確認内容
-//   - 入力値から入力チェックエラーを取得できること
-func TestChangeExtendedSpatialIdsZoom13(t *testing.T) {
-	//入力値
-	SpatialIds := []string{"34/1024A/1024/34/0"}
-	var hzoom int64 = 15
-	var vzoom int64 = 15
-	resultVal, resultErr := ChangeExtendedSpatialIdsZoom(SpatialIds, hzoom, vzoom)
-
-	//期待値
-	expectVal := []string{}
-	expectErr := "InputValueError,入力チェックエラー"
-
-	// 空間IDと期待値の比較
-	if !reflect.DeepEqual(resultVal, expectVal) {
-		t.Errorf("空間ID - 期待値：%v, 取得値：%v", expectVal, resultVal)
-	}
-	if resultErr.Error() != expectErr {
-		// 戻り値のエラーインスタンスが期待値と異なる場合Errorをログに出力
-		t.Errorf("error - 期待値：%s, 取得値：%s\n", expectErr, resultErr.Error())
-	}
-
-	t.Log("テスト終了")
+		-19, -34,
+	)
 }
 
 func testTileXYZBoxAddZoomLevel(
@@ -654,29 +559,41 @@ func testTileXYZBoxAddZoomLevel(
 // + 確認内容
 //   - 入力値から精度変換後の全拡張空間IDの水平方向成分を格納したスライスを取得できること
 func TestHorizontalZoom01(t *testing.T) {
-	//入力値
-	var inputZoom int64 = 25
-	var xIndex int64 = 1024
-	var yIndex int64 = 1024
-	var outputZoom int64 = 26
-	resultVal := HorizontalZoom(inputZoom, xIndex, yIndex, outputZoom)
-
-	//期待値
-	expectVal := []string{"26/2048/2048", "26/2049/2048", "26/2049/2048", "26/2049/2049"}
-
-	//戻り値要素数と期待値の比較
-	if len(resultVal) != len(expectVal) {
-		t.Errorf("拡張空間IDの水平方向成分スライス - 期待要素数：%v, 取得要素数：%v", len(expectVal), len(resultVal))
+	expectedMinChild := &TileXYZ{
+		quadkeyZoomLevel: 26,
+		altitudekeyZoomLevel: 0,
+		x: 2048,
+		y: 2048,
+		z: 0,
+	}
+	expectedMaxChild := &TileXYZ{
+		quadkeyZoomLevel: 26,
+		altitudekeyZoomLevel: 0,
+		x: 2049,
+		y: 2049,
+		z: 0,
 	}
 
-	//戻り値の空間IDと期待値の比較
-	for _, exp := range expectVal {
-		if !contains(resultVal, exp) {
-			t.Errorf("拡張空間IDの水平方向成分スライス - 期待値：%v, 取得値：%v", expectVal, resultVal)
-		}
+	tileXYZ, error := NewTileXYZ(25, 0, 1024, 1024, 0)
+	if error != nil {
+		t.Error(error)
 	}
 
-	t.Log("テスト終了")
+	minChild, error := tileXYZ.NewMinChild(1, 0)
+	if error != nil {
+		t.Error(error)
+	}
+	maxChild, error := tileXYZ.NewMaxChild(1, 0)
+	if error != nil {
+		t.Error(error)
+	}
+
+	if !reflect.DeepEqual(minChild, expectedMinChild) {
+		t.Errorf("TileXYZ - 期待値：%v, 取得値：%v", expectedMinChild, minChild)
+	}
+	if !reflect.DeepEqual(maxChild, expectedMaxChild) {
+		t.Errorf("TileXYZ - 期待値：%v, 取得値：%v", expectedMaxChild, maxChild)
+	}
 }
 
 // TestHorizontalZoom02  拡張空間IDの水平方向の精度変換関数 変換後の精度が低い場合
@@ -690,29 +607,27 @@ func TestHorizontalZoom01(t *testing.T) {
 // + 確認内容
 //   - 入力値から精度変換後の全拡張空間IDの水平方向成分を格納したスライスを取得できること
 func TestHorizontalZoom02(t *testing.T) {
-	//入力値
-	var inputZoom int64 = 25
-	var xIndex int64 = 1024
-	var yIndex int64 = 1024
-	var outputZoom int64 = 24
-	resultVal := HorizontalZoom(inputZoom, xIndex, yIndex, outputZoom)
-
-	//期待値
-	expectVal := []string{"24/512/512"}
-
-	//戻り値要素数と期待値の比較
-	if len(resultVal) != len(expectVal) {
-		t.Errorf("拡張空間IDの水平方向成分スライス - 期待要素数：%v, 取得要素数：%v", len(expectVal), len(resultVal))
+	expectedParent := &TileXYZ{
+		quadkeyZoomLevel: 24,
+		altitudekeyZoomLevel: 0,
+		x: 512,
+		y: 512,
+		z: 0,
 	}
 
-	//戻り値の空間IDと期待値の比較
-	for _, exp := range expectVal {
-		if !contains(resultVal, exp) {
-			t.Errorf("拡張空間IDの水平方向成分スライス - 期待値：%v, 取得値：%v", expectVal, resultVal)
-		}
+	tileXYZ, error := NewTileXYZ(25, 0, 1024, 1024, 0)
+	if error != nil {
+		t.Error(error)
 	}
 
-	t.Log("テスト終了")
+	parent, error := tileXYZ.NewParent(1, 0)
+	if error != nil {
+		t.Error(error)
+	}
+
+	if !reflect.DeepEqual(parent, expectedParent) {
+		t.Errorf("TileXYZ - 期待値：%v, 取得値：%v", expectedParent, parent)
+	}
 }
 
 // TestHorizontalZoom03  拡張空間IDの水平方向の精度変換関数 変換後の精度が変換前と等しい場合
@@ -726,29 +641,36 @@ func TestHorizontalZoom02(t *testing.T) {
 // + 確認内容
 //   - 入力値から精度変換後の全拡張空間IDの水平方向成分を格納したスライスを取得できること
 func TestHorizontalZoom03(t *testing.T) {
-	//入力値
-	var inputZoom int64 = 25
-	var xIndex int64 = 1024
-	var yIndex int64 = 1024
-	var outputZoom int64 = 25
-	resultVal := HorizontalZoom(inputZoom, xIndex, yIndex, outputZoom)
-
-	//期待値
-	expectVal := []string{"25/1024/1024"}
-
-	//戻り値要素数と期待値の比較
-	if len(resultVal) != len(expectVal) {
-		t.Errorf("拡張空間IDの水平方向成分スライス - 期待要素数：%v, 取得要素数：%v", len(expectVal), len(resultVal))
+	tileXYZ := &TileXYZ{
+		quadkeyZoomLevel: 25,
+		altitudekeyZoomLevel: 0,
+		x: 1024,
+		y: 1024,
+		z: 0,
 	}
 
-	//戻り値の空間IDと期待値の比較
-	for _, exp := range expectVal {
-		if !contains(resultVal, exp) {
-			t.Errorf("拡張空間IDの水平方向成分スライス - 期待値：%v, 取得値：%v", expectVal, resultVal)
-		}
+	minChild, error := tileXYZ.NewMinChild(0, 0)
+	if error != nil {
+		t.Error(error)
+	}
+	maxChild, error := tileXYZ.NewMaxChild(0, 0)
+	if error != nil {
+		t.Error(error)
+	}
+	parent, error := tileXYZ.NewParent(0, 0)
+	if error != nil {
+		t.Error(error)
 	}
 
-	t.Log("テスト終了")
+	if !reflect.DeepEqual(minChild, tileXYZ) {
+		t.Errorf("TileXYZ - 期待値：%v, 取得値：%v", tileXYZ, minChild)
+	}
+	if !reflect.DeepEqual(maxChild, tileXYZ) {
+		t.Errorf("TileXYZ - 期待値：%v, 取得値：%v", tileXYZ, maxChild)
+	}
+	if !reflect.DeepEqual(parent, tileXYZ) {
+		t.Errorf("TileXYZ - 期待値：%v, 取得値：%v", tileXYZ, parent)
+	}
 }
 
 // TestVerticalZoom01  拡張空間IDの垂直方向の精度変換関数 正常系動作確認
@@ -762,28 +684,41 @@ func TestHorizontalZoom03(t *testing.T) {
 // + 確認内容
 //   - 入力値から精度変換後の全拡張空間IDの垂直方向成分を格納したスライスを取得できること
 func TestVerticalZoom01(t *testing.T) {
-	//入力値
-	var inputZoom int64 = 25
-	var vIndex int64 = 1024
-	var outputZoom int64 = 26
-	resultVal := VerticalZoom(inputZoom, vIndex, outputZoom)
-
-	//期待値
-	expectVal := []string{"26/2048", "26/2049"}
-
-	//戻り値要素数と期待値の比較
-	if len(resultVal) != len(expectVal) {
-		t.Errorf("拡張空間IDの垂直方向成分スライス - 期待要素数：%v, 取得要素数：%v", len(expectVal), len(resultVal))
+	expectedMinChild := &TileXYZ{
+		quadkeyZoomLevel: 0,
+		altitudekeyZoomLevel: 26,
+		x: 0,
+		y: 0,
+		z: 2048,
+	}
+	expectedMaxChild := &TileXYZ{
+		quadkeyZoomLevel: 0,
+		altitudekeyZoomLevel: 26,
+		x: 0,
+		y: 0,
+		z: 2049,
 	}
 
-	//戻り値の空間IDと期待値の比較
-	for _, exp := range expectVal {
-		if !contains(resultVal, exp) {
-			t.Errorf("拡張空間IDの垂直方向成分スライス - 期待値：%v, 取得値：%v", expectVal, resultVal)
-		}
+	tileXYZ, error := NewTileXYZ(0, 25, 0, 0, 1024)
+	if error != nil {
+		t.Error(error)
 	}
 
-	t.Log("テスト終了")
+	minChild, error := tileXYZ.NewMinChild(0, 1)
+	if error != nil {
+		t.Error(error)
+	}
+	maxChild, error := tileXYZ.NewMaxChild(0, 1)
+	if error != nil {
+		t.Error(error)
+	}
+
+	if !reflect.DeepEqual(minChild, expectedMinChild) {
+		t.Errorf("TileXYZ - 期待値：%v, 取得値：%v", expectedMinChild, minChild)
+	}
+	if !reflect.DeepEqual(maxChild, expectedMaxChild) {
+		t.Errorf("TileXYZ - 期待値：%v, 取得値：%v", expectedMaxChild, maxChild)
+	}
 }
 
 // TestVerticalZoom02  拡張空間IDの垂直方向の精度変換関数 変換後の垂直方向精度が低い場合
@@ -797,28 +732,27 @@ func TestVerticalZoom01(t *testing.T) {
 // + 確認内容
 //   - 入力値から精度変換後の全拡張空間IDの垂直方向成分を格納したスライスを取得できること
 func TestVerticalZoom02(t *testing.T) {
-	//入力値
-	var inputZoom int64 = 25
-	var vIndex int64 = 1024
-	var outputZoom int64 = 24
-	resultVal := VerticalZoom(inputZoom, vIndex, outputZoom)
-
-	//期待値
-	expectVal := []string{"24/512"}
-
-	//戻り値要素数と期待値の比較
-	if len(resultVal) != len(expectVal) {
-		t.Errorf("拡張空間IDの垂直方向成分スライス - 期待要素数：%v, 取得要素数：%v", len(expectVal), len(resultVal))
+	expectedParent := &TileXYZ{
+		quadkeyZoomLevel: 0,
+		altitudekeyZoomLevel: 24,
+		x: 0,
+		y: 0,
+		z: 512,
 	}
 
-	//戻り値の空間IDと期待値の比較
-	for _, exp := range expectVal {
-		if !contains(resultVal, exp) {
-			t.Errorf("拡張空間IDの垂直方向成分スライス - 期待値：%v, 取得値：%v", expectVal, resultVal)
-		}
+	tileXYZ, error := NewTileXYZ(0, 25, 0, 0, 1024)
+	if error != nil {
+		t.Error(error)
 	}
 
-	t.Log("テスト終了")
+	parent, error := tileXYZ.NewParent(0, 1)
+	if error != nil {
+		t.Error(error)
+	}
+
+	if !reflect.DeepEqual(parent, expectedParent) {
+		t.Errorf("TileXYZ - 期待値：%v, 取得値：%v", expectedParent, parent)
+	}
 }
 
 // TestVerticalZoom03  拡張空間IDの垂直方向の精度変換関数 変換後の精度が変換前と等しい場合
@@ -832,46 +766,34 @@ func TestVerticalZoom02(t *testing.T) {
 // + 確認内容
 //   - 入力値から精度変換後の全拡張空間IDの垂直方向成分を格納したスライスを取得できること
 func TestVerticalZoom03(t *testing.T) {
-	//入力値
-	var inputZoom int64 = 25
-	var vIndex int64 = 1024
-	var outputZoom int64 = 25
-	resultVal := VerticalZoom(inputZoom, vIndex, outputZoom)
-
-	//期待値
-	expectVal := []string{"25/1024"}
-
-	//戻り値要素数と期待値の比較
-	if len(resultVal) != len(expectVal) {
-		t.Errorf("拡張空間IDの垂直方向成分スライス - 期待要素数：%v, 取得要素数：%v", len(expectVal), len(resultVal))
+	tileXYZ := &TileXYZ{
+		quadkeyZoomLevel: 0,
+		altitudekeyZoomLevel: 25,
+		x: 0,
+		y: 0,
+		z: 1024,
 	}
 
-	//戻り値の空間IDと期待値の比較
-	for _, exp := range expectVal {
-		if !contains(resultVal, exp) {
-			t.Errorf("拡張空間IDの垂直方向成分スライス - 期待値：%v, 取得値：%v", expectVal, resultVal)
-		}
+	minChild, error := tileXYZ.NewMinChild(0, 0)
+	if error != nil {
+		t.Error(error)
+	}
+	maxChild, error := tileXYZ.NewMaxChild(0, 0)
+	if error != nil {
+		t.Error(error)
+	}
+	parent, error := tileXYZ.NewParent(0, 0)
+	if error != nil {
+		t.Error(error)
 	}
 
-	t.Log("テスト終了")
-}
-
-// stringスライスの中に指定文字列を含むか判定する
-//
-// 引数：
-//
-//	slice： stringスライス
-//	target： 検索文字列
-//
-// 戻り値：
-//
-//	含む場合：true
-//	含まない場合：false
-func contains(slice []string, target string) bool {
-	for _, s := range slice {
-		if s == target {
-			return true
-		}
+	if !reflect.DeepEqual(minChild, tileXYZ) {
+		t.Errorf("TileXYZ - 期待値：%v, 取得値：%v", tileXYZ, minChild)
 	}
-	return false
+	if !reflect.DeepEqual(maxChild, tileXYZ) {
+		t.Errorf("TileXYZ - 期待値：%v, 取得値：%v", tileXYZ, maxChild)
+	}
+	if !reflect.DeepEqual(parent, tileXYZ) {
+		t.Errorf("TileXYZ - 期待値：%v, 取得値：%v", tileXYZ, parent)
+	}
 }
