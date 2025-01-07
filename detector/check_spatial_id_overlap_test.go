@@ -1,8 +1,11 @@
 package detector
 
 import (
+	"errors"
 	"reflect"
 	"testing"
+
+	sperrors "github.com/trajectoryjp/spatial_id_go/v4/common/errors"
 )
 
 // TestCheckSpatialIdsOverlap01 空間IDの重複確認関数 正常系動作確認
@@ -533,6 +536,78 @@ func BenchmarkCheckSpatialIdsArrayOverlap02(b *testing.B) {
 	}
 	b.StopTimer()
 	b.Log("テスト終了")
+}
+
+// TestSpatialIdOverlapDetector SpatialIdOverlapDetectorのテスト
+func TestSpatialIdOverlapDetector(t *testing.T) {
+	testCases := []struct {
+		spatialIds1  []string
+		spatialIds2  []string
+		expectValue  bool
+		expectError1 error
+		expectError2 error
+	}{
+		{
+			spatialIds1:  []string{"13/0/7274/3225"},
+			spatialIds2:  []string{"16/0/58198/25800", "16/0/58198/25804"},
+			expectValue:  true,
+			expectError1: nil,
+			expectError2: nil,
+		},
+		{
+			spatialIds1:  []string{"13/0/7275/3226"},
+			spatialIds2:  []string{"16/0/58198/25804", "16/0/58198/25805"},
+			expectValue:  false,
+			expectError1: nil,
+			expectError2: nil,
+		},
+		{
+			spatialIds1: []string{""},
+			spatialIds2: []string{"16/0/58198/25803", "16/0/58198/25804"},
+			expectValue: false,
+			expectError1: sperrors.NewSpatialIdError(
+				sperrors.InputValueErrorCode,
+				"spatialId: ",
+			),
+			// ),
+			expectError2: nil,
+		},
+		{
+			spatialIds1:  []string{"16/0/58198/25803", "16/0/58198/25804"},
+			spatialIds2:  []string{"25/0/29803148/13212522/777"},
+			expectValue:  false,
+			expectError1: nil,
+			expectError2: sperrors.NewSpatialIdError(
+				sperrors.InputValueErrorCode,
+				"spatialId: 25/0/29803148/13212522/777",
+			),
+		},
+	}
+
+	for _, testCase := range testCases {
+		for _, newSpatialIdOverlapDetector := range []func([]string) (SpatialIdOverlapDetector, error){
+			NewSpatialIdGreedyOverlapDetector,
+			NewSpatialIdTreeOverlapDetector,
+		} {
+			spatialIdOverlapDetector, resultError1 := newSpatialIdOverlapDetector(testCase.spatialIds1)
+			if !errors.Is(resultError1, testCase.expectError1) {
+				// 戻り値のエラーインスタンスが期待値と異なる場合Errorをログに出力
+				t.Errorf("error - 期待値：%s, 取得値：%s\n", testCase.expectError1, resultError1)
+			}
+			if resultError1 != nil {
+				continue
+			}
+
+			resultValue, resultError2 := spatialIdOverlapDetector.IsOverlap(testCase.spatialIds2)
+			if !reflect.DeepEqual(resultValue, testCase.expectValue) {
+				t.Errorf("空間ID - 期待値：%v, 取得値：%v\n", testCase.expectValue, resultValue)
+			}
+			if !errors.Is(resultError2, testCase.expectError2) {
+				// 戻り値のエラーインスタンスが期待値と異なる場合Errorをログに出力
+				t.Errorf("error - 期待値：%s, 取得値：%s\n", testCase.expectError2, resultError2)
+			}
+		}
+	}
 }
 
 //	TestCheckExtendedSpatialIdsOverlap01 拡張空間IDの重複確認関数 正常系動作確認
