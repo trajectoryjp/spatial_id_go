@@ -221,13 +221,13 @@ func NewSpatialIdTreeOverlapDetector(spatialIds []string) (SpatialIdOverlapDetec
 				positiveTree = tree.CreateTree(tree.Create3DTable())
 			}
 			treeIndex := tree.Indexs{int64(f), int64(x), int64(y)}
-			positiveTree.Append(treeIndex, tree.ZoomSetLevel(zoom), spatialId)
+			positiveTree.Append(treeIndex, tree.ZoomSetLevel(zoom), struct{}{})
 		} else {
 			if negativeTree == nil {
 				negativeTree = tree.CreateTree(tree.Create3DTable())
 			}
 			treeIndex := tree.Indexs{int64(^f), int64(x), int64(y)}
-			negativeTree.Append(treeIndex, tree.ZoomSetLevel(zoom), spatialId)
+			negativeTree.Append(treeIndex, tree.ZoomSetLevel(zoom), struct{}{})
 		}
 	}
 	return &SpatialIdTreeOverlapDetector{positiveTree, negativeTree}, nil
