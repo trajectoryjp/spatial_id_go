@@ -2,19 +2,10 @@
 package spatialID
 
 import (
-	"fmt"
-	"mime/quotedprintable"
 	"reflect"
 	"sort"
 	"strconv"
-	"strings"
 	"testing"
-
-	"github.com/trajectoryjp/spatial_id_go/v4/common/consts"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/trajectoryjp/spatial_id_go/v4/common/errors"
-	"github.com/trajectoryjp/spatial_id_go/v4/common/object"
 )
 
 func TestConvertTileXYZsToSpatialIDs_01(t *testing.T) {
@@ -219,7 +210,7 @@ func testNewSpatialIDBoxFromTileXYZBox(
 	if theError != nil {
 		t.Fatal(theError)
 	}
-	spatialIDBox.SetZ(spatialIDZoomLevel)
+	spatialIDBox.AddZ(spatialIDZoomLevel-spatialIDBox.GetMin().GetZ())
 
 	i := 0
 	theError = spatialIDBox.ForXYF(func(id SpatialID) error {
@@ -234,534 +225,60 @@ func testNewSpatialIDBoxFromTileXYZBox(
 	}
 }
 
-func TestConvertTileXYZsToExtendedSpatialIDs(t *testing.T) {
-	type argSet struct {
-		tile          []*object.TileXYZ
-		zBaseExponent int64
-		zBaseOffset   int64
-		outputVZoom   int64
-	}
-	testCases := []struct {
-		expected []string
-		request  argSet
-	}{
-		{
-			// hZoom/x/y/vZoom/z
-			[]string{"20/85263/65423/23/-2"},
-			argSet{
-				[]*object.TileXYZ{newTileXYZ(
-					t,
-					20,
-					85263,
-					65423,
-					23,
-					0,
-				)},
-				23,
-				8,
-				23,
+func TestConvertSpatialIdsToQuadkeysAndVerticalIDs_Max(t *testing.T) {
+	testNewTileXYZBoxFromSpatialIDBox(
+		t,
+		[]*TileXYZ{
+			{
+				quadkeyZoomLevel: 21,
+				altitudekeyZoomLevel: 10,
+				x: 170526,
+				y: 130846,
+				z: 1023, // Max
+			},
+			{
+				quadkeyZoomLevel: 21,
+				altitudekeyZoomLevel: 10,
+				x: 170527,
+				y: 130846,
+				z: 1023, // Max
+			},
+			{
+				quadkeyZoomLevel: 21,
+				altitudekeyZoomLevel: 10,
+				x: 170526,
+				y: 130847,
+				z: 1023, // Max
+			},
+			{
+				quadkeyZoomLevel: 21,
+				altitudekeyZoomLevel: 10,
+				x: 170527,
+				y: 130847,
+				z: 1023, // Max
 			},
 		},
-		{
-			[]string{"20/85263/65423/25/1"},
-			argSet{
-				[]*object.TileXYZ{newTileXYZ(
-					t,
-					20,
-					85263,
-					65423,
-					25,
-					3,
-				)},
-				25,
-				2,
-				25,
-			},
-		},
-		{
-			[]string{"20/85263/65423/3/0"},
-			argSet{
-				[]*object.TileXYZ{newTileXYZ(
-					t,
-					20,
-					85263,
-					65423,
-					3,
-					3,
-				)},
-				3,
-				2,
-				3,
-			},
-		},
-		{
-			[]string{"20/85263/65423/23/-2"},
-			argSet{
-				[]*object.TileXYZ{newTileXYZ(
-					t,
-					20,
-					85263,
-					65423,
-					23,
-					0,
-				)},
-				25,
-				8,
-				23,
-			},
-		},
-		{
-			[]string{"20/85263/65423/23/-2", "20/85263/65423/23/-1"},
-			argSet{
-				[]*object.TileXYZ{newTileXYZ(
-					t,
-					20,
-					85263,
-					65423,
-					23,
-					0,
-				)},
-				25,
-				7,
-				23,
-			},
-		},
-		{
-			[]string{"20/85263/65423/26/6", "20/85263/65423/26/7"},
-			argSet{
-				[]*object.TileXYZ{newTileXYZ(
-					t,
-					20,
-					85263,
-					65423,
-					26,
-					3,
-				)},
-				25,
-				-2,
-				26,
-			},
-		},
-		{
-			[]string{"20/85263/65423/23/0", "20/85263/65423/23/1", "20/85263/65423/23/2"},
-			argSet{
-				[]*object.TileXYZ{
-					newTileXYZ(
-						t,
-						20,
-						85263,
-						65423,
-						23,
-						0,
-					),
-					newTileXYZ(
-						t,
-						20,
-						85263,
-						65423,
-						23,
-						1,
-					)},
-				25,
-				-1,
-				23,
-			},
-		},
-		{
-			[]string{"20/85263/65423/23/0", "20/85263/65423/23/1", "20/85263/65423/23/2", "20/85264/65424/23/0", "20/85264/65424/23/1", "20/85264/65424/23/2"},
-			argSet{
-				[]*object.TileXYZ{
-					newTileXYZ(
-						t,
-						20,
-						85263,
-						65423,
-						23,
-						0,
-					),
-					newTileXYZ(
-						t,
-						20,
-						85263,
-						65423,
-						23,
-						1,
-					),
-					newTileXYZ(
-						t,
-						20,
-						85264,
-						65424,
-						23,
-						0,
-					),
-					newTileXYZ(
-						t,
-						20,
-						85264,
-						65424,
-						23,
-						1,
-					)},
-				25,
-				-1,
-				23,
-			},
-		},
-	}
-	for _, testCase := range testCases {
-		expectedData := []object.ExtendedSpatialID{}
-		for i := 0; i < len(testCase.expected); i++ {
-			extendedSpatialId := newExtendedSpatialID(t, testCase.expected[i])
-			expectedData = append(expectedData, *extendedSpatialId)
-		}
-		result, err := ConvertTileXYZsToExtendedSpatialIDs(testCase.request.tile, testCase.request.zBaseExponent, testCase.request.zBaseOffset, testCase.request.outputVZoom)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if assert.ElementsMatch(t, expectedData, result) == false {
-			// t.Error(result):
-			t.Errorf("expected: %v result: %v", expectedData, result)
-		} else {
-			t.Log("Success", result)
-		}
-	}
 
-}
+		"20/32768/85263/65423", // 32768 = 1 << 15
 
-func TestErrorConvertTileXYZsToExtendedSpatialIDs(t *testing.T) {
-	type argSet struct {
-		tile          []*object.TileXYZ
-		zBaseExponent int64
-		zBaseOffset   int64
-		outputVZoom   int64
-	}
-	testCases := []struct {
-		expected string
-		request  argSet
-	}{
-		{
-			"input index does not exist",
-			argSet{
-				[]*object.TileXYZ{newTileXYZ(
-					t,
-					20,
-					85263,
-					65423,
-					25,
-					(1<<consts.ZOriginValue)+1,
-				)},
-				25,
-				8,
-				25,
-			},
-		},
-		{
-			"output index does not exist",
-			argSet{
-				[]*object.TileXYZ{newTileXYZ(
-					t,
-					20,
-					85263,
-					65423,
-					25,
-					(1<<consts.ZOriginValue)-1,
-				)},
-				25,
-				-1,
-				25,
-			},
-		},
-		{
-			"extendSpatialID zoom level must be in 0-35",
-			argSet{
-				[]*object.TileXYZ{newTileXYZ(
-					t,
-					20,
-					85263,
-					65423,
-					23,
-					0,
-				)},
-				23,
-				8,
-				230,
-			},
-		},
-	}
-	for _, testCase := range testCases {
-		_, err := ConvertTileXYZsToExtendedSpatialIDs(testCase.request.tile, testCase.request.zBaseExponent, testCase.request.zBaseOffset, testCase.request.outputVZoom)
-		if err == nil {
-			t.Fatal(err)
-		}
-		if strings.Contains(err.Error(), testCase.expected) == false {
-			t.Errorf("expected: %v result: %v", testCase.expected, err)
-		} else {
-			t.Log("Success", err)
-		}
-	}
-}
-
-func ExampleConvertTileXYZsToExtendedSpatialIDs() {
-	inputData := []struct {
-		hZoom int64
-		x     int64
-		y     int64
-		vZoom int64
-		z     int64
-	}{
-		{
-			22,
-			85263,
-			65423,
-			23,
-			0,
-		},
-		{
-			22,
-			85263,
-			65423,
-			23,
-			1,
-		},
-		{
-			22,
-			85264,
-			65424,
-			23,
-			0,
-		},
-		{
-			22,
-			85264,
-			65424,
-			23,
-			1,
-		},
-	}
-	var inputXYZ []*object.TileXYZ
-	for _, in := range inputData {
-		tile, err := object.NewTileXYZ(in.hZoom, in.x, in.y, in.vZoom, in.z)
-		if err != nil {
-			panic(err)
-		}
-		inputXYZ = append(inputXYZ, tile)
-	}
-	outputData, err := ConvertTileXYZsToExtendedSpatialIDs(
-		inputXYZ,
-		25,
-		-1,
-		23,
+		21, 10,
 	)
-	if err != nil {
-		panic(err)
-	}
-	for _, out := range outputData {
-		fmt.Println(out.ID())
-	}
-	// Unordered output:
-	// 22/85263/65423/23/0
-	// 22/85264/65424/23/0
-	// 22/85263/65423/23/1
-	// 22/85264/65424/23/1
-	// 22/85263/65423/23/2
-	// 22/85264/65424/23/2
 }
 
-func TestConvertExtendedSpatialIDsToSpatialIDs(t *testing.T) {
-	testCases := []struct {
-		expected []string
-		id       *object.ExtendedSpatialID
-	}{
-		{
-			// 水平精度の方が低い場合
-			[]string{"7/0/48/106", "7/0/48/107", "7/0/49/106", "7/0/49/107"},
-			newExtendedSpatialID(t, "6/24/53/7/0"),
+func TestConvertSpatialIdsToQuadkeysAndVerticalIDs_2(t *testing.T) {
+	testNewTileXYZBoxFromSpatialIDBox(
+		t,
+		// 21, [][2]int64{{29728048124, 2047}, {29728048125, 2047}, {29728048126, 2047}, {29728048127, 2047}}, 11, 500, 0
+		[]*TileXYZ{
+			{
+				quadkeyZoomLevel: 21,
+				altitudekeyZoomLevel: ,
+				x: 170526,
+				y: 130846,
+
+			},
 		},
-		{
-			// 水平精度の方が低い場合
-			[]string{"7/0/48/98", "7/0/48/99", "7/0/49/98", "7/0/49/99"},
-			newExtendedSpatialID(t, "6/24/49/7/0"),
-		},
-		{
-			// 垂直精度の方が低い場合
-			[]string{"7/48/24/53", "7/49/24/53"},
-			newExtendedSpatialID(t, "7/24/53/6/24"),
-		},
-		{
-			// 水平精度、垂直精度に差がない場合
-			[]string{"6/0/24/49"},
-			newExtendedSpatialID(t, "6/24/49/6/0"),
-		},
-	}
-	for _, testCase := range testCases {
-		result := ConvertExtendedSpatialIDToSpatialIDs(testCase.id)
-		if !assert.ElementsMatch(t, testCase.expected, result) {
-			t.Errorf("expected: %v result: %v", testCase.expected, result)
-		}
-	}
-}
-
-func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys_Example1(t *testing.T) {
-	expected := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{
-		object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(
-			20,
-			[][2]int64{{7432012031, 3}},
-			3,
-			3,
-			2,
-		),
-	}
-
-	result, error := ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(
-		[]string{"20/85263/65423/25/1"},
-		20,
-		3,
-		3,
-		2,
 	)
-	if error != nil {
-		t.Fatal(error)
-	}
-
-	if !reflect.DeepEqual(result, expected) {
-		t.Fatal(result)
-	}
-}
-
-func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys_Example2(t *testing.T) {
-	expected := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{
-		object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(
-			20,
-			[][2]int64{{7432012031, 2}},
-			2,
-			3,
-			2,
-		),
-	}
-
-	result, error := ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(
-		[]string{"20/85263/65423/25/3"},
-		20,
-		2,
-		3,
-		2,
-	)
-	if error != nil {
-		t.Fatal(error)
-	}
-
-	if !reflect.DeepEqual(result, expected) {
-		t.Fatal(result)
-	}
-}
-
-func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys_Example3(t *testing.T) {
-	expected := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{
-		object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(
-			20,
-			[][2]int64{{7432012031, 2}, {7432012031, 3}},
-			3,
-			3,
-			2,
-		),
-	}
-
-	result, error := ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(
-		[]string{"20/85263/65423/24/0"},
-		20,
-		3,
-		3,
-		2,
-	)
-	if error != nil {
-		t.Fatal(error)
-	}
-
-	if !reflect.DeepEqual(result, expected) {
-		t.Fatal(result)
-	}
-}
-
-func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys_Example4(t *testing.T) {
-	expected := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{
-		object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(
-			20,
-			[][2]int64{{7432012031, 0}, {7432012031, 1}, {7432012031, 2}, {7432012031, 3}},
-			25,
-			23,
-			-1,
-		),
-	}
-
-	result, error := ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(
-		[]string{"20/85263/65423/25/1"},
-		20,
-		25,
-		23,
-		-1,
-	)
-	if error != nil {
-		t.Fatal(error)
-	}
-
-	if !reflect.DeepEqual(result, expected) {
-		t.Fatal(result)
-	}
-}
-
-func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys_Example5(t *testing.T) {
-	expected := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{
-		object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey(
-			20,
-			[][2]int64{{7432012031, 0}},
-			23,
-			25,
-			-1,
-		),
-	}
-
-	result, error := ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(
-		[]string{"20/85263/65423/25/1"},
-		20,
-		23,
-		25,
-		-1,
-	)
-	if error != nil {
-		t.Fatal(error)
-	}
-
-	if !reflect.DeepEqual(result, expected) {
-		t.Fatal(result)
-	}
-}
-
-func TestConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys_Example6(t *testing.T) {
-	expected := []*object.FromExtendedSpatialIDToQuadkeyAndAltitudekey{
-		object.NewFromExtendedSpatialIDToQuadkeyAndAltitudekey( // 例6
-			20,
-			[][2]int64{{7432012031, 0}},
-			23,
-			25,
-			-1,
-		),
-	}
-
-	result, error := ConvertExtendedSpatialIDsToQuadkeysAndAltitudekeys(
-		[]string{"20/85263/65423/25/4"},
-		20,
-		23,
-		25,
-		-1,
-	)
-	if error != nil {
-		t.Fatal(error)
-	}
-
-	if !reflect.DeepEqual(result, expected) {
-		t.Fatal(result)
-	}
 }
 
 func TestConvertSpatialIdsToQuadkeysAndVerticalIDs(t *testing.T) {
@@ -818,7 +335,6 @@ func TestConvertSpatialIdsToQuadkeysAndVerticalIDs(t *testing.T) {
 		e            error
 	}{
 		// 正常
-		{spatialIds: []string{"20/56/85263/65423"}, ToHZoom: 21, ToVZoom: 10, maxHeight: 500, minHeight: 0.0, result: quadkeyAndVerticalIDs, pattern: 0},     //all1
 		{spatialIds: []string{"20/56/85263/65423"}, ToHZoom: 21, ToVZoom: 11, maxHeight: 500, minHeight: 0.0, result: quadkeyAndVerticalIDsUpup, pattern: 0}, //all1
 		{spatialIds: []string{"20/56/85263/65423"}, ToHZoom: 19, ToVZoom: 9, maxHeight: 500, minHeight: 0.0, result: quadkeyAndVerticalIDsDwdw, pattern: 0},  //all1
 		{spatialIds: []string{"20/56/85263/65423"}, ToHZoom: 19, ToVZoom: 11, maxHeight: 500, minHeight: 0.0, result: quadkeyAndVerticalIDsDwup, pattern: 0}, //all1
@@ -871,6 +387,43 @@ func TestConvertSpatialIdsToQuadkeysAndVerticalIDs(t *testing.T) {
 			t.Errorf("ConvertSpatialIDsToQuadkeysAndVerticalIDs(%s,%d,%d,%f,%f) == %+v, result: %+v", p.spatialIds, p.ToHZoom, p.ToVZoom, p.maxHeight, p.minHeight, len(result[0].InnerIDList()), p.resultLength)
 		}
 
+	}
+}
+
+func testNewTileXYZBoxFromSpatialIDBox(
+	t *testing.T,
+	expected []*TileXYZ,
+	spatialIDString string,
+	quadkeyZoomLevel int8,
+	altitudekeyZoomLevel int8,
+	) {
+	spatialID, theError := NewSpatialIDFromString(spatialIDString)
+	if theError != nil {
+		t.Fatal(theError)
+	}
+
+	spatialIDBox, theError := NewSpatialIDBox(*spatialID, *spatialID)
+	if theError != nil {
+		t.Fatal(theError)
+	}
+
+	tileXYZBox, theError := NewTileXYZBoxFromSpatialIDBox(*spatialIDBox)
+	if theError != nil {
+		t.Fatal(theError)
+	}
+
+	tileXYZBox.AddZoomLevel(quadkeyZoomLevel - tileXYZBox.GetMin().GetQuadkeyZoomLevel(), altitudekeyZoomLevel - tileXYZBox.GetMin().GetAltitudekeyZoomLevel())
+
+	i := 0
+	theError = tileXYZBox.ForXYZ(func(tileXYZ TileXYZ) error {
+		if !reflect.DeepEqual(&tileXYZ, expected[i]) {
+			t.Fatal(tileXYZ)
+		}
+		i += 1
+		return nil
+	})
+	if theError != nil {
+		t.Fatal(theError)
 	}
 }
 
