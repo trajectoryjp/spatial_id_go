@@ -1,6 +1,7 @@
 package spatialID
 
 import (
+	"iter"
 	"math"
 
 	"github.com/HarutakaMatsumoto/mathematics_go/geometry/rectangular/solid"
@@ -120,7 +121,7 @@ func (box TileXYZBox) IsCollidedWith(another TileXYZBox) bool {
 	return true
 }
 
-func (box TileXYZBox) ForCollisionWithConvexHull(convexHull []*coordinates.Geodetic, clearance float64, function func(TileXYZ) error) error {
+func (box TileXYZBox) AllCollisionWithConvexHull(convexHull []*coordinates.Geodetic, clearance float64) iter.Seq[TileXYZ] {
 	measure := closest.Measure{
 		ConvexHulls: [2][]*mgl64.Vec3{
 			make([]*mgl64.Vec3, len(convexHull)),
@@ -132,125 +133,123 @@ func (box TileXYZBox) ForCollisionWithConvexHull(convexHull []*coordinates.Geode
 		measure.ConvexHulls[0][i] = (*mgl64.Vec3)(vertex)
 	}
 
-	current := box.GetMin()
-	for ; ; current.SetX(current.GetX() + 1) {
+	return iter.Seq[TileXYZ](func(yield func(tile TileXYZ) bool) {
+		current := box.GetMin()
+		for ; ; current.SetX(current.GetX() + 1) {
 		yLoop:
-		for current.SetY(box.GetMin().GetY()); ; current.SetY(current.GetY() + 1) {
-			bottom := current
-			oldDistance := math.Inf(1)
-			for bottom.SetZ(box.GetMin().GetZ()); ; bottom.SetZ(bottom.GetZ() + 1) {
-				tileXYZBox, _ := NewTileXYZBox(bottom, bottom)
-				geodeticBox := NewGeodeticBoxFromTileXYZBox(*tileXYZBox)
-		
-				for i, vertex := range geodeticBox.GetVertices() {
-					measure.ConvexHulls[1][i] = (*mgl64.Vec3)(vertex)
-				}
-		
-				measure.MeasureNonnegativeDistance()
-		
-				geocentric0 := coordinates.GeocentricFromGeodetic(coordinates.Geodetic(measure.Points[0]))
-				geocentric1 := coordinates.GeocentricFromGeodetic(coordinates.Geodetic(measure.Points[1]))
-				distance := mgl64.Vec3(geocentric0).Sub(mgl64.Vec3(geocentric1)).Len() // TODO: Embed
-		
-				if distance > clearance {
-					if distance > oldDistance {
-						continue yLoop
-					} else {
-						deltaAltitude := *geodeticBox.Max.Altitude() - *geodeticBox.Min.Altitude()
-						newZ := int64(distance / deltaAltitude) + bottom.GetZ()
-						if newZ >= tileXYZBox.GetMax().GetZ() {
+			for current.SetY(box.GetMin().GetY()); ; current.SetY(current.GetY() + 1) {
+				bottom := current
+				oldDistance := math.Inf(1)
+				for bottom.SetZ(box.GetMin().GetZ()); ; bottom.SetZ(bottom.GetZ() + 1) {
+					tileXYZBox, _ := NewTileXYZBox(bottom, bottom)
+					geodeticBox := NewGeodeticBoxFromTileXYZBox(*tileXYZBox)
+
+					for i, vertex := range geodeticBox.GetVertices() {
+						measure.ConvexHulls[1][i] = (*mgl64.Vec3)(vertex)
+					}
+
+					measure.MeasureNonnegativeDistance()
+
+					geocentric0 := coordinates.GeocentricFromGeodetic(coordinates.Geodetic(measure.Points[0]))
+					geocentric1 := coordinates.GeocentricFromGeodetic(coordinates.Geodetic(measure.Points[1]))
+					distance := mgl64.Vec3(geocentric0).Sub(mgl64.Vec3(geocentric1)).Len() // TODO: Embed
+
+					if distance > clearance {
+						if distance > oldDistance {
 							continue yLoop
+						} else {
+							deltaAltitude := *geodeticBox.Max.Altitude() - *geodeticBox.Min.Altitude()
+							newZ := int64(distance/deltaAltitude) + bottom.GetZ()
+							if newZ >= tileXYZBox.GetMax().GetZ() {
+								continue yLoop
+							}
+
+							bottom.SetZ(newZ)
+							continue
 						}
-	
-						bottom.SetZ(newZ)
-						continue
+					}
+
+					break
+				}
+
+				top := current
+				oldDistance = math.Inf(1)
+				for top.SetZ(box.GetMax().GetZ()); ; top.SetZ(top.GetZ() - 1) {
+					tileXYZBox, _ := NewTileXYZBox(top, top)
+					geodeticBox := NewGeodeticBoxFromTileXYZBox(*tileXYZBox)
+
+					for i, vertex := range geodeticBox.GetVertices() {
+						measure.ConvexHulls[1][i] = (*mgl64.Vec3)(vertex)
+					}
+
+					measure.MeasureNonnegativeDistance()
+
+					geocentric0 := coordinates.GeocentricFromGeodetic(coordinates.Geodetic(measure.Points[0]))
+					geocentric1 := coordinates.GeocentricFromGeodetic(coordinates.Geodetic(measure.Points[1]))
+					distance := mgl64.Vec3(geocentric0).Sub(mgl64.Vec3(geocentric1)).Len() // TODO: Embed
+
+					if distance > clearance {
+						if distance > oldDistance {
+							continue yLoop
+						} else {
+							deltaAltitude := *geodeticBox.Max.Altitude() - *geodeticBox.Min.Altitude()
+							newZ := -int64(distance/deltaAltitude) + top.GetZ()
+							if newZ <= tileXYZBox.GetMin().GetZ() {
+								continue yLoop
+							}
+
+							top.SetZ(newZ)
+							continue
+						}
+					}
+
+					break
+				}
+
+				for currentZ := bottom; currentZ.GetZ() <= top.GetZ(); currentZ.SetZ(currentZ.GetZ() + 1) {
+					if !yield(currentZ) {
+						return
 					}
 				}
-	
-				break
-			}
-	
-			top := current
-			oldDistance = math.Inf(1)
-			for top.SetZ(box.GetMax().GetZ()); ; top.SetZ(top.GetZ() - 1) {
-				tileXYZBox, _ := NewTileXYZBox(top, top)
-				geodeticBox := NewGeodeticBoxFromTileXYZBox(*tileXYZBox)
-		
-				for i, vertex := range geodeticBox.GetVertices() {
-					measure.ConvexHulls[1][i] = (*mgl64.Vec3)(vertex)
-				}
-		
-				measure.MeasureNonnegativeDistance()
-		
-				geocentric0 := coordinates.GeocentricFromGeodetic(coordinates.Geodetic(measure.Points[0]))
-				geocentric1 := coordinates.GeocentricFromGeodetic(coordinates.Geodetic(measure.Points[1]))
-				distance := mgl64.Vec3(geocentric0).Sub(mgl64.Vec3(geocentric1)).Len() // TODO: Embed
-		
-				if distance > clearance {
-					if distance > oldDistance {
-						continue yLoop
-					} else {
-						deltaAltitude := *geodeticBox.Max.Altitude() - *geodeticBox.Min.Altitude()
-						newZ := -int64(distance / deltaAltitude) + top.GetZ()
-						if newZ <= tileXYZBox.GetMin().GetZ() {
-							continue yLoop
-						}
-	
-						top.SetZ(newZ)
-						continue
-					}
-				}
-	
-				break
-			}
-	
-			for currentZ := bottom; currentZ.GetZ() <= top.GetZ(); currentZ.SetZ(currentZ.GetZ() + 1) {
-				error := function(currentZ)
-				if error != nil {
-					return error
-				}
-			}
 
-			if current.GetY() == box.GetMax().GetY() {
-				break
-			}
-		}
-
-		if current.GetX() == box.GetMax().GetX() {
-			break
-		}
-	}
-
-	return nil
-}
-
-func (box TileXYZBox) ForXYZ(function func(TileXYZ) error) error {
-	current := box.GetMin()
-
-	for ; ; current.SetX(current.GetX() + 1) {
-		for current.SetY(box.GetMin().GetY()); ; current.SetY(current.GetY() + 1) {
-			for current.SetZ(box.GetMin().GetZ()); ; current.SetZ(current.GetZ() + 1) {
-				error := function(current)
-				if error != nil {
-					return error
-				}
-
-				if current.GetZ() == box.GetMax().GetZ() {
+				if current.GetY() == box.GetMax().GetY() {
 					break
 				}
 			}
 
-			if current.GetY() == box.GetMax().GetY() {
+			if current.GetX() == box.GetMax().GetX() {
 				break
 			}
 		}
+	})
+}
 
-		if current.GetX() == box.GetMax().GetX() {
-			break
+func (box TileXYZBox) AllXYZ() iter.Seq[TileXYZ] {
+	current := box.GetMin()
+
+	return iter.Seq[TileXYZ](func(yield func(tile TileXYZ) bool) {
+		for ; ; current.SetX(current.GetX() + 1) {
+			for current.SetY(box.GetMin().GetY()); ; current.SetY(current.GetY() + 1) {
+				for current.SetZ(box.GetMin().GetZ()); ; current.SetZ(current.GetZ() + 1) {
+					if !yield(current) {
+						return
+					}
+
+					if current.GetZ() == box.GetMax().GetZ() {
+						break
+					}
+				}
+
+				if current.GetY() == box.GetMax().GetY() {
+					break
+				}
+			}
+
+			if current.GetX() == box.GetMax().GetX() {
+				break
+			}
 		}
-	}
-
-	return nil
+	})
 }
 
 func NewTileXYZBoxFromSpatialIDBox(spatialIDBox SpatialIDBox) (*TileXYZBox, error) {

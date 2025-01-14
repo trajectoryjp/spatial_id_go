@@ -1,8 +1,6 @@
 module github.com/trajectoryjp/spatial_id_go/v4
 
-go 1.22
-
-toolchain go1.22.6
+go 1.23
 
 require (
 	github.com/go-gl/mathgl v1.1.0

@@ -1,6 +1,7 @@
 package spatialID
 
 import (
+	"iter"
 	"math"
 
 	"github.com/HarutakaMatsumoto/mathematics_go/geometry/rectangular/solid"
@@ -119,10 +120,10 @@ func (box SpatialIDBox) IsCollidedWith(another SpatialIDBox) bool {
 	return true
 }
 
-func (box SpatialIDBox) ForCollidedWithConvexHull(convexHull []*coordinates.Geodetic, clearance float64, function func(id SpatialID) error) error {
+func (box SpatialIDBox) AllCollisionWithConvexHull(convexHull []*coordinates.Geodetic, clearance float64) iter.Seq[SpatialID] {
 	measure := closest.Measure{
 		ConvexHulls: [2][]*mgl64.Vec3{
-            make([]*mgl64.Vec3, len(convexHull)),
+			make([]*mgl64.Vec3, len(convexHull)),
 			make([]*mgl64.Vec3, len(solid.VertexIntervals)),
 		},
 	}
@@ -131,99 +132,98 @@ func (box SpatialIDBox) ForCollidedWithConvexHull(convexHull []*coordinates.Geod
 		measure.ConvexHulls[0][i] = (*mgl64.Vec3)(vertex)
 	}
 
-	current := box.GetMin()
-	for ; ; current.SetX(current.GetX() + 1) {
+	return iter.Seq[SpatialID](func(yield func(id SpatialID) bool) {
+		current := box.GetMin()
+		for ; ; current.SetX(current.GetX() + 1) {
 		yLoop:
-		for current.SetY(box.GetMin().GetY()); ; current.SetY(current.GetY() + 1) {
-			bottom := current
-			oldDistance := math.Inf(1)
-			for bottom.SetF(box.GetMin().GetF()); ; bottom.SetF(bottom.GetF() + 1) {
-				spatialIDBox, _ := NewSpatialIDBox(bottom, bottom)
-				geodeticBox := NewGeodeticBoxFromSpatialIDBox(*spatialIDBox)
-		
-				for i, vertex := range geodeticBox.GetVertices() {
-					measure.ConvexHulls[1][i] = (*mgl64.Vec3)(vertex)
-				}
-		
-				measure.MeasureNonnegativeDistance()
-		
-				geocentric0 := coordinates.GeocentricFromGeodetic(coordinates.Geodetic(measure.Points[0]))
-				geocentric1 := coordinates.GeocentricFromGeodetic(coordinates.Geodetic(measure.Points[1]))
-				distance := mgl64.Vec3(geocentric0).Sub(mgl64.Vec3(geocentric1)).Len() // TODO: Embed
-		
-				if distance > clearance {
-					if distance > oldDistance {
-						continue yLoop
-					} else {
-						deltaAltitude := *geodeticBox.Max.Altitude() - *geodeticBox.Min.Altitude()
-						newF := int64(distance / deltaAltitude) + bottom.GetF()
-						if newF >= spatialIDBox.GetMax().GetF() {
+			for current.SetY(box.GetMin().GetY()); ; current.SetY(current.GetY() + 1) {
+				bottom := current
+				oldDistance := math.Inf(1)
+				for bottom.SetF(box.GetMin().GetF()); ; bottom.SetF(bottom.GetF() + 1) {
+					spatialIDBox, _ := NewSpatialIDBox(bottom, bottom)
+					geodeticBox := NewGeodeticBoxFromSpatialIDBox(*spatialIDBox)
+
+					for i, vertex := range geodeticBox.GetVertices() {
+						measure.ConvexHulls[1][i] = (*mgl64.Vec3)(vertex)
+					}
+
+					measure.MeasureNonnegativeDistance()
+
+					geocentric0 := coordinates.GeocentricFromGeodetic(coordinates.Geodetic(measure.Points[0]))
+					geocentric1 := coordinates.GeocentricFromGeodetic(coordinates.Geodetic(measure.Points[1]))
+					distance := mgl64.Vec3(geocentric0).Sub(mgl64.Vec3(geocentric1)).Len() // TODO: Embed
+
+					if distance > clearance {
+						if distance > oldDistance {
 							continue yLoop
+						} else {
+							deltaAltitude := *geodeticBox.Max.Altitude() - *geodeticBox.Min.Altitude()
+							newF := int64(distance/deltaAltitude) + bottom.GetF()
+							if newF >= spatialIDBox.GetMax().GetF() {
+								continue yLoop
+							}
+
+							bottom.SetF(newF)
+							continue
 						}
-	
-						bottom.SetF(newF)
-						continue
+					}
+
+					break
+				}
+
+				top := current
+				oldDistance = math.Inf(1)
+				for top.SetF(box.GetMax().GetF()); ; top.SetF(top.GetF() - 1) {
+					spatialIDBox, _ := NewSpatialIDBox(top, top)
+					geodeticBox := NewGeodeticBoxFromSpatialIDBox(*spatialIDBox)
+
+					for i, vertex := range geodeticBox.GetVertices() {
+						measure.ConvexHulls[1][i] = (*mgl64.Vec3)(vertex)
+					}
+
+					measure.MeasureNonnegativeDistance()
+
+					geocentric0 := coordinates.GeocentricFromGeodetic(coordinates.Geodetic(measure.Points[0]))
+					geocentric1 := coordinates.GeocentricFromGeodetic(coordinates.Geodetic(measure.Points[1]))
+					distance := mgl64.Vec3(geocentric0).Sub(mgl64.Vec3(geocentric1)).Len() // TODO: Embed
+
+					if distance > clearance {
+						if distance > oldDistance {
+							continue yLoop
+						} else {
+							deltaAltitude := *geodeticBox.Max.Altitude() - *geodeticBox.Min.Altitude()
+							newF := -int64(distance/deltaAltitude) + top.GetF()
+							if newF <= spatialIDBox.GetMin().GetF() {
+								continue yLoop
+							}
+
+							top.SetF(newF)
+							continue
+						}
+					}
+
+					break
+				}
+
+				for currentF := bottom; currentF.GetF() <= top.GetF(); currentF.SetF(currentF.GetF() + 1) {
+					if !yield(currentF) {
+						return
 					}
 				}
-	
-				break
-			}
-	
-			top := current
-			oldDistance = math.Inf(1)
-			for top.SetF(box.GetMax().GetF()); ; top.SetF(top.GetF() - 1) {
-				spatialIDBox, _ := NewSpatialIDBox(top, top)
-				geodeticBox := NewGeodeticBoxFromSpatialIDBox(*spatialIDBox)
-		
-				for i, vertex := range geodeticBox.GetVertices() {
-					measure.ConvexHulls[1][i] = (*mgl64.Vec3)(vertex)
-				}
-		
-				measure.MeasureNonnegativeDistance()
-		
-				geocentric0 := coordinates.GeocentricFromGeodetic(coordinates.Geodetic(measure.Points[0]))
-				geocentric1 := coordinates.GeocentricFromGeodetic(coordinates.Geodetic(measure.Points[1]))
-				distance := mgl64.Vec3(geocentric0).Sub(mgl64.Vec3(geocentric1)).Len() // TODO: Embed
-		
-				if distance > clearance {
-					if distance > oldDistance {
-						continue yLoop
-					} else {
-						deltaAltitude := *geodeticBox.Max.Altitude() - *geodeticBox.Min.Altitude()
-						newF := -int64(distance / deltaAltitude) + top.GetF()
-						if newF <= spatialIDBox.GetMin().GetF() {
-							continue yLoop
-						}
-	
-						top.SetF(newF)
-						continue
-					}
-				}
-	
-				break
-			}
-	
-			for currentF := bottom; currentF.GetF() <= top.GetF(); currentF.SetF(currentF.GetF() + 1) {
-				error := function(currentF)
-				if error != nil {
-					return error
+
+				if current.GetY() == box.GetMax().GetY() {
+					break
 				}
 			}
 
-			if current.GetY() == box.GetMax().GetY() {
+			if current.GetX() == box.GetMax().GetX() {
 				break
 			}
 		}
-
-		if current.GetX() == box.GetMax().GetX() {
-			break
-		}
-	}
-
-	return nil
+	})
 }
 
-func (box SpatialIDBox) ForZXYF(function func(id SpatialID) error) error { // TODO: Hide?
+func (box SpatialIDBox) AllZXYF() iter.Seq[SpatialID] {
 	generations := [MaxZ]SpatialIDBox{}
 
 	ancestor := box
@@ -236,42 +236,42 @@ func (box SpatialIDBox) ForZXYF(function func(id SpatialID) error) error { // TO
 		generations[box.GetMin().GetZ()] = box
 	}
 
-	for _, generation := range generations {
-		error := generation.ForXYF(function)
-		if error != nil {
-			return error
+	return iter.Seq[SpatialID](func(yield func(id SpatialID) bool) {
+		for _, generation := range generations {
+			for id := range generation.AllXYF() {
+				if !yield(id) {
+					return
+				}
+			}
 		}
-	}
-
-	return nil
+	})
 }
 
-func (box SpatialIDBox) ForXYF(function func(id SpatialID) error) error {
-	current := box.GetMin()
-	for ; ; current.SetX(current.GetX() + 1) {
-		for current.SetY(box.GetMin().GetY()); ; current.SetY(current.GetY() + 1) {
-			for current.SetF(box.GetMin().GetF()); ; current.SetF(current.GetF() + 1) {
-				error := function(current)
-				if error != nil {
-					return error
+func (box SpatialIDBox) AllXYF() iter.Seq[SpatialID] {
+	return iter.Seq[SpatialID](func(yield func(id SpatialID) bool) {
+		current := box.GetMin()
+		for ; ; current.SetX(current.GetX() + 1) {
+			for current.SetY(box.GetMin().GetY()); ; current.SetY(current.GetY() + 1) {
+				for current.SetF(box.GetMin().GetF()); ; current.SetF(current.GetF() + 1) {
+					if !yield(current) {
+						return
+					}
+
+					if current.GetF() == box.GetMax().GetF() {
+						break
+					}
 				}
 
-				if current.GetF() == box.GetMax().GetF() {
+				if current.GetY() == box.GetMax().GetY() {
 					break
 				}
 			}
 
-			if current.GetY() == box.GetMax().GetY() {
+			if current.GetX() == box.GetMax().GetX() {
 				break
 			}
 		}
-
-		if current.GetX() == box.GetMax().GetX() {
-			break
-		}
-	}
-
-	return nil
+	})
 }
 
 func NewSpatialIDBoxFromTileXYZBox(tileXYZBox TileXYZBox) (*SpatialIDBox, error) {
