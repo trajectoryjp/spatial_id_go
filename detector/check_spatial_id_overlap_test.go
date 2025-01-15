@@ -1,8 +1,13 @@
 package detector
 
 import (
+	"errors"
+	"fmt"
 	"reflect"
+	"runtime"
 	"testing"
+
+	sperrors "github.com/trajectoryjp/spatial_id_go/v4/common/errors"
 )
 
 // TestCheckSpatialIdsOverlap01 空間IDの重複確認関数 正常系動作確認
@@ -281,7 +286,7 @@ func TestCheckSpatialIdsOverlap09(t *testing.T) {
 			spatialId2: "18/1/58198/25804",
 			// 期待値
 			expectValue: false,
-			expectError: "InputValueError,入力チェックエラー,output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset @spatialId1[0] = 25/16777216/0/3225",
+			expectError: "InputValueError,入力チェックエラー,outputIndex=33554432 is out of range at outputZoom=25 @spatialId1[0] = 25/16777216/0/3225",
 		},
 		{
 			// 入力空間IDのfインデックスが不正
@@ -290,7 +295,7 @@ func TestCheckSpatialIdsOverlap09(t *testing.T) {
 			spatialId2: "25/16777216/0/3225",
 			// 期待値
 			expectValue: false,
-			expectError: "InputValueError,入力チェックエラー,output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset @spatialId2[0] = 25/16777216/0/3225",
+			expectError: "InputValueError,入力チェックエラー,outputIndex=33554432 is out of range at outputZoom=25 @spatialId2[0] = 25/16777216/0/3225",
 		},
 		{
 			// 入力可能な高度インデックス範囲を超えている(下限より小さい)
@@ -300,7 +305,7 @@ func TestCheckSpatialIdsOverlap09(t *testing.T) {
 			// 期待値
 			expectValue: false,
 			// 高度変換が負数を許容しないため高度変換エラーになる
-			expectError: "InputValueError,入力チェックエラー,output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset @spatialId1[0] = 25/-16777217/0/3225",
+			expectError: "InputValueError,入力チェックエラー,outputIndex=-1 is out of range at outputZoom=25 @spatialId1[0] = 25/-16777217/0/3225",
 		},
 		{
 			// 入力可能な高度インデックス範囲を超えている(下限より小さい)
@@ -310,7 +315,7 @@ func TestCheckSpatialIdsOverlap09(t *testing.T) {
 			// 期待値
 			expectValue: false,
 			// 高度変換が負数を許容しないため高度変換エラーになる
-			expectError: "InputValueError,入力チェックエラー,output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset @spatialId2[0] = 25/-16777217/0/3225",
+			expectError: "InputValueError,入力チェックエラー,outputIndex=-1 is out of range at outputZoom=25 @spatialId2[0] = 25/-16777217/0/3225",
 		},
 	}
 	for _, testCase := range testCases {
@@ -533,6 +538,333 @@ func BenchmarkCheckSpatialIdsArrayOverlap02(b *testing.B) {
 	}
 	b.StopTimer()
 	b.Log("テスト終了")
+}
+
+// TestSpatialIdOverlapDetector SpatialIdOverlapDetectorのテスト
+func TestSpatialIdOverlapDetector(t *testing.T) {
+	testCases := []struct {
+		spatialIds1  []string
+		spatialIds2  []string
+		expectValue  bool
+		expectError1 error
+		expectError2 error
+	}{
+		{
+			spatialIds1:  []string{"13/0/7274/3225"},
+			spatialIds2:  []string{"16/0/58198/25800", "16/0/58198/25804"},
+			expectValue:  true,
+			expectError1: nil,
+			expectError2: nil,
+		},
+		{
+			spatialIds1:  []string{"13/0/7275/3226"},
+			spatialIds2:  []string{"16/0/58198/25804", "16/0/58198/25805"},
+			expectValue:  false,
+			expectError1: nil,
+			expectError2: nil,
+		},
+		{
+			spatialIds1: []string{""},
+			spatialIds2: []string{"16/0/58198/25803", "16/0/58198/25804"},
+			expectValue: false,
+			expectError1: sperrors.NewSpatialIdError(
+				sperrors.InputValueErrorCode,
+				"spatialId: ",
+			),
+			// ),
+			expectError2: nil,
+		},
+		{
+			spatialIds1:  []string{"16/0/58198/25803", "16/0/58198/25804"},
+			spatialIds2:  []string{"25/0/29803148/13212522/777"},
+			expectValue:  false,
+			expectError1: nil,
+			expectError2: sperrors.NewSpatialIdError(
+				sperrors.InputValueErrorCode,
+				"spatialId: 25/0/29803148/13212522/777",
+			),
+		},
+	}
+
+	for _, testCase := range testCases {
+		for _, newSpatialIdOverlapDetector := range []func([]string) (SpatialIdOverlapDetector, error){
+			NewSpatialIdGreedyOverlapDetector,
+			NewSpatialIdTreeOverlapDetector,
+		} {
+			spatialIdOverlapDetector, resultError1 := newSpatialIdOverlapDetector(testCase.spatialIds1)
+			if !errors.Is(resultError1, testCase.expectError1) {
+				// 戻り値のエラーインスタンスが期待値と異なる場合Errorをログに出力
+				t.Errorf("error - 期待値：%s, 取得値：%s\n", testCase.expectError1, resultError1)
+			}
+			if resultError1 != nil {
+				continue
+			}
+
+			resultValue, resultError2 := spatialIdOverlapDetector.IsOverlap(testCase.spatialIds2)
+			if !reflect.DeepEqual(resultValue, testCase.expectValue) {
+				t.Errorf("空間ID - 期待値：%v, 取得値：%v\n", testCase.expectValue, resultValue)
+			}
+			if !errors.Is(resultError2, testCase.expectError2) {
+				// 戻り値のエラーインスタンスが期待値と異なる場合Errorをログに出力
+				t.Errorf("error - 期待値：%s, 取得値：%s\n", testCase.expectError2, resultError2)
+			}
+		}
+	}
+}
+
+// OverlapDetectorBenchmarkCase OverlapDetectorのベンチマークケース
+type OverlapDetectorBenchmarkCase struct {
+	name                 string
+	detectIdNumberCbrt   int
+	detectedIdNumberCbrt int
+	detectZoomLevel      int
+	detectedZoomLevel    int
+	unmatchDepth         int
+}
+
+// newOverlapDetectorBenchmarkCase ベンチマークケース名nameを受け取り、OverlapDetectorBenchmarkCaseを返す
+func newOverlapDetectorBenchmarkCase(name string) OverlapDetectorBenchmarkCase {
+	return OverlapDetectorBenchmarkCase{
+		name:                 name,
+		detectIdNumberCbrt:   1,
+		detectedIdNumberCbrt: 10,
+		detectZoomLevel:      23,
+		detectedZoomLevel:    23,
+		unmatchDepth:         18,
+	}
+}
+
+// createDetectSpatialIds ベンチマークケースから検知空間IDを生成する
+func (benchmarkCase *OverlapDetectorBenchmarkCase) createDetectSpatialIds() []string {
+	zoomLevelDiff := max(0, benchmarkCase.detectZoomLevel-benchmarkCase.detectedZoomLevel)
+	unmatchHeight := benchmarkCase.detectZoomLevel - benchmarkCase.unmatchDepth
+
+	detectSpatialIds := []string{}
+	for f := range benchmarkCase.detectIdNumberCbrt {
+		for x := range benchmarkCase.detectIdNumberCbrt {
+			for y := range benchmarkCase.detectIdNumberCbrt {
+				detectSpatialId := fmt.Sprintf(
+					"%d/%d/%d/%d",
+					benchmarkCase.detectZoomLevel,
+					(1<<unmatchHeight)|(f<<zoomLevelDiff),
+					(1<<unmatchHeight)|(x<<zoomLevelDiff),
+					(1<<unmatchHeight)|(y<<zoomLevelDiff),
+				)
+				detectSpatialIds = append(detectSpatialIds, detectSpatialId)
+			}
+		}
+	}
+	return detectSpatialIds
+}
+
+// createDetectedSpatialIds ベンチマークケースから被検知空間IDを生成する
+func (benchmarkCase *OverlapDetectorBenchmarkCase) createDetectedSpatialIds() []string {
+	detectedSpatialIds := []string{}
+	for f := range benchmarkCase.detectedIdNumberCbrt {
+		for x := range benchmarkCase.detectedIdNumberCbrt {
+			for y := range benchmarkCase.detectedIdNumberCbrt {
+				detectedSpatialId := fmt.Sprintf(
+					"%d/%d/%d/%d",
+					benchmarkCase.detectedZoomLevel,
+					f,
+					x,
+					y,
+				)
+				detectedSpatialIds = append(detectedSpatialIds, detectedSpatialId)
+			}
+		}
+	}
+	return detectedSpatialIds
+}
+
+// BenchmarkOverlapDetectorProcessingTime OverlapDetectorの処理時間に対するベンチマークを行う
+func BenchmarkOverlapDetectorProcessingTime(b *testing.B) {
+	benchmarkCases := []OverlapDetectorBenchmarkCase{}
+	for _, detectIdNumberCbrt := range []int{1, 10} {
+		for detectedIdNumberCbrt := 6; detectedIdNumberCbrt <= 10; detectedIdNumberCbrt += 1 {
+			name := fmt.Sprintf("Pattern=1,DetectIdNumberCbrt=%d,DetectedIdNumberCbrt=%d", detectIdNumberCbrt, detectedIdNumberCbrt)
+			benchmarkCase := newOverlapDetectorBenchmarkCase(name)
+			benchmarkCase.detectIdNumberCbrt = detectIdNumberCbrt
+			benchmarkCase.detectedIdNumberCbrt = detectedIdNumberCbrt
+			benchmarkCases = append(benchmarkCases, benchmarkCase)
+		}
+		for detectedZoomLevel := 10; detectedZoomLevel <= 35; detectedZoomLevel += 5 {
+			name := fmt.Sprintf("Pattern=2,DetectIdNumberCbrt=%d,DetectedZoomLevel=%d", detectIdNumberCbrt, detectedZoomLevel)
+			benchmarkCase := newOverlapDetectorBenchmarkCase(name)
+			benchmarkCase.detectIdNumberCbrt = detectIdNumberCbrt
+			benchmarkCase.detectedZoomLevel = detectedZoomLevel
+			benchmarkCase.unmatchDepth = 5
+			benchmarkCases = append(benchmarkCases, benchmarkCase)
+		}
+		for unmatchDepth := 5; unmatchDepth <= 30; unmatchDepth += 5 {
+			name := fmt.Sprintf("Pattern=3,DetectIdNumberCbrt=%d,UnmatchDepth=%d", detectIdNumberCbrt, unmatchDepth)
+			benchmarkCase := newOverlapDetectorBenchmarkCase(name)
+			benchmarkCase.detectIdNumberCbrt = detectIdNumberCbrt
+			benchmarkCase.detectedZoomLevel = 35
+			benchmarkCase.detectZoomLevel = 35
+			benchmarkCase.unmatchDepth = unmatchDepth
+			benchmarkCases = append(benchmarkCases, benchmarkCase)
+		}
+	}
+
+	for _, benchmarkCase := range benchmarkCases {
+		detectSpatialIds := benchmarkCase.createDetectSpatialIds()
+		detectedSpatialIds := benchmarkCase.createDetectedSpatialIds()
+
+		// ベンチマーク内ではエラーが無視されるため、エラーが出ていないかの確認
+		greedyDetector, err := NewSpatialIdGreedyOverlapDetector(detectedSpatialIds)
+		if err != nil {
+			b.Error(err)
+			return
+		}
+		if _, err := greedyDetector.IsOverlap(detectSpatialIds); err != nil {
+			b.Error(err)
+			return
+		}
+		treeDetector, err := NewSpatialIdTreeOverlapDetector(detectedSpatialIds)
+		if err != nil {
+			b.Error(err)
+			return
+		}
+		if _, err := treeDetector.IsOverlap(detectSpatialIds); err != nil {
+			b.Error(err)
+			return
+		}
+
+		logic_slice := []string{"greedy", "tree"}
+		step_slice := []string{"construct", "search"}
+		for _, logic := range logic_slice {
+			for _, step := range step_slice {
+				name := fmt.Sprintf("Logic=%s,Step=%s,%s", logic, step, benchmarkCase.name)
+
+				var f func(b *testing.B)
+				switch logic {
+				case "greedy":
+					switch step {
+					case "construct":
+						f = func(b *testing.B) {
+							for range b.N {
+								NewSpatialIdGreedyOverlapDetector(detectedSpatialIds)
+							}
+						}
+					case "search":
+						f = func(b *testing.B) {
+							for range b.N {
+								greedyDetector.IsOverlap(detectSpatialIds)
+							}
+						}
+					}
+				case "tree":
+					switch step {
+					case "construct":
+						f = func(b *testing.B) {
+							for range b.N {
+								NewSpatialIdTreeOverlapDetector(detectedSpatialIds)
+							}
+						}
+					case "search":
+						f = func(b *testing.B) {
+							for range b.N {
+								treeDetector.IsOverlap(detectSpatialIds)
+							}
+						}
+					}
+				}
+
+				b.Run(name, f)
+			}
+		}
+	}
+}
+
+// BenchmarkOverlapDetectorMemoryUsage OverlapDetectorのメモリ使用量に対するベンチマークを行う
+func BenchmarkOverlapDetectorMemoryUsage(b *testing.B) {
+	benchmarkCases := []OverlapDetectorBenchmarkCase{}
+	for _, detectIdNumberCbrt := range []int{1, 10} {
+		for detectedIdNumberCbrt := 6; detectedIdNumberCbrt <= 10; detectedIdNumberCbrt += 1 {
+			name := fmt.Sprintf("Pattern=1,DetectIdNumberCbrt=%d,DetectedIdNumberCbrt=%d", detectIdNumberCbrt, detectedIdNumberCbrt)
+			benchmarkCase := newOverlapDetectorBenchmarkCase(name)
+			benchmarkCase.detectIdNumberCbrt = detectIdNumberCbrt
+			benchmarkCase.detectedIdNumberCbrt = detectedIdNumberCbrt
+			benchmarkCases = append(benchmarkCases, benchmarkCase)
+		}
+		for detectedZoomLevel := 5; detectedZoomLevel <= 35; detectedZoomLevel += 5 {
+			name := fmt.Sprintf("Pattern=2,DetectIdNumberCbrt=%d,DetectedZoomLevel=%d", detectIdNumberCbrt, detectedZoomLevel)
+			benchmarkCase := newOverlapDetectorBenchmarkCase(name)
+			benchmarkCase.detectIdNumberCbrt = detectIdNumberCbrt
+			benchmarkCase.detectedZoomLevel = detectedZoomLevel
+			benchmarkCase.unmatchDepth = 5
+			benchmarkCases = append(benchmarkCases, benchmarkCase)
+		}
+	}
+
+	var detector SpatialIdOverlapDetector // コンパイラに最適化されないように
+	for _, benchmarkCase := range benchmarkCases {
+		detectedSpatialIds := benchmarkCase.createDetectedSpatialIds()
+
+		// ベンチマーク内ではエラーが無視されるため、エラーが出ていないかの確認
+		var err error
+		_, err = NewSpatialIdGreedyOverlapDetector(detectedSpatialIds)
+		if err != nil {
+			b.Error(err)
+			return
+		}
+		_, err = NewSpatialIdTreeOverlapDetector(detectedSpatialIds)
+		if err != nil {
+			b.Error(err)
+			return
+		}
+
+		logic_slice := []string{"greedy", "tree"}
+		step := "construct"
+		for _, logic := range logic_slice {
+			name := fmt.Sprintf("Logic=%s,Step=%s,%s", logic, step, benchmarkCase.name)
+
+			memAllocSum := uint64(0)
+			var f func(b *testing.B)
+			switch logic {
+			case "greedy":
+				for range 100 {
+					startAllocatedMemory := getAllocatedMemory()
+					detector, _ = NewSpatialIdGreedyOverlapDetector(detectedSpatialIds)
+					goalAllocatedMemory := getAllocatedMemory()
+					if goalAllocatedMemory < startAllocatedMemory {
+						b.Error("goalAllocatedMemory < startAllocatedMemory")
+						return
+					}
+					memAllocSum += goalAllocatedMemory - startAllocatedMemory
+				}
+
+				f = func(b *testing.B) {
+					for range b.N {
+						NewSpatialIdGreedyOverlapDetector(detectedSpatialIds)
+					}
+				}
+			case "tree":
+				for range 100 {
+					startAllocatedMemory := getAllocatedMemory()
+					detector, _ = NewSpatialIdTreeOverlapDetector(detectedSpatialIds)
+					goalAllocatedMemory := getAllocatedMemory()
+					memAllocSum += goalAllocatedMemory - startAllocatedMemory
+					if goalAllocatedMemory < startAllocatedMemory {
+						b.Error("goalAllocatedMemory < startAllocatedMemory")
+						return
+					}
+				}
+
+				f = func(b *testing.B) {
+					for range b.N {
+						NewSpatialIdTreeOverlapDetector(detectedSpatialIds)
+					}
+				}
+			}
+
+			fmt.Printf("BenchmarkOverlapDetectorMemoryUsage/%s,AllocatedMemoryMean=%d\n", name, memAllocSum/100)
+
+			b.Run(name, f)
+		}
+	}
+	fmt.Println(detector)
 }
 
 //	TestCheckExtendedSpatialIdsOverlap01 拡張空間IDの重複確認関数 正常系動作確認
@@ -821,4 +1153,13 @@ func BenchmarkCheckExtendedSpatialIdsArrayOverlap01(b *testing.B) {
 	}
 	b.StopTimer()
 	b.Log("テスト終了")
+}
+
+// getAllocatedMemory GC後の現在のメモリ使用量を取得する
+func getAllocatedMemory() uint64 {
+	runtime.GC()
+
+	var mem runtime.MemStats
+	runtime.ReadMemStats(&mem)
+	return mem.Alloc
 }
