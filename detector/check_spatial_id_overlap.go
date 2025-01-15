@@ -2,13 +2,14 @@ package detector
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
+
 	"github.com/trajectoryjp/multidimensional-radix-tree/src/tree"
 	"github.com/trajectoryjp/spatial_id_go/v4/common/consts"
 	"github.com/trajectoryjp/spatial_id_go/v4/common/errors"
 	"github.com/trajectoryjp/spatial_id_go/v4/integrate"
 	"github.com/trajectoryjp/spatial_id_go/v4/transform"
-	"strconv"
-	"strings"
 )
 
 // CheckSpatialIdsOverlap 2つの空間ID重複の判定関数
@@ -131,16 +132,172 @@ func getSpatialIdAttrs(spatialId string) (int, int, int, int, error) {
 		// 不正形式(要素数)
 		return 0, 0, 0, 0, errors.NewSpatialIdError(errors.InputValueErrorCode, fmt.Sprintf("spatialId: %v", spatialId))
 	}
-	var errNumberConversion error
-	zoom, errNumberConversion := strconv.Atoi(spatialIdAttributes[0])
-	f, errNumberConversion := strconv.Atoi(spatialIdAttributes[1])
-	x, errNumberConversion := strconv.Atoi(spatialIdAttributes[2])
-	y, errNumberConversion := strconv.Atoi(spatialIdAttributes[3])
+	zoom, err := strconv.Atoi(spatialIdAttributes[0])
 	// 不正形式(数値)
-	if errNumberConversion != nil {
+	if err != nil {
+		return 0, 0, 0, 0, errors.NewSpatialIdError(errors.InputValueErrorCode, fmt.Sprintf("spatialId: %v", spatialId))
+	}
+	f, err := strconv.Atoi(spatialIdAttributes[1])
+	// 不正形式(数値)
+	if err != nil {
+		return 0, 0, 0, 0, errors.NewSpatialIdError(errors.InputValueErrorCode, fmt.Sprintf("spatialId: %v", spatialId))
+	}
+	x, err := strconv.Atoi(spatialIdAttributes[2])
+	// 不正形式(数値)
+	if err != nil {
+		return 0, 0, 0, 0, errors.NewSpatialIdError(errors.InputValueErrorCode, fmt.Sprintf("spatialId: %v", spatialId))
+	}
+	y, err := strconv.Atoi(spatialIdAttributes[3])
+	// 不正形式(数値)
+	if err != nil {
 		return 0, 0, 0, 0, errors.NewSpatialIdError(errors.InputValueErrorCode, fmt.Sprintf("spatialId: %v", spatialId))
 	}
 	return zoom, f, x, y, nil
+}
+
+// SpatialIdOverlapDetector 方式吸収のための重複検知インターフェース
+type SpatialIdOverlapDetector interface {
+	IsOverlap(spatialIds []string) (bool, error)
+}
+
+// SpatialIdGreedyOverlapDetector 愚直方式での重複検知構造体
+type SpatialIdGreedyOverlapDetector struct {
+	detectedIds []PartedSpatialId
+}
+
+// NewSpatialIdGreedyOverlapDetector 被検知IDの空間ID列spatialIdsを受け取り、SpatialIdOverlapDetectorを返す
+// 空間IDのフォーマットが正しくない場合エラーを返す
+func NewSpatialIdGreedyOverlapDetector(spatialIds []string) (SpatialIdOverlapDetector, error) {
+	ids := []PartedSpatialId{}
+	for index, spatialId := range spatialIds {
+		id, err := NewPartedSpatialId(spatialId)
+		if err != nil {
+			return nil, fmt.Errorf("%w @spatialIds[%v]", err, index)
+		}
+		ids = append(ids, id)
+	}
+	return &SpatialIdGreedyOverlapDetector{ids}, nil
+}
+
+// IsOverlap 重複検知を行う
+// 検知IDの空間ID列spatialIdsを受け取り、重複検知結果をboolで返す
+// 空間IDのフォーマットが正しくない場合エラーを返す
+func (detector *SpatialIdGreedyOverlapDetector) IsOverlap(spatialIds []string) (bool, error) {
+	for index, spatialId := range spatialIds {
+		detectId, err := NewPartedSpatialId(spatialId)
+		if err != nil {
+			return false, fmt.Errorf("%w @spatialIds[%v]", err, index)
+		}
+		for _, detectedId := range detector.detectedIds {
+			if detectId.IsOverlap(detectedId) {
+				return true, nil
+			}
+		}
+	}
+	return false, nil
+}
+
+// SpatialIdGreedyOverlapDetector 多次元基数木方式での重複検知構造体
+type SpatialIdTreeOverlapDetector struct {
+	positiveTree tree.TreeInterface
+	negativeTree tree.TreeInterface
+}
+
+// NewSpatialIdTreeOverlapDetector 被検知IDの空間ID列spatialIdsを受け取り、SpatialIdOverlapDetectorを返す
+// 空間IDのフォーマットが正しくない場合エラーを返す
+func NewSpatialIdTreeOverlapDetector(spatialIds []string) (SpatialIdOverlapDetector, error) {
+	// f,x,yで3次元分の2分木
+	var positiveTree tree.TreeInterface
+	var negativeTree tree.TreeInterface
+
+	for spatialIdIndex, spatialId := range spatialIds {
+		zoom, f, x, y, err := getSpatialIdAttrs(spatialId)
+		if err != nil {
+			return nil, fmt.Errorf("%w @spatialIds[%v]", err, spatialIdIndex)
+		}
+
+		if f >= 0 {
+			if positiveTree == nil {
+				positiveTree = tree.CreateTree(tree.Create3DTable())
+			}
+			treeIndex := tree.Indexs{int64(f), int64(x), int64(y)}
+			positiveTree.Append(treeIndex, tree.ZoomSetLevel(zoom), struct{}{})
+		} else {
+			if negativeTree == nil {
+				negativeTree = tree.CreateTree(tree.Create3DTable())
+			}
+			treeIndex := tree.Indexs{int64(^f), int64(x), int64(y)}
+			negativeTree.Append(treeIndex, tree.ZoomSetLevel(zoom), struct{}{})
+		}
+	}
+	return &SpatialIdTreeOverlapDetector{positiveTree, negativeTree}, nil
+}
+
+// IsOverlap 検知IDの空間ID列spatialIdsを受け取り、重複検知を行う
+// 空間IDのフォーマットが正しくない場合エラーを返す
+func (detector *SpatialIdTreeOverlapDetector) IsOverlap(spatialIds []string) (bool, error) {
+	for spatialIdIndex, spatialId := range spatialIds {
+		zoomLevel, f, x, y, err := getSpatialIdAttrs(spatialId)
+		if err != nil {
+			return false, fmt.Errorf("%w @spatialIds[%v]", err, spatialIdIndex)
+		}
+
+		var isOverlap bool
+		if f >= 0 {
+			if detector.positiveTree != nil {
+				treeIndex := tree.Indexs{int64(f), int64(x), int64(y)}
+				isOverlap = detector.positiveTree.IsOverlap(treeIndex, tree.ZoomSetLevel(zoomLevel))
+			}
+		} else {
+			if detector.negativeTree != nil {
+				treeIndex := tree.Indexs{int64(^f), int64(x), int64(y)}
+				isOverlap = detector.negativeTree.IsOverlap(treeIndex, tree.ZoomSetLevel(zoomLevel))
+			}
+		}
+		if isOverlap {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+// PartedSpatialId 文字列の空間IDを分解した構造体
+type PartedSpatialId struct {
+	zoomLevel int
+	indices   [3]int
+}
+
+// NewPartedSpatialId 文字列の空間IDであるspatialIdを受け取り、PartedSpatialIdを返す
+// 空間IDのフォーマットが正しくない場合エラーを返す
+func NewPartedSpatialId(spatialId string) (PartedSpatialId, error) {
+	zoomLevel, f, x, y, err := getSpatialIdAttrs(spatialId)
+	if err != nil {
+		return PartedSpatialId{}, err
+	}
+	indices := [3]int{f, x, y}
+	return PartedSpatialId{zoomLevel, indices}, nil
+}
+
+// DownZoomLevel ズームレベルをtoZoomLevelに下げる
+// 現在のズームレベルがtoZoomLevel以下の場合は何もしない
+func (id PartedSpatialId) DownZoomLevel(toZoomLevel int) PartedSpatialId {
+	if id.zoomLevel > toZoomLevel {
+		for i := range 3 {
+			id.indices[i] >>= id.zoomLevel - toZoomLevel
+		}
+		id.zoomLevel = toZoomLevel
+	}
+	return id
+}
+
+// IsOverlap 空間IDであるid1およびid2の重複検知を行う
+func (id1 PartedSpatialId) IsOverlap(id2 PartedSpatialId) bool {
+	if id1.zoomLevel < id2.zoomLevel {
+		id2 = id2.DownZoomLevel(id1.zoomLevel)
+	} else {
+		id1 = id1.DownZoomLevel(id2.zoomLevel)
+	}
+	return id1 == id2
 }
 
 // CheckExtendedSpatialIdsOverlap 2つの拡張空間IDの重複の判定関数
