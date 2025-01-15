@@ -116,7 +116,7 @@ func testForXYF(
 	}
 
 	i := 0
-	theError = spatialIDBox.ForXYF(func(spatialID SpatialID) error {
+	for spatialID := range spatialIDBox.AllXYF() {
 		if i >= len(expected) {
 			t.Errorf("空間ID - 期待要素数：%v, 取得要素数：%v", len(expected), i)
 		}
@@ -124,11 +124,6 @@ func testForXYF(
 			t.Errorf("空間ID - 期待値：%v, 取得値：%v", expected[i], spatialID.String())
 		}
 		i += 1
-		return nil
-	})
-
-	if theError != nil {
-		t.Error(theError)
 	}
 }
 
@@ -532,7 +527,7 @@ func testTileXYZBoxAddZoomLevel(
 	}
 
 	i := 0
-	theError = tileXYZBox.ForXYZ(func(tile TileXYZ) error {
+	for tile := range tileXYZBox.AllXYZ() {
 		if i >= len(expected) {
 			t.Errorf("TileXYZ - 期待要素数：%v, 取得要素数：%v", len(expected), i)
 		}
@@ -540,11 +535,6 @@ func testTileXYZBoxAddZoomLevel(
 			t.Errorf("TileXYZ - 期待値：%v, 取得値：%v", expected[i], tile)
 		}
 		i += 1
-		return nil
-	})
-
-	if theError != nil {
-		t.Error(theError)
 	}
 }
 

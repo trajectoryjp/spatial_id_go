@@ -36,12 +36,8 @@ func TestGetExtendedSpatialIdsWithinRadiusOfLine02_1(t *testing.T) {
 	}
 
 	count := 0
-	theError = tileXYZBox.ForCollisionWithConvexHull(convexHull, clearance, func(tile TileXYZ) error { // TODO: Rename ForXYZCollisionWithConvexHull
+	for _ = range tileXYZBox.AllCollisionWithConvexHull(convexHull, clearance) {
 		count += 1
-		return nil
-	})
-	if theError != nil {
-		t.Error(theError)
 	}
 
 	if count != expectedCount {
@@ -79,10 +75,9 @@ func TestGetExtendedSpatialIdsWithinRadiusOfLine02_2(t *testing.T) {
 	}
 
 	count := 0
-	theError = tileXYZBox.ForCollisionWithConvexHull(convexHull, clearance, func(tile TileXYZ) error {
+	for _ = range tileXYZBox.AllCollisionWithConvexHull(convexHull, clearance) {
 		count += 1
-		return nil
-	})
+	}
 
 	if count != expectedCount {
 		t.Errorf("Expected %v voxels, but got %v", expectedCount, count)
