@@ -66,7 +66,7 @@ func NewTileXYZ(
 }
 
 func (tile *TileXYZ) SetX(x int64) {
-	tile.x = x%(1 << tile.GetQuadkeyZoomLevel())
+	tile.x = x%(1 << tile.GetQuadkeyZoomLevel()) // TODO: 統合
 	if tile.x < 0 {
 		tile.x += 1 << tile.GetQuadkeyZoomLevel()
 	}
@@ -142,7 +142,7 @@ func (tile TileXYZ) NewMaxChild(quadNumber, altitudeNumber int8) (*TileXYZ, erro
 	return NewTileXYZ(
 		tile.GetQuadkeyZoomLevel()+quadNumber,
 		tile.GetAltitudekeyZoomLevel()+altitudeNumber,
-		(tile.GetX() << quadNumber) + (1 << quadNumber) - 1,
+		(tile.GetX() << quadNumber) + (1 << quadNumber) - 1, // TODO: 統合
 		(tile.GetY() << quadNumber) + (1 << quadNumber) - 1,
 		(tile.GetZ() << altitudeNumber) + (1 << altitudeNumber) - 1,
 	)

@@ -200,7 +200,7 @@ func NewSpatialID(
 }
 
 func (id *SpatialID) SetX(x int64) {
-	id.x = x%(1 << id.GetZ())
+	id.x = x%(1 << id.GetZ()) // TODO: 統合
 	if id.x < 0 {
 		id.x += 1 << id.GetZ()
 	}
@@ -277,7 +277,7 @@ func (id SpatialID) NewMinChild(number int8) (*SpatialID, error) {
 func (id SpatialID) NewMaxChild(number int8) (*SpatialID, error) {
 	return NewSpatialID(
 		id.GetZ()+number,
-		(id.GetF() << number) + (1 << number) - 1,
+		(id.GetF() << number) + (1 << number) - 1, // TODO: 統合
 		(id.GetX() << number) + (1 << number) - 1,
 		(id.GetY() << number) + (1 << number) - 1,
 	)

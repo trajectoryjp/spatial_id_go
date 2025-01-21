@@ -221,7 +221,7 @@ func testNewSpatialIDBoxFromTileXYZBox(
 	}
 }
 
-func TestConvertSpatialIdsToQuadkeysAndVerticalIDs_Max(t *testing.T) {
+func TestConvertSpatialIdsToQuadkeysAndVerticalIDs_Max_UpFlat(t *testing.T) {
 	testNewTileXYZBoxFromSpatialIDBox(
 		t,
 		[]*TileXYZ{
@@ -230,74 +230,204 @@ func TestConvertSpatialIdsToQuadkeysAndVerticalIDs_Max(t *testing.T) {
 				altitudekeyZoomLevel: 10,
 				x: 170526,
 				y: 130846,
-				z: 1023, // Max
+				z: 511, // Max
 			},
 			{
 				quadkeyZoomLevel: 21,
 				altitudekeyZoomLevel: 10,
 				x: 170527,
 				y: 130846,
-				z: 1023, // Max
+				z: 511, // Max
 			},
 			{
 				quadkeyZoomLevel: 21,
 				altitudekeyZoomLevel: 10,
 				x: 170526,
 				y: 130847,
-				z: 1023, // Max
+				z: 511, // Max
 			},
 			{
 				quadkeyZoomLevel: 21,
 				altitudekeyZoomLevel: 10,
 				x: 170527,
 				y: 130847,
+				z: 511, // Max
+			},
+		},
+		nil,
+
+		"20/32768/85263/65423", // 32768 = 1 << (1 + TileXYZZBaseExponent)
+
+		21, 9,
+	)
+}
+
+func TestConvertSpatialIdsToQuadkeysAndVerticalIDs_Max_UpUp(t *testing.T) {
+	testNewTileXYZBoxFromSpatialIDBox(
+		t,
+		[]*TileXYZ{
+			{
+				quadkeyZoomLevel: 21,
+				altitudekeyZoomLevel: 11,
+				x: 170526,
+				y: 130846,
+				z: 1023, // Max
+			},
+			{
+				quadkeyZoomLevel: 21,
+				altitudekeyZoomLevel: 11,
+				x: 170527,
+				y: 130846,
+				z: 1023, // Max
+			},
+			{
+				quadkeyZoomLevel: 21,
+				altitudekeyZoomLevel: 11,
+				x: 170526,
+				y: 130847,
+				z: 1023, // Max
+			},
+			{
+				quadkeyZoomLevel: 21,
+				altitudekeyZoomLevel: 11,
+				x: 170527,
+				y: 130847,
 				z: 1023, // Max
 			},
 		},
+		nil,
 
-		"20/32768/85263/65423", // 32768 = 1 << 15
+		"20/32768/85263/65423", // 32768 = 1 << (1 + TileXYZZBaseExponent)
 
 		21, 10,
 	)
 }
 
-func TestConvertSpatialIdsToQuadkeysAndVerticalIDs_2(t *testing.T) {
+func TestConvertSpatialIdsToQuadkeysAndVerticalIDs_Max_DownDown(t *testing.T) {
 	testNewTileXYZBoxFromSpatialIDBox(
 		t,
 		[]*TileXYZ{
 			{
-				quadkeyZoomLevel: 21,
-				altitudekeyZoomLevel: 11,
-				x: 170526,
-				y: 130846,
-				z: 2047, // Max
-			},
-			{
-				quadkeyZoomLevel: 21,
-				altitudekeyZoomLevel: 11,
-				x: 170527,
-				y: 130846,
-				z: 2047, // Max
-			},
-			{
-				quadkeyZoomLevel: 21,
-				altitudekeyZoomLevel: 11,
-				x: 170526,
-				y: 130847,
-				z: 2047, // Max
-			},
-			{
-				quadkeyZoomLevel: 21,
-				altitudekeyZoomLevel: 11,
-				x: 170527,
-				y: 130847,
-				z: 2047, // Max
+				quadkeyZoomLevel: 19,
+				altitudekeyZoomLevel: 9,
+				x: 42631,
+				y: 32711,
+				z: 255, // Max
 			},
 		},
+		nil,
 
-		"20/32768/85263/65423", // 32768 = 1 << 15
+		"20/32768/85263/65423", // 32768 = 1 << (1 + TileXYZZBaseExponent)
 
-		21, 11,
+		19, 8,
+	)
+}
+
+func TestConvertSpatialIdsToQuadkeysAndVerticalIDs_Max_DownUp(t *testing.T) {
+	testNewTileXYZBoxFromSpatialIDBox(
+		t,
+		[]*TileXYZ{
+			{
+				quadkeyZoomLevel: 19,
+				altitudekeyZoomLevel: 11,
+				x: 42631,
+				y: 32711,
+				z: 1023, // Max
+			},
+		},
+		nil,
+
+		"20/32768/85263/65423", // 32768 = 1 << (1 + TileXYZZBaseExponent)
+
+		19, 10,
+	)
+}
+
+func TestConvertSpatialIdsToQuadkeysAndVerticalIDs_MinZoomLevel(t *testing.T) {
+	testNewTileXYZBoxFromSpatialIDBox(
+		t,
+		[]*TileXYZ{
+			{
+				quadkeyZoomLevel: 0,
+				altitudekeyZoomLevel: 0,
+				x: 0,
+				y: 0,
+				z: 0,
+			},
+		},
+		nil,
+
+		"0/-1/0/0",
+
+		0, 0,
+	)
+}
+
+func TestConvertSpatialIdsToQuadkeysAndVerticalIDs_MaxZoomLevel(t *testing.T) {
+	testNewTileXYZBoxFromSpatialIDBox(
+		t,
+		[]*TileXYZ{
+			{
+				quadkeyZoomLevel: MaxQuadkeyZoomLevel,
+				altitudekeyZoomLevel: 24, // MaxZ - SpatialIDZBaseExponent + TileXYZZBaseExponent
+				x: 34359738367, // = (1 << MaxZ) - 1
+				y: 34359738367, // = (1 << MaxZ) - 1
+				z: 34359738879, // = (1 << MaxZ) - 1 - SpatialIDZOffset + TileXYZZBaseOffset
+			},
+		},
+		nil,
+
+		"35/34359738367/34359738367/34359738367", // 34359738367 = (1 << MaxZ) - 1
+
+		MaxQuadkeyZoomLevel, 24,
+	)
+}
+
+func TestConvertSpatialIdsToQuadkeysAndVerticalIDs_UnderMinQuadkeyZoomLevel(t *testing.T) {
+	testNewTileXYZBoxFromSpatialIDBox(
+		t,
+		nil,
+		NewSpatialIdError(InputValueErrorCode, ""),
+
+		"20/32768/85263/65423",
+
+		-1, 0,
+	)
+}
+
+func TestConvertSpatialIdsToQuadkeysAndVerticalIDs_OverMaxQuadkeyZoomLevel(t *testing.T) {
+	testNewTileXYZBoxFromSpatialIDBox(
+		t,
+		nil,
+		NewSpatialIdError(InputValueErrorCode, ""),
+
+		"20/32768/85263/65423",
+
+		36, 0, // 36 = MaxQuadkeyZoomLevel + 1
+	)
+}
+
+func TestConvertSpatialIdsToQuadkeysAndVerticalIDs_UnderMinAltitudekeyZoomLevel(t *testing.T) {
+	testNewTileXYZBoxFromSpatialIDBox(
+		t,
+		nil,
+		NewSpatialIdError(InputValueErrorCode, ""),
+
+		"20/32768/85263/65423",
+
+		0, -1,
+	)
+}
+
+func TestConvertSpatialIdsToQuadkeysAndVerticalIDs_OverMaxAltitudekeyZoomLevel(t *testing.T) {
+	testNewTileXYZBoxFromSpatialIDBox(
+		t,
+		nil,
+		NewSpatialIdError(InputValueErrorCode, ""),
+
+		"20/32768/85263/65423",
+
+		0, 36, // 36 = MaxAltitudekeyZoomLevel + 1
 	)
 }
 
@@ -354,26 +484,6 @@ func TestConvertSpatialIdsToQuadkeysAndVerticalIDs(t *testing.T) {
 		pattern      int64 // 0:正常 1:異常 2:個数(水平) 3:個数(垂直)
 		e            error
 	}{
-		// 正常
-		{spatialIds: []string{"20/56/85263/65423"}, ToHZoom: 19, ToVZoom: 9, maxHeight: 500, minHeight: 0.0, result: quadkeyAndVerticalIDsDwdw, pattern: 0},  //all1
-		{spatialIds: []string{"20/56/85263/65423"}, ToHZoom: 19, ToVZoom: 11, maxHeight: 500, minHeight: 0.0, result: quadkeyAndVerticalIDsDwup, pattern: 0}, //all1
-
-		{spatialIds: []string{"20/56/85263/65423"}, ToHZoom: 21, ToVZoom: 21, maxHeight: 0, minHeight: 0.0, result: quadkeyAndVerticalIDsSpatialIDs, pattern: 0},
-		{spatialIds: []string{"20/56/85263/65423"}, ToHZoom: 21, ToVZoom: 19, maxHeight: 0, minHeight: 0.0, result: quadkeyAndVerticalIDsSpatialIDsUpdw, pattern: 0},
-		{spatialIds: []string{"20/56/85263/65423"}, ToHZoom: 19, ToVZoom: 21, maxHeight: 0, minHeight: 0.0, result: quadkeyAndVerticalIDsSpatialIDsDwup, pattern: 0},
-		{spatialIds: []string{"20/56/85263/65423"}, ToHZoom: 19, ToVZoom: 19, maxHeight: 0, minHeight: 0.0, result: quadkeyAndVerticalIDsSpatialIDsDwdw, pattern: 0},
-
-		// 水平精度個数確認 低精度は1、高精度は精度差^4
-		{spatialIds: []string{"20/56/85263/65423"}, ToHZoom: 24, ToVZoom: 10, maxHeight: 500, minHeight: 0.0, result: quadkeyAndVerticalIDs, resultLength: 256, pattern: 2},
-		{spatialIds: []string{"20/56/85263/65423"}, ToHZoom: 2, ToVZoom: 10, maxHeight: 500, minHeight: 0.0, result: quadkeyAndVerticalIDs, resultLength: 1, pattern: 2},
-		// 水平精度境界値
-		{spatialIds: []string{"20/0/85263/65423"}, ToHZoom: 1, ToVZoom: 10, maxHeight: 500, minHeight: 0.0, result: quadkeyAndVerticalIDsHBorders1, resultLength: 66, pattern: 2},
-		{spatialIds: []string{"35/0/85263/65423"}, ToHZoom: 31, ToVZoom: 10, maxHeight: 500, minHeight: 0.0, result: quadkeyAndVerticalIDsHBorders31, pattern: 0},
-
-		// 垂直精度境界値
-		{spatialIds: []string{"20/0/85263/65423"}, ToHZoom: 21, ToVZoom: 0, maxHeight: 500, minHeight: 0.0, result: quadkeyAndVerticalIDs, resultLength: 4, pattern: 3},
-		{spatialIds: []string{"20/0/85263/65423"}, ToHZoom: 21, ToVZoom: 1, maxHeight: 500, minHeight: 0.0, result: quadkeyAndVerticalIDs, resultLength: 4, pattern: 3},
-
 		// 異常系(精度エラー)
 		{spatialIds: []string{"20/56/85263/65423"}, ToHZoom: 0, ToVZoom: 10, maxHeight: 0, minHeight: 0.0, pattern: 1, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "")},
 		{spatialIds: []string{"20/56/85263/65423"}, ToHZoom: 20, ToVZoom: -1, maxHeight: 0, minHeight: 0.0, pattern: 1, e: errors.NewSpatialIdError(errors.InputValueErrorCode, "")},
@@ -412,37 +522,43 @@ func TestConvertSpatialIdsToQuadkeysAndVerticalIDs(t *testing.T) {
 func testNewTileXYZBoxFromSpatialIDBox(
 	t *testing.T,
 	expected []*TileXYZ,
+	expectedError error,
 	spatialIDString string,
 	quadkeyZoomLevel int8,
 	altitudekeyZoomLevel int8,
 	) {
 	spatialID, theError := NewSpatialIDFromString(spatialIDString)
 	if theError != nil {
-		t.Fatal(theError)
+		if theError.Error() != expectedError.Error() {
+			t.Errorf("expectedError: %+v, result: %+v", expectedError, theError)
+		}
+		return
 	}
 
 	spatialIDBox, theError := NewSpatialIDBox(*spatialID, *spatialID)
 	if theError != nil {
-		t.Fatal(theError)
+		if theError.Error() != expectedError.Error() {
+			t.Errorf("expectedError: %+v, result: %+v", expectedError, theError)
+		}
+		return
 	}
 
 	tileXYZBox, theError := NewTileXYZBoxFromSpatialIDBox(*spatialIDBox)
 	if theError != nil {
-		t.Fatal(theError)
+		if theError.Error() != expectedError.Error() {
+			t.Errorf("expectedError: %+v, result: %+v", expectedError, theError)
+		}
+		return
 	}
 
 	tileXYZBox.AddZoomLevel(quadkeyZoomLevel - tileXYZBox.GetMin().GetQuadkeyZoomLevel(), altitudekeyZoomLevel - tileXYZBox.GetMin().GetAltitudekeyZoomLevel())
 
 	i := 0
-	theError = tileXYZBox.ForXYZ(func(tileXYZ TileXYZ) error {
+	for tileXYZ := range tileXYZBox.AllXYZ() {
 		if !reflect.DeepEqual(&tileXYZ, expected[i]) {
 			t.Fatal(tileXYZ)
 		}
 		i += 1
-		return nil
-	})
-	if theError != nil {
-		t.Fatal(theError)
 	}
 }
 
