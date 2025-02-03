@@ -47,7 +47,7 @@ func NewGeodeticBoxFromConvexHull(convexHull []*coordinates.Geodetic, clearance 
 	geocentricMax := coordinates.GeocentricFromGeodetic(geodeticMax)
 	localMin := localFromGeocentric(geocentricMin)
 	localMax := localFromGeocentric(geocentricMax)
-	
+
 	localMin[0] -= clearance
 	localMin[1] -= clearance
 	localMin[2] -= clearance
@@ -69,11 +69,11 @@ func NewGeodeticBoxFromSpatialIDBox(spatialIDBox SpatialIDBox) *GeodeticBox {
 
 	max := float64(int(1) << spatialIDBox.GetMin().GetZ())
 
-	*box.Min.Longitude() = 360.0 * float64(spatialIDBox.GetMin().GetX()) / max - 180.0
-	*box.Max.Longitude() = 360.0 * float64(spatialIDBox.GetMax().GetX()+1) / max - 180.0
+	*box.Min.Longitude() = 360.0*float64(spatialIDBox.GetMin().GetX())/max - 180.0
+	*box.Max.Longitude() = 360.0*float64(spatialIDBox.GetMax().GetX()+1)/max - 180.0
 
-	*box.Min.Latitude() = mathematics.RadianPerDegree * math.Atan(math.Sinh(math.Pi * (1.0 - 2.0*float64(spatialIDBox.GetMin().GetY())/max)))
-	*box.Max.Latitude() = mathematics.RadianPerDegree * math.Atan(math.Sinh(math.Pi * (1.0 - 2.0*float64(spatialIDBox.GetMax().GetY()+1)/max)))
+	*box.Min.Latitude() = mathematics.RadianPerDegree * math.Atan(math.Sinh(math.Pi*(1.0-2.0*float64(spatialIDBox.GetMin().GetY())/max)))
+	*box.Max.Latitude() = mathematics.RadianPerDegree * math.Atan(math.Sinh(math.Pi*(1.0-2.0*float64(spatialIDBox.GetMax().GetY()+1)/max)))
 
 	altitudeResolution := float64(int(1) << (SpatialIDZBaseExponent - spatialIDBox.GetMin().GetZ()))
 
@@ -88,11 +88,11 @@ func NewGeodeticBoxFromTileXYZBox(TileXYZBox TileXYZBox) *GeodeticBox {
 
 	quadMax := float64(int(1) << TileXYZBox.GetMin().GetQuadkeyZoomLevel())
 
-	*box.Min.Longitude() = 360.0 * float64(TileXYZBox.GetMin().GetX()) / quadMax - 180.0
-	*box.Max.Longitude() = 360.0 * float64(TileXYZBox.GetMax().GetX()+1) / quadMax - 180.0
+	*box.Min.Longitude() = 360.0*float64(TileXYZBox.GetMin().GetX())/quadMax - 180.0
+	*box.Max.Longitude() = 360.0*float64(TileXYZBox.GetMax().GetX()+1)/quadMax - 180.0
 
-	*box.Min.Latitude() = mathematics.RadianPerDegree * math.Atan(math.Sinh(math.Pi * (1.0 - 2.0*float64(TileXYZBox.GetMin().GetY())/quadMax)))
-	*box.Max.Latitude() = mathematics.RadianPerDegree * math.Atan(math.Sinh(math.Pi * (1.0 - 2.0*float64(TileXYZBox.GetMax().GetY()+1)/quadMax)))
+	*box.Min.Latitude() = mathematics.RadianPerDegree * math.Atan(math.Sinh(math.Pi*(1.0-2.0*float64(TileXYZBox.GetMin().GetY())/quadMax)))
+	*box.Max.Latitude() = mathematics.RadianPerDegree * math.Atan(math.Sinh(math.Pi*(1.0-2.0*float64(TileXYZBox.GetMax().GetY()+1)/quadMax)))
 
 	altitudeResolution := float64(int(1) << (TileXYZZBaseExponent - TileXYZBox.GetMin().GetAltitudekeyZoomLevel()))
 
