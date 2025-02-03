@@ -11,22 +11,23 @@ import (
 
 const MaxQuadkeyZoomLevel = 35
 const MaxAltitudekeyZoomLevel = 35
+
 var TileXYZZBaseExponent int8 = 14
 var TileXYZZBaseOffset int64 = 512
 
 type TileXYZ struct {
-	quadkeyZoomLevel int8
+	quadkeyZoomLevel     int8
 	altitudekeyZoomLevel int8
-	x                   int64
-	y                   int64
-	z                   int64
+	x                    int64
+	y                    int64
+	z                    int64
 }
 
 func NewTileXYZFromGeodetic(geodetic coordinates.Geodetic, quadkeyZoomLevel int8, altitudeZoomLevel int8) (*TileXYZ, error) {
 	quadMax := float64(int(1) << quadkeyZoomLevel)
 
 	// 経度方向のインデックスの計算
-	x := int64(math.Floor(quadMax * math.Mod(*geodetic.Longitude() + 180.0, 360.0)))
+	x := int64(math.Floor(quadMax * math.Mod(*geodetic.Longitude()+180.0, 360.0)))
 
 	radianLatitude := mathematics.RadianPerDegree * *geodetic.Latitude()
 
@@ -36,7 +37,7 @@ func NewTileXYZFromGeodetic(geodetic coordinates.Geodetic, quadkeyZoomLevel int8
 	altitudeResolution := float64(common.CalculateArithmeticShift(1, int64(TileXYZZBaseExponent-altitudeZoomLevel)))
 
 	// 垂直方向の位置を計算する
-	z := int64(math.Floor(*geodetic.Altitude() / altitudeResolution))+TileXYZZBaseOffset
+	z := int64(math.Floor(*geodetic.Altitude()/altitudeResolution)) + TileXYZZBaseOffset
 
 	return NewTileXYZ(quadkeyZoomLevel, altitudeZoomLevel, x, y, z)
 }
@@ -44,9 +45,9 @@ func NewTileXYZFromGeodetic(geodetic coordinates.Geodetic, quadkeyZoomLevel int8
 func NewTileXYZ(
 	quadkeyZoomLevel int8,
 	altitudekeyZoomLevel int8,
-	x                   int64,
-	y                   int64,
-	z                   int64,
+	x int64,
+	y int64,
+	z int64,
 ) (*TileXYZ, error) {
 	tile := &TileXYZ{}
 
@@ -68,14 +69,17 @@ func NewTileXYZ(
 }
 
 func (tile *TileXYZ) SetX(x int64) {
-	tile.x = x%(1 << tile.GetQuadkeyZoomLevel())
+	limit := int64(1 << tile.GetQuadkeyZoomLevel())
+
+	tile.x = x % limit
 	if tile.x < 0 {
-		tile.x += 1 << tile.GetQuadkeyZoomLevel()
+		tile.x += limit
 	}
 }
 
 func (tile *TileXYZ) SetY(y int64) {
-	max := int64(1 << tile.GetQuadkeyZoomLevel()) -  1
+	limit := int64(1 << tile.GetQuadkeyZoomLevel())
+	max := limit - 1
 	min := int64(0)
 
 	if y > max {
@@ -88,7 +92,8 @@ func (tile *TileXYZ) SetY(y int64) {
 }
 
 func (tile *TileXYZ) SetZ(z int64) {
-	max := int64(1 << tile.GetAltitudekeyZoomLevel()) - 1
+	limit := int64(1 << tile.GetAltitudekeyZoomLevel())
+	max := limit - 1
 	min := int64(0)
 
 	if z > max {
@@ -124,9 +129,9 @@ func (tile TileXYZ) NewParent(quadNumber, altitudeNumber int8) (*TileXYZ, error)
 	return NewTileXYZ(
 		tile.GetQuadkeyZoomLevel()-quadNumber,
 		tile.GetAltitudekeyZoomLevel()-altitudeNumber,
-		tile.GetX() >> quadNumber,
-		tile.GetY() >> quadNumber,
-		tile.GetZ() >> altitudeNumber,
+		tile.GetX()>>quadNumber,
+		tile.GetY()>>quadNumber,
+		tile.GetZ()>>altitudeNumber,
 	)
 }
 
@@ -134,9 +139,9 @@ func (tile TileXYZ) NewMinChild(quadNumber, altitudeNumber int8) (*TileXYZ, erro
 	return NewTileXYZ(
 		tile.GetQuadkeyZoomLevel()+quadNumber,
 		tile.GetAltitudekeyZoomLevel()+altitudeNumber,
-		tile.GetX() << quadNumber,
-		tile.GetY() << quadNumber,
-		tile.GetZ() << altitudeNumber,
+		tile.GetX()<<quadNumber,
+		tile.GetY()<<quadNumber,
+		tile.GetZ()<<altitudeNumber,
 	)
 }
 
@@ -144,8 +149,8 @@ func (tile TileXYZ) NewMaxChild(quadNumber, altitudeNumber int8) (*TileXYZ, erro
 	return NewTileXYZ(
 		tile.GetQuadkeyZoomLevel()+quadNumber,
 		tile.GetAltitudekeyZoomLevel()+altitudeNumber,
-		(tile.GetX() << quadNumber) + (1 << quadNumber) - 1,
-		(tile.GetY() << quadNumber) + (1 << quadNumber) - 1,
-		(tile.GetZ() << altitudeNumber) + (1 << altitudeNumber) - 1,
+		(tile.GetX()+1)<<quadNumber-1,
+		(tile.GetY()+1)<<quadNumber-1,
+		(tile.GetZ()+1)<<altitudeNumber-1,
 	)
 }

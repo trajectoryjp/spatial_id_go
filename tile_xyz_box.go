@@ -64,7 +64,7 @@ func NewTileXYZBoxFromGeodeticBox(geodeticBox GeodeticBox, quadkeyZoomLevel int8
 }
 
 func (box *TileXYZBox) AddZoomLevel(quadDelta, altitudeDelta int8) error {
-	if quadDelta < 0 || altitudeDelta < 0 {
+	if quadDelta < 0 && altitudeDelta < 0 {
 		newMin, error := box.min.NewParent(-quadDelta, -altitudeDelta)
 		if error != nil {
 			return error
@@ -78,7 +78,7 @@ func (box *TileXYZBox) AddZoomLevel(quadDelta, altitudeDelta int8) error {
 		}
 
 		box.max = *newMax
-	} else if quadDelta > 0 || altitudeDelta > 0 {
+	} else if quadDelta > 0 && altitudeDelta > 0 {
 		newMin, error := box.min.NewMinChild(quadDelta, altitudeDelta)
 		if error != nil {
 			return error
@@ -94,7 +94,7 @@ func (box *TileXYZBox) AddZoomLevel(quadDelta, altitudeDelta int8) error {
 		box.max = *newMax
 	}
 
-	return nil
+	return errors.NewSpatialIdError(errors.InputValueErrorCode, "")
 }
 
 func (box TileXYZBox) GetMin() TileXYZ {
