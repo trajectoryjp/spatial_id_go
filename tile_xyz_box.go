@@ -64,7 +64,7 @@ func NewTileXYZBoxFromGeodeticBox(geodeticBox GeodeticBox, quadkeyZoomLevel int8
 }
 
 func (box *TileXYZBox) AddZoomLevel(quadDelta, altitudeDelta int8) error {
-	if quadDelta < 0 || altitudeDelta < 0 {
+	if quadDelta < 0 || altitudeDelta < 0 { // TODO: 入れ違いになった時落ちる
 		newMin, error := box.min.NewParent(-quadDelta, -altitudeDelta)
 		if error != nil {
 			return error

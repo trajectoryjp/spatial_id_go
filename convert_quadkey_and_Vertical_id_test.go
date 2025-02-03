@@ -3,8 +3,6 @@ package spatialID
 
 import (
 	"reflect"
-	"sort"
-	"strconv"
 	"testing"
 )
 
@@ -928,258 +926,6 @@ func TestConvertZToMinMaxAltitudekey_9(t *testing.T) {
 	)
 }
 
-func TestConvertZToMinAltitudekey_1(t *testing.T) {
-	testConvertZToMinAltitudekey(
-		t,
-
-		TileXYZ{
-			quadkeyZoomLevel: 25,
-			altitudekeyZoomLevel: 25,
-			x: 85263,
-			y: 65423,
-			z: 47,
-		},
-
-		SpatialID{
-			z: 25,
-			f: 100,
-			x: 85263,
-			y: 65423,
-		},
-
-		25, 47,
-
-		25,
-	)
-}
-
-func TestConvertZToMinAltitudekey_2(t *testing.T) {
-	testConvertZToMinAltitudekey(
-		t,
-
-		TileXYZ{
-			quadkeyZoomLevel: 25,
-			altitudekeyZoomLevel: 25,
-			x: 85263,
-			y: 65423,
-			z: 0,
-		},
-
-		SpatialID{
-			z: 25,
-			f: 0,
-			x: 85263,
-			y: 65423,
-		},
-
-		25, 0,
-
-		25,
-	)
-}
-
-func TestConvertZToMinAltitudekey_3(t *testing.T) {
-	testConvertZToMinAltitudekey(
-		t,
-
-		TileXYZ{
-			quadkeyZoomLevel: 25,
-			altitudekeyZoomLevel: 27,
-			x: 85263,
-			y: 65423,
-			z: 0,
-		},
-
-		SpatialID{
-			z: 25,
-			f: 0,
-			x: 85263,
-			y: 65423,
-		},
-
-		25, 0,
-
-		27,
-	)
-}
-
-func TestConvertZToMinAltitudekey_4(t *testing.T) {
-	expected := int64(4)
-
-	result, error := convertZToMinAltitudekey(
-		1,
-		25,
-		27,
-		25,
-		0,
-	)
-	if error != nil {
-		t.Fatal(error)
-	}
-
-	if result != expected {
-		t.Fatal(result)
-	}
-}
-
-func TestConvertZToMinAltitudekey_5(t *testing.T) {
-	expected := int64(3276800)
-
-	result, error := convertZToMinAltitudekey(
-		100,
-		10,
-		25,
-		25,
-		0,
-	)
-	if error != nil {
-		t.Fatal(error)
-	}
-
-	if result != expected {
-		t.Fatal(result)
-	}
-}
-
-func TestConvertZToMinAltitudekey_6(t *testing.T) {
-	expectedError := errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset")
-
-	result, error := convertZToMinAltitudekey(
-		100,
-		10,
-		25,
-		25,
-		-3276801,
-	)
-	if error != expectedError {
-		t.Fatal(result, error)
-	}
-}
-
-func TestConvertZToMinAltitudekey_7(t *testing.T) {
-	expected := int64(24)
-
-	result, error := convertZToMinAltitudekey(
-		47,
-		25,
-		24,
-		25,
-		2,
-	)
-	if error != nil {
-		t.Fatal(error)
-	}
-
-	if result != expected {
-		t.Fatal(result)
-	}
-}
-
-func TestConvertZToMinAltitudekey_8(t *testing.T) {
-	expected := int64(2)
-
-	result, error := convertZToMinAltitudekey(
-		47,
-		25,
-		20,
-		25,
-		32,
-	)
-	if error != nil {
-		t.Fatal(error)
-	}
-
-	if result != expected {
-		t.Fatal(result)
-	}
-}
-
-func TestConvertZToMinAltitudekey_9(t *testing.T) {
-	expected := int64(12)
-
-	result, error := convertZToMinAltitudekey(
-		47,
-		25,
-		12,
-		14,
-		4,
-	)
-	if error != nil {
-		t.Fatal(error)
-	}
-
-	if result != expected {
-		t.Fatal(result)
-	}
-}
-
-func TestConvertZToMinAltitudekey_10(t *testing.T) {
-	expectedError := errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset")
-
-	result, error := convertZToMinAltitudekey(
-		-1,
-		25,
-		25,
-		25,
-		0,
-	)
-	if error != expectedError {
-		t.Fatal(result, error)
-	}
-}
-
-func TestConvertZToMinAltitudekey_11(t *testing.T) {
-	expectedError := errors.NewSpatialIdError(errors.InputValueErrorCode, "output index does not exist with given outputZoom, zBaseExponent, and zBaseOffset")
-
-	result, error := convertZToMinAltitudekey(
-		-100,
-		25,
-		26,
-		24,
-		51,
-	)
-	if error != expectedError {
-		t.Fatal(result, error)
-	}
-}
-
-func testConvertZToMinAltitudekey(
-	t *testing.T,
-	expectedMin TileXYZ,
-	spatialID SpatialID,
-	tileXYZZBaseExponent int8,
-	tileXYZZBaseOffset int64,
-	altitudekeyZoomLevel int8,
-) {
-	oldZBaseExponent := TileXYZZBaseExponent
-	oldZBaseOffset := TileXYZZBaseOffset
-	defer func() {
-		TileXYZZBaseExponent = oldZBaseExponent
-		TileXYZZBaseOffset = oldZBaseOffset
-	}()
-	TileXYZZBaseExponent = tileXYZZBaseExponent
-	TileXYZZBaseOffset = tileXYZZBaseOffset
-
-	spatialIDBox, error := NewSpatialIDBox(spatialID, spatialID)
-	if error != nil {
-		t.Fatal(error)
-	}
-
-	tileXYZBox, error := NewTileXYZBoxFromSpatialIDBox(spatialIDBox)
-	if error != nil {
-		t.Fatal(error)
-	}
-
-	error = tileXYZBox.AddZoomLevel(0, altitudekeyZoomLevel-tileXYZBox.GetMin().GetAltitudekeyZoomLevel())
-	if error != nil {
-		t.Fatal(error)
-	}
-
-	if !reflect.DeepEqual(tileXYZBox.GetMin(), expectedMin) {
-		t.Errorf("expected: %+v, result: %+v", expectedMin, tileXYZBox.GetMin())
-	}
-}
-
 type argsForConvertAltitudekeyToMinMaxZ struct {
 	altitudekey          int64
 	altitudekeyZoomLevel int64
@@ -1189,67 +935,201 @@ type argsForConvertAltitudekeyToMinMaxZ struct {
 }
 
 func TestConvertAltitudekeyToMinMaxZ_OffseMustBeConverted(t *testing.T) {
-	var expectedMin int64 = -2
-	expectedMax := expectedMin
-	args := argsForConvertAltitudekeyToMinMaxZ{
-		altitudekey:          0,
-		altitudekeyZoomLevel: 23,
-		outputZoomLevel:      23,
-		zBaseExponent:        23,
-		zBaseOffset:          8,
-	}
-	assertConvertAltitudekeyToMinMaxZ(t, args, expectedMin, expectedMax, false)
+	assertConvertAltitudekeyToMinMaxZ(
+		t,
+
+		SpatialIDBox{
+			min: SpatialID{
+				z: 23,
+				f: -2,
+				x: 85263,
+				y: 65423,
+			},
+			max: SpatialID{
+				z: 23,
+				f: -2,
+				x: 85263,
+				y: 65423,
+			},
+		},
+
+		TileXYZBox{
+			min: TileXYZ{
+				quadkeyZoomLevel: 23,
+				altitudekeyZoomLevel: 23,
+				x: 85263,
+				y: 65423,
+				z: 0,
+			},
+			max: TileXYZ{
+				quadkeyZoomLevel: 23,
+				altitudekeyZoomLevel: 23,
+				x: 85263,
+				y: 65423,
+				z: 0,
+			},
+		},
+
+		23, 8,
+
+		23,
+	)
 }
 
 func TestConvertAltitudekeyToMinMaxZ_ZoomLevelMustBeConverted(t *testing.T) {
-	var expectedMin int64 = 0
-	expectedMax := expectedMin
-	args := argsForConvertAltitudekeyToMinMaxZ{
-		altitudekey:          0,
-		altitudekeyZoomLevel: 23,
-		outputZoomLevel:      22,
-		zBaseExponent:        25,
-		zBaseOffset:          -2,
-	}
-	assertConvertAltitudekeyToMinMaxZ(t, args, expectedMin, expectedMax, false)
+	assertConvertAltitudekeyToMinMaxZ(
+		t,
+
+		SpatialIDBox{
+			min: SpatialID{
+				z: 22,
+				f: 0,
+				x: 85263,
+				y: 65423,
+			},
+			max: SpatialID{
+				z: 22,
+				f: 0,
+				x: 85263,
+				y: 65423,
+			},
+		},
+
+		TileXYZBox{
+			min: TileXYZ{
+				quadkeyZoomLevel: 22,
+				altitudekeyZoomLevel: 23,
+				x: 85263,
+				y: 65423,
+				z: 0,
+			},
+			max: TileXYZ{
+				quadkeyZoomLevel: 22,
+				altitudekeyZoomLevel: 23,
+				x: 85263,
+				y: 65423,
+				z: 0,
+			},
+		},
+
+		25, -2,
+
+		22,
+	)
 }
 
 func TestConvertAltitudekeyToMinMaxZ_MinMaxDiffersWhenZBaseOffsetIsNotPowerOf2(t *testing.T) {
-	var expectedMin int64 = -2
-	var expectedMax int64 = -1
-	args := argsForConvertAltitudekeyToMinMaxZ{
-		altitudekey:          0,
-		altitudekeyZoomLevel: 23,
-		outputZoomLevel:      23,
-		zBaseExponent:        25,
-		zBaseOffset:          7,
-	}
-	assertConvertAltitudekeyToMinMaxZ(t, args, expectedMin, expectedMax, false)
+	assertConvertAltitudekeyToMinMaxZ(
+		t,
+
+		SpatialIDBox{
+			min: SpatialID{
+				z: 23,
+				f: -2,
+				x: 85263,
+				y: 65423,
+			},
+			max: SpatialID{
+				z: 23,
+				f: -1,
+				x: 85263,
+				y: 65423,
+			},
+		},
+		
+		TileXYZBox{
+			min: TileXYZ{
+				quadkeyZoomLevel: 23,
+				altitudekeyZoomLevel: 23,
+				x: 85263,
+				y: 65423,
+				z: 0,
+			},
+			max: TileXYZ{
+				quadkeyZoomLevel: 23,
+				altitudekeyZoomLevel: 23,
+				x: 85263,
+				y: 65423,
+				z: 0,
+			},
+		},
+
+		25, 7,
+
+		23,
+	)
 }
 
 func TestConvertAltitudekeyToMinMaxZ_MinMaxDiffersWhenZBaseExponentLessThanInputZoomLevelOrOutputZoomLevel(t *testing.T) {
-	var expectedMin int64 = 6
-	var expectedMax int64 = 7
-	args := argsForConvertAltitudekeyToMinMaxZ{
-		altitudekey:          3,
-		altitudekeyZoomLevel: 26,
-		outputZoomLevel:      26,
-		zBaseExponent:        25,
-		zBaseOffset:          -2,
-	}
-	assertConvertAltitudekeyToMinMaxZ(t, args, expectedMin, expectedMax, false)
+	assertConvertAltitudekeyToMinMaxZ(
+		t,
+
+		SpatialIDBox{
+			min: SpatialID{
+				z: 26,
+				f: 6,
+				x: 85263,
+				y: 65423,
+			},
+			max: SpatialID{
+				z: 26,
+				f: 7,
+				x: 85263,
+				y: 65423,
+			},
+		},
+
+		TileXYZBox{
+			min: TileXYZ{
+				quadkeyZoomLevel: 26,
+				altitudekeyZoomLevel: 26,
+				x: 85263,
+				y: 65423,
+				z: 3,
+			},
+			max: TileXYZ{
+				quadkeyZoomLevel: 26,
+				altitudekeyZoomLevel: 26,
+				x: 85263,
+				y: 65423,
+				z: 3,
+			},
+		},
+
+		25, -2,
+
+		26,
+	)
 }
 
-func assertConvertAltitudekeyToMinMaxZ(t *testing.T, args argsForConvertAltitudekeyToMinMaxZ, expectedMin int64, expectedMax int64, wantError bool) {
-	gotMinZ, gotMaxZ, err := ConvertAltitudekeyToMinMaxZ(args.altitudekey, args.altitudekeyZoomLevel, args.outputZoomLevel, args.zBaseExponent, args.zBaseOffset)
-	if (err != nil) != wantError {
-		t.Errorf("ConvertAltitudekeyToMinMaxZ() error = %v, wantErr %v", err, wantError)
-		return
+func assertConvertAltitudekeyToMinMaxZ(
+	t *testing.T,
+	expected SpatialIDBox,
+	tileXYZBox TileXYZBox,
+	zBaseExponent int8,
+	zBaseOffset int64,
+	z int8,
+) {
+	oldZBaseExponent := TileXYZZBaseExponent
+	oldZBaseOffset := TileXYZZBaseOffset
+	defer func() {
+		TileXYZZBaseExponent = oldZBaseExponent
+		TileXYZZBaseOffset = oldZBaseOffset
+	}()
+	TileXYZZBaseExponent = zBaseExponent
+	TileXYZZBaseOffset = zBaseOffset
+
+	spatialIDBox, error := NewSpatialIDBoxFromTileXYZBox(tileXYZBox)
+	if error != nil {
+		t.Fatal(error)
 	}
-	if gotMinZ != expectedMin {
-		t.Errorf("ConvertAltitudekeyToMinMaxZ() gotMinZ = %v, minZ %v", gotMinZ, expectedMin)
+
+	error = spatialIDBox.AddZ(z-spatialIDBox.GetMin().GetZ())
+	if error != nil {
+		t.Fatal(error)
 	}
-	if gotMaxZ != expectedMax {
-		t.Errorf("ConvertAltitudekeyToMinMaxZ() gotMaxZ = %v, maxZ %v", gotMaxZ, expectedMax)
+
+	if !reflect.DeepEqual(spatialIDBox, expected) {
+		t.Errorf("expected: %+v, result: %+v", expected, spatialIDBox)
 	}
 }

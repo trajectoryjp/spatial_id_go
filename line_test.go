@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/trajectoryjp/geodesy_go/coordinates"
 	"github.com/trajectoryjp/spatial_id_go/v4/common/enum"
 	"github.com/trajectoryjp/spatial_id_go/v4/common/object"
 	"github.com/trajectoryjp/spatial_id_go/v4/common/spatial"
@@ -19,32 +20,17 @@ import (
 // + 確認内容
 //   - 入力に対応した空間ID集合が取得できること
 func TestGetSpatialIdsOnLine01(t *testing.T) {
-	var zoom int64 = 10
-	startCoodinate, _ := GetPointOnExtendedSpatialId("10/10/10/10/10", enum.Center)
-	startPoint, _ := object.NewPoint(startCoodinate[0].Lon(), startCoodinate[0].Lat(), startCoodinate[0].Alt())
-	endCoodinate, _ := GetPointOnExtendedSpatialId("10/13/10/10/10", enum.Center)
-	endPoint, _ := object.NewPoint(endCoodinate[0].Lon(), endCoodinate[0].Lat(), endCoodinate[0].Alt())
-	resultVal, resultErr := GetSpatialIdsOnLine(startPoint, endPoint, zoom)
+	testGetSpatialIdsOnLine(
+		t,
 
-	expectVal := []string{"10/10/10/10", "10/10/11/10", "10/10/12/10", "10/10/13/10"}
+		[]string{"10/10/10/10", "10/10/11/10", "10/10/12/10", "10/10/13/10"},
+		nil,
 
-	//戻り値要素数と期待値の比較
-	if len(resultVal) != len(expectVal) {
-		t.Errorf("空間ID - 期待要素数：%v, 取得要素数：%v", len(expectVal), len(resultVal))
-	}
+		"10/10/10/10",
+		"10/10/13/10",
 
-	//戻り値の空間IDと期待値の比較
-	for _, exp := range expectVal {
-		if !contains(resultVal, exp) {
-			t.Errorf("空間ID - 期待値：%v, 取得値：%v", expectVal, resultVal)
-		}
-	}
-
-	if resultErr != nil {
-		// 戻り値のエラーインスタンスがが期待値と異なる場合Errorをログに出力
-		t.Errorf("error - 期待値：nil, 取得値：%s", resultVal)
-	}
-	t.Log("テスト終了")
+		10,
+	)
 }
 
 // TestGetSpatialIdsOnLine02 精度閾値超過
@@ -408,6 +394,90 @@ func TestGetExtendedSpatialIdsOnLine09(t *testing.T) {
 		t.Errorf("error - 期待値：nil, 取得値：%s", resultVal)
 	}
 	t.Log("テスト終了")
+}
+
+func testGetSpatialIdsOnLine(
+	t *testing.T,
+	expectedSpatialIDStrings []string,
+	expectedError error,
+	startSpatialIDString string,
+	endSpatialIDString string,
+	z int8,
+) {
+	startSpatialID, error := NewSpatialIDFromString(startSpatialIDString)
+	if error != nil {
+		if error.Error() == expectedError.Error() {
+			return
+		}
+
+		t.Fatal(error)
+	}
+	startSpatialIDBox, error := NewSpatialIDBox(*startSpatialID, *startSpatialID)
+	if error != nil {
+		if error.Error() == expectedError.Error() {
+			return
+		}
+
+		t.Fatal(error)
+	}
+	startGeodeticBox := NewGeodeticBoxFromSpatialIDBox(*startSpatialIDBox)
+
+	endSpatialID, error := NewSpatialIDFromString(endSpatialIDString)
+	if error != nil {
+		if error.Error() == expectedError.Error() {
+			return
+		}
+
+		t.Fatal(error)
+	}
+	endSpatialIDBox, error := NewSpatialIDBox(*endSpatialID, *endSpatialID)
+	if error != nil {
+		if error.Error() == expectedError.Error() {
+			return
+		}
+
+		t.Fatal(error)
+	}
+	endGeodeticBox := NewGeodeticBoxFromSpatialIDBox(*endSpatialIDBox)
+
+	spatialIDBox, error := NewSpatialIDBox(*startSpatialID, *endSpatialID)
+	if error != nil {
+		if error.Error() == expectedError.Error() {
+			return
+		}
+
+		t.Fatal(error)
+	}
+	spatialIDBox.AddZ(z - spatialIDBox.GetMin().GetZ())
+
+	i := 0
+	for spatialID := range spatialIDBox.AllCollisionWithConvexHull(
+		[]*coordinates.Geodetic{
+			{
+				(*startGeodeticBox.Min.Longitude() + *endGeodeticBox.Min.Longitude()) / 2,
+				(*startGeodeticBox.Min.Latitude() + *endGeodeticBox.Min.Latitude()) / 2,
+				(*startGeodeticBox.Min.Altitude() + *endGeodeticBox.Min.Altitude()) / 2,
+			},
+			{
+				(*startGeodeticBox.Max.Longitude() + *endGeodeticBox.Max.Longitude()) / 2,
+				(*startGeodeticBox.Max.Latitude() + *endGeodeticBox.Max.Latitude()) / 2,
+				(*startGeodeticBox.Max.Altitude() + *endGeodeticBox.Max.Altitude()) / 2,
+			},
+		},
+		0.0,
+	) {
+		if i >= len(expectedSpatialIDStrings) {
+			t.Fatalf("Too many spatial IDs: %v", i)
+		}
+		if spatialID.String() != expectedSpatialIDStrings[i] {
+			t.Fatalf("Unexpected spatial ID: %v", spatialID.String())
+		}
+
+		i += 1
+	}
+	if i != len(expectedSpatialIDStrings) {
+		t.Fatalf("Too few spatial IDs: %v", i)
+	}
 }
 
 func TestGetSpatialIdsOnLineForTests(t *testing.T) {

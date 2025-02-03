@@ -6,7 +6,6 @@ import (
 	mathematics "github.com/HarutakaMatsumoto/mathematics_go"
 	"github.com/HarutakaMatsumoto/mathematics_go/geometry/rectangular/solid"
 	"github.com/trajectoryjp/geodesy_go/coordinates"
-	"github.com/trajectoryjp/spatial_id_go/v4/common/errors"
 )
 
 type GeodeticBox struct {
@@ -16,7 +15,7 @@ type GeodeticBox struct {
 
 func NewGeodeticBoxFromConvexHull(convexHull []*coordinates.Geodetic, clearance float64) (*GeodeticBox, error) {
 	if len(convexHull) == 0 {
-		return nil, errors.NewSpatialIdError(errors.InputValueErrorCode, "The convex hull is empty.")
+		return nil, NewSpatialIdError(InputValueErrorCode, "The convex hull is empty.")
 	}
 
 	geodeticMin := *convexHull[0]
