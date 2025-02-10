@@ -8,7 +8,6 @@ import (
 	"github.com/go-gl/mathgl/mgl64"
 	closest "github.com/trajectoryjp/closest_go"
 	"github.com/trajectoryjp/geodesy_go/coordinates"
-	"github.com/trajectoryjp/spatial_id_go/v4/common/errors"
 )
 
 type TileXYZBox struct {
@@ -37,10 +36,10 @@ func NewTileXYZBox(min TileXYZ, max TileXYZ) (*TileXYZBox, error) {
 
 	// Pass x
 	if min.GetY() > max.GetY() {
-		return nil, errors.NewSpatialIdError(errors.InputValueErrorCode, "")
+		return nil, NewSpatialIdError(InputValueErrorCode, "")
 	}
 	if min.GetZ() > max.GetZ() {
-		return nil, errors.NewSpatialIdError(errors.InputValueErrorCode, "")
+		return nil, NewSpatialIdError(InputValueErrorCode, "")
 	}
 
 	return &TileXYZBox{
@@ -78,7 +77,9 @@ func (box *TileXYZBox) AddZoomLevel(quadDelta, altitudeDelta int8) error {
 		}
 
 		box.max = *newMax
-	} else if quadDelta > 0 && altitudeDelta > 0 {
+
+		return nil
+	} else if quadDelta >= 0 && altitudeDelta >= 0 {
 		newMin, error := box.min.NewMinChild(quadDelta, altitudeDelta)
 		if error != nil {
 			return error
@@ -92,9 +93,11 @@ func (box *TileXYZBox) AddZoomLevel(quadDelta, altitudeDelta int8) error {
 		}
 
 		box.max = *newMax
+
+		return nil
 	}
 
-	return errors.NewSpatialIdError(errors.InputValueErrorCode, "")
+	return NewSpatialIdError(InputValueErrorCode, "")
 }
 
 func (box TileXYZBox) GetMin() TileXYZ {

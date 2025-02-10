@@ -40,10 +40,10 @@ func TestChangeSpatialIdsZoom02_01(t *testing.T) {
 		[]string{
 			"15/0/2048/4096",
 			"15/1/2048/4096",
-			"15/0/2049/4096",
-			"15/1/2049/4096",
 			"15/0/2048/4097",
 			"15/1/2048/4097",
+			"15/0/2049/4096",
+			"15/1/2049/4096",
 			"15/0/2049/4097",
 			"15/1/2049/4097",
 		},
@@ -111,14 +111,18 @@ func testForXYF(
 	}
 
 	theError = spatialIDBox.AddZ(differenceZ)
-	if !reflect.DeepEqual(theError, expectedError) {
-		t.Errorf("error - 期待値：%v, 取得値：%v", expectedError, theError)
+	if theError != nil {
+		if theError == expectedError {
+			return
+		}
+
+		t.Fatalf("error - 期待値：%v, 取得値：%v", expectedError, theError)
 	}
 
 	i := 0
 	for spatialID := range spatialIDBox.AllXYF() {
 		if i >= len(expected) {
-			t.Errorf("空間ID - 期待要素数：%v, 取得要素数：%v", len(expected), i)
+			t.Fatalf("空間ID - 期待要素数：%v, 取得要素数：%v", len(expected), i)
 		}
 		if !reflect.DeepEqual(spatialID.String(), expected[i]) {
 			t.Errorf("空間ID - 期待値：%v, 取得値：%v", expected[i], spatialID.String())
@@ -189,29 +193,29 @@ func TestChangeExtendedSpatialIdsZoom02_01(t *testing.T) {
 			{
 				quadkeyZoomLevel: 15,
 				altitudekeyZoomLevel: 15,
-				x: 2049,
-				y: 4096,
+				x: 2048,
+				y: 4097,
 				z: 0,
 			},
 			{
 				quadkeyZoomLevel: 15,
 				altitudekeyZoomLevel: 15,
-				x: 2049,
-				y: 4096,
+				x: 2048,
+				y: 4097,
 				z: 1,
 			},
 			{
 				quadkeyZoomLevel: 15,
 				altitudekeyZoomLevel: 15,
-				x: 2048,
-				y: 4097,
+				x: 2049,
+				y: 4096,
 				z: 0,
 			},
 			{
 				quadkeyZoomLevel: 15,
 				altitudekeyZoomLevel: 15,
-				x: 2048,
-				y: 4097,
+				x: 2049,
+				y: 4096,
 				z: 1,
 			},
 			{
@@ -522,8 +526,11 @@ func testTileXYZBoxAddZoomLevel(
 	}
 
 	theError = tileXYZBox.AddZoomLevel(deltaQuadkeyZoomLevel, deltaAltitudekeyZoomLevel)
-	if !reflect.DeepEqual(theError, expectedError) {
-		t.Errorf("error - 期待値：%v, 取得値：%v", expectedError, theError)
+	if theError != nil {
+		if theError == expectedError {
+			return
+		}
+		t.Fatalf("error - 期待値：%v, 取得値：%v", expectedError, theError)
 	}
 
 	i := 0

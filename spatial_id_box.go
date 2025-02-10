@@ -8,7 +8,6 @@ import (
 	"github.com/go-gl/mathgl/mgl64"
 	closest "github.com/trajectoryjp/closest_go"
 	"github.com/trajectoryjp/geodesy_go/coordinates"
-	"github.com/trajectoryjp/spatial_id_go/v4/common/errors"
 )
 
 type SpatialIDBox struct {
@@ -35,11 +34,11 @@ func NewSpatialIDBox(min SpatialID, max SpatialID) (*SpatialIDBox, error) {
 	}
 
 	if min.GetF() > max.GetF() {
-		return nil, errors.NewSpatialIdError(errors.InputValueErrorCode, "")
+		return nil, NewSpatialIdError(InputValueErrorCode, "")
 	}
 	// Pass x
 	if min.GetY() > max.GetY() {
-		return nil, errors.NewSpatialIdError(errors.InputValueErrorCode, "")
+		return nil, NewSpatialIdError(InputValueErrorCode, "")
 	}
 
 	return &SpatialIDBox{

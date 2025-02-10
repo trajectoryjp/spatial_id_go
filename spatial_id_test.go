@@ -225,7 +225,7 @@ func testNewSpatialIDFromString(
 	}
 	if !reflect.DeepEqual(error, expectedError) {
 		// 戻り値のエラーインスタンスが期待値と異なる場合Errorをログに出力
-		t.Errorf("error - 期待値：%s, 取得値：%s\n", expectedError.Error, error.Error())
+		t.Errorf("error - 期待値：%s, 取得値：%s\n", expectedError.Error(), error.Error())
 	}
 }
 
