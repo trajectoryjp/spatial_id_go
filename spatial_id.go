@@ -2,7 +2,6 @@ package spatialID
 
 import (
 	"math"
-	"slices"
 	"strconv"
 	"strings"
 
@@ -100,7 +99,7 @@ func MergeSpatialIDs (spatialIDs []*SpatialID) []*SpatialID {
 	return mergedSpatialIDs
 }
 
-func CompareSpatialIDs (a, b *SpatialID) int {
+func CompareSpatialIDs(a, b *SpatialID) int {
 	if a.GetZ() < b.GetZ() {
 		return -1
 	} else if a.GetZ() > b.GetZ() {
@@ -130,10 +129,10 @@ func CompareSpatialIDs (a, b *SpatialID) int {
 
 // SpatialID 空間IDクラス
 type SpatialID struct {
-	z int8 // 精度
-	f                   int64 // 高さID
-	x                   int64 // 経度ID
-	y                   int64 // 緯度ID
+	z int8  // 精度
+	f int64 // 高さID
+	x int64 // 経度ID
+	y int64 // 緯度ID
 }
 
 func NewSpatialIDFromString(string string) (*SpatialID, error) {
@@ -167,7 +166,7 @@ func NewSpatialIDFromGeodetic(geodetic coordinates.Geodetic, z int8) (*SpatialID
 	max := float64(int(1) << z)
 
 	// 経度方向のインデックスの計算
-	x := math.Floor(max * math.Mod(*geodetic.Longitude() + 180.0, 360.0))
+	x := math.Floor(max * math.Mod(*geodetic.Longitude()+180.0, 360.0))
 
 	radianLatitude := mathematics.RadianPerDegree * *geodetic.Latitude()
 
@@ -205,7 +204,7 @@ func NewSpatialID(
 func (id *SpatialID) SetX(x int64) {
 	limit := int64(1 << id.GetZ())
 
-	id.x = x%limit
+	id.x = x % limit
 	if id.x < 0 {
 		id.x += limit
 	}
@@ -257,34 +256,61 @@ func (id SpatialID) GetY() int64 {
 
 func (id SpatialID) String() string {
 	return strconv.FormatInt(int64(id.GetZ()), 10) + delimiter +
-	strconv.FormatInt(id.GetF(), 10) + delimiter +
-	strconv.FormatInt(id.GetX(), 10) + delimiter +
-	strconv.FormatInt(id.GetY(), 10)
+		strconv.FormatInt(id.GetF(), 10) + delimiter +
+		strconv.FormatInt(id.GetX(), 10) + delimiter +
+		strconv.FormatInt(id.GetY(), 10)
 }
 
 func (id SpatialID) NewParent(number int8) (*SpatialID, error) {
 	return NewSpatialID(
 		id.GetZ()-number,
-		id.GetF() >> number,
-		id.GetX() >> number,
-		id.GetY() >> number,
+		id.GetF()>>number,
+		id.GetX()>>number,
+		id.GetY()>>number,
 	)
 }
 
 func (id SpatialID) NewMinChild(number int8) (*SpatialID, error) {
 	return NewSpatialID(
 		id.GetZ()+number,
-		id.GetF() << number,
-		id.GetX() << number,
-		id.GetY() << number,
+		id.GetF()<<number,
+		id.GetX()<<number,
+		id.GetY()<<number,
 	)
 }
 
 func (id SpatialID) NewMaxChild(number int8) (*SpatialID, error) {
 	return NewSpatialID(
 		id.GetZ()+number,
-		(id.GetF() + 1) << number - 1,
-		(id.GetX() + 1) << number - 1,
-		(id.GetY() + 1) << number - 1,
+		(id.GetF()+1)<<number-1,
+		(id.GetX()+1)<<number-1,
+		(id.GetY()+1)<<number-1,
 	)
+}
+
+func (id SpatialID) GetZoomedDownTo(afterZ int8) (*SpatialID, error) {
+	return id.NewParent(id.z - afterZ)
+}
+
+func (id *SpatialID) Overlaps(targetId *SpatialID) bool {
+	// zは0以上であることが保証されているため、エラーハンドリングしない
+	if id.GetZ() < targetId.GetZ() {
+		targetId, _ = targetId.GetZoomedDownTo(id.GetZ())
+	} else if id.GetZ() > targetId.GetZ() {
+		id, _ = id.GetZoomedDownTo(targetId.GetZ())
+	}
+	return *id == *targetId
+}
+
+type SpatialIDs []*SpatialID
+
+func (ids SpatialIDs) Overlaps(targetIDs SpatialIDs) bool {
+	for _, id := range ids {
+		for _, targetId := range targetIDs {
+			if id.Overlaps(targetId) {
+				return true
+			}
+		}
+	}
+	return false
 }
