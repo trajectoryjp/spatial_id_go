@@ -288,29 +288,13 @@ func (id SpatialID) NewMaxChild(number int8) (*SpatialID, error) {
 	)
 }
 
-func (id SpatialID) GetZoomedDownTo(afterZ int8) (*SpatialID, error) {
-	return id.NewParent(id.z - afterZ)
-}
-
-func (id *SpatialID) Overlaps(targetId *SpatialID) bool {
-	// zは0以上であることが保証されているため、エラーハンドリングしない
-	if id.GetZ() < targetId.GetZ() {
-		targetId, _ = targetId.GetZoomedDownTo(id.GetZ())
-	} else if id.GetZ() > targetId.GetZ() {
-		id, _ = id.GetZoomedDownTo(targetId.GetZ())
+func (id SpatialID) Overlaps(another SpatialID) bool {
+	deltaZ := id.GetZ() - another.GetZ()
+	if deltaZ < 0 {
+		another = *another.NewParent(-deltaZ)
+	} else if deltaZ > 0 {
+		id = *id.NewParent(deltaZ)
 	}
-	return *id == *targetId
-}
 
-type SpatialIDs []*SpatialID
-
-func (ids SpatialIDs) Overlaps(targetIDs SpatialIDs) bool {
-	for _, id := range ids {
-		for _, targetId := range targetIDs {
-			if id.Overlaps(targetId) {
-				return true
-			}
-		}
-	}
-	return false
+	return id == another
 }
