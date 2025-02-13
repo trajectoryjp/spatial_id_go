@@ -188,13 +188,6 @@ func testNewSpatialIDBoxFromTileXYZBox(
 	tileXYZZBaseOffset int64,
 	spatialIDZoomLevel int8,
 	) {
-	tileXYZ, theError := NewTileXYZ(quadkeyZoomLevel, altitudekeyZoomLevel, x, y, z)
-
-	tileXYZBox, theError := NewTileXYZBox(*tileXYZ, *tileXYZ)
-	if theError != nil {
-		t.Fatal(theError)
-	}
-
 	oldZBaseExponent := TileXYZZBaseExponent
 	oldZBaseOffset := TileXYZZBaseOffset
 	defer func() {
@@ -204,18 +197,36 @@ func testNewSpatialIDBoxFromTileXYZBox(
 	TileXYZZBaseExponent = tileXYZZBaseExponent
 	TileXYZZBaseOffset = tileXYZZBaseOffset
 
+	tileXYZ, theError := NewTileXYZ(quadkeyZoomLevel, altitudekeyZoomLevel, x, y, z)
+	if theError != nil {
+		t.Fatal(theError)
+	}
+
+	tileXYZBox, theError := NewTileXYZBox(*tileXYZ, *tileXYZ)
+	if theError != nil {
+		t.Fatal(theError)
+	}
+
 	spatialIDBox, theError := NewSpatialIDBoxFromTileXYZBox(*tileXYZBox)
 	if theError != nil {
 		t.Fatal(theError)
 	}
-	spatialIDBox.AddZ(spatialIDZoomLevel-spatialIDBox.GetMin().GetZ())
+	
+	spatialIDBox.AddZ(spatialIDZoomLevel - spatialIDBox.GetMin().GetZ())
 
 	i := 0
 	for id := range spatialIDBox.AllXYF() {
-		if id.String() != expected[i] {
-			t.Fatal(id)
+		if i >= len(expected) {
+			t.Errorf("TileXYZ - 期待要素数：%v, 取得要素数：%v", len(expected), i)
+			break
+		}
+		if !reflect.DeepEqual(id.String(), expected[i]) {
+			t.Errorf("TileXYZ - 期待値：%v, 取得値：%v", expected[i], id.String())
 		}
 		i += 1
+	}
+	if i < len(expected) {
+		t.Errorf("TileXYZ - 期待要素数：%v, 取得要素数：%v", len(expected), i)
 	}
 }
 
