@@ -4,28 +4,12 @@ import (
 	radixtree "github.com/trajectoryjp/multidimensional-radix-tree/src/tree"
 )
 
-type SpatialIDDetector interface {
-	IsOverlap(ids SpatialIDs) bool
-}
-
-type SpatialIDGreedyDetector struct {
-	ids SpatialIDs
-}
-
-func NewSpatialIDGreedyDetector(ids SpatialIDs) SpatialIDDetector {
-	return &SpatialIDGreedyDetector{ids}
-}
-
-func (detector *SpatialIDGreedyDetector) IsOverlap(targetIDs SpatialIDs) bool {
-	return detector.ids.Overlaps(targetIDs)
-}
-
-type SpatialIDTreeDetector struct {
+type SpatialIDTree struct {
 	positiveTree radixtree.TreeInterface
 	negativeTree radixtree.TreeInterface
 }
 
-func NewSpatialIDTreeDetector(ids SpatialIDs) SpatialIDDetector {
+func NewSpatialIDTree(ids []SpatialID) *SpatialIDTree {
 	var positiveTree radixtree.TreeInterface
 	var negativeTree radixtree.TreeInterface
 	for _, id := range ids {
@@ -43,11 +27,11 @@ func NewSpatialIDTreeDetector(ids SpatialIDs) SpatialIDDetector {
 			negativeTree.Append(treeIndex, radixtree.ZoomSetLevel(id.GetZ()), struct{}{})
 		}
 	}
-	return &SpatialIDTreeDetector{positiveTree, negativeTree}
+	return &SpatialIDTree{positiveTree, negativeTree}
 }
 
-func (tree *SpatialIDTreeDetector) IsOverlap(targetIds SpatialIDs) bool {
-	for _, id := range targetIds {
+func (tree *SpatialIDTree) Overlaps(ids []SpatialID) bool {
+	for _, id := range ids {
 		var isOverlap bool
 		if id.GetF() >= 0 {
 			if tree.positiveTree != nil {
