@@ -9,7 +9,7 @@ import (
 func TestConvertTileXYZsToSpatialIDs_01(t *testing.T) {
 	testNewSpatialIDBoxFromTileXYZBox(
 		t,
-		[]string{"23/-2/85263/65423"},
+		[]string{"23/-8/85263/65423"}, // 元は23/-2/85263/65423
 
 		23, 23, 85263, 65423, 0,
 
