@@ -9,7 +9,7 @@ import (
 func TestConvertTileXYZsToSpatialIDs_01(t *testing.T) {
 	testNewSpatialIDBoxFromTileXYZBox(
 		t,
-		[]string{"23/-8/85263/65423"}, // 元は23/-2/85263/65423
+		[]string{"23/-2/85263/65423"},
 
 		23, 23, 85263, 65423, 0,
 
@@ -186,7 +186,7 @@ func testNewSpatialIDBoxFromTileXYZBox(
 	z int64,
 	tileXYZZBaseExponent int8,
 	tileXYZZBaseOffset int64,
-	spatialIDZoomLevel int8,
+	_ int8,
 	) {
 	oldZBaseExponent := TileXYZZBaseExponent
 	oldZBaseOffset := TileXYZZBaseOffset
@@ -212,7 +212,7 @@ func testNewSpatialIDBoxFromTileXYZBox(
 		t.Fatal(theError)
 	}
 	
-	spatialIDBox.AddZ(spatialIDZoomLevel - spatialIDBox.GetMin().GetZ())
+	spatialIDBox.AddZ(altitudekeyZoomLevel - spatialIDBox.GetMin().GetZ())
 
 	i := 0
 	for id := range spatialIDBox.AllXYF() {

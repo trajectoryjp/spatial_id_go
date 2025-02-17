@@ -274,8 +274,9 @@ func (box SpatialIDBox) AllXYF() iter.Seq[SpatialID] {
 }
 
 func NewSpatialIDBoxFromTileXYZBox(tileXYZBox TileXYZBox) (*SpatialIDBox, error) {
+	deltaQuad := tileXYZBox.GetMin().GetQuadkeyZoomLevel() - SpatialIDZBaseExponent
 	deltaAltitude := tileXYZBox.GetMin().GetAltitudekeyZoomLevel() - TileXYZZBaseExponent // TODO: Fix for positive
-	tileXYZBox.AddZoomLevel(0, -deltaAltitude)
+	tileXYZBox.AddZoomLevel(-deltaQuad, -deltaAltitude)
 
 	baseMinID, error := NewSpatialID(
 		tileXYZBox.GetMin().GetQuadkeyZoomLevel(),
@@ -302,7 +303,12 @@ func NewSpatialIDBoxFromTileXYZBox(tileXYZBox TileXYZBox) (*SpatialIDBox, error)
 		return nil, error
 	}
 
-	error = box.AddZ(deltaAltitude)
+	maxDelta := deltaQuad
+	if deltaAltitude > maxDelta {
+		maxDelta = deltaAltitude
+	}
+
+	error = box.AddZ(maxDelta)
 	if error != nil {
 		return nil, error
 	}
