@@ -2,7 +2,6 @@ package spatialID
 
 import (
 	"math"
-	"slices"
 	"strconv"
 	"strings"
 
@@ -22,85 +21,85 @@ const delimiter = "/"
 
 var SpatialIDZoomSetTable = tree.Create3DTable()
 
-func MergeSpatialIDs (spatialIDs []*SpatialID) []*SpatialID {
-	type element struct {
-		id SpatialID
-		isExprored bool
-	}
-	compare := func(a, b *element) int {
-		return CompareSpatialIDs(&a.id, &b.id)
-	}
+// func MergeSpatialIDs (spatialIDs []*SpatialID) []*SpatialID {
+// 	type element struct {
+// 		id SpatialID
+// 		isExprored bool
+// 	}
+// 	compare := func(a, b *element) int {
+// 		return CompareSpatialIDs(&a.id, &b.id)
+// 	}
 
-	zooms := [MaxZ + 1][]*element{}
-	for _, spatialID := range spatialIDs {
-		zooms[spatialID.GetZ()] = append(zooms[spatialID.GetZ()], &element{
-			id: *spatialID,
-			isExprored: false,
-		})
-	}
+// 	zooms := [MaxZ + 1][]*element{}
+// 	for _, spatialID := range spatialIDs {
+// 		zooms[spatialID.GetZ()] = append(zooms[spatialID.GetZ()], &element{
+// 			id: *spatialID,
+// 			isExprored: false,
+// 		})
+// 	}
 
-	for _, zoom := range zooms {
-		slices.SortFunc(zoom, compare)
-	}
+// 	for _, zoom := range zooms {
+// 		slices.SortFunc(zoom, compare)
+// 	}
 
-	for i := MaxZ; i >= 0; i -= 1 {
-		zoom := zooms[i]
-		for j := len(zoom) - 1; j >= 0; j -= 1 {
-			// {0, 0, 0}
-			element0 := zoom[j]
-			if element0.isExprored {
-				continue
-			}
-			element0.isExprored = true
+// 	for i := MaxZ; i >= 0; i -= 1 {
+// 		zoom := zooms[i]
+// 		for j := len(zoom) - 1; j >= 0; j -= 1 {
+// 			// {0, 0, 0}
+// 			element0 := zoom[j]
+// 			if element0.isExprored {
+// 				continue
+// 			}
+// 			element0.isExprored = true
 
-			if element0.id.GetF() % 2 == 0 {
-				continue
-			}
+// 			if element0.id.GetF() % 2 == 0 {
+// 				continue
+// 			}
 
-			// {1, 0, 0}
-			j -= 1
-			element1 := zoom[j]
-			if element1.isExprored {
-				continue
-			}
-			element1.isExprored = true
+// 			// {1, 0, 0}
+// 			j -= 1
+// 			element1 := zoom[j]
+// 			if element1.isExprored {
+// 				continue
+// 			}
+// 			element1.isExprored = true
 
-			for element1.id.GetF() != element0.id.GetF() {
-				j -= 1
-				element1 = zoom[j]
-				if element1.isExprored {
-					continue
-				}
-				element1.isExprored = true
-			}
-			if element1.id.GetF() != element0.id.GetF() + 1 {
-				continue
-			}
-			if element1.id.GetX() != element0.id.GetX() {
-				continue
-			}
-			if element1.id.GetY() != element0.id.GetY() {
-				continue
-			}
+// 			for element1.id.GetF() != element0.id.GetF() {
+// 				j -= 1
+// 				element1 = zoom[j]
+// 				if element1.isExprored {
+// 					continue
+// 				}
+// 				element1.isExprored = true
+// 			}
+// 			if element1.id.GetF() != element0.id.GetF() + 1 {
+// 				continue
+// 			}
+// 			if element1.id.GetX() != element0.id.GetX() {
+// 				continue
+// 			}
+// 			if element1.id.GetY() != element0.id.GetY() {
+// 				continue
+// 			}
 
-			// {0, 1, 0}
-			slices.BinarySearchFunc(zoom, &element{
-				id
-			})
-		}
+// 			// {0, 1, 0}
+// 			slices.BinarySearchFunc(zoom, &element{
+// 				id
+// 			})
+// 		}
 
-	}
+// 	}
 
-	// 空間IDのマージ
-	mergedSpatialIDs := []*SpatialID{}
-	for _, spatialID := range spatialIDs {
-		mergedSpatialIDs = append(mergedSpatialIDs, spatialID)
-	}
+// 	// 空間IDのマージ
+// 	mergedSpatialIDs := []*SpatialID{}
+// 	for _, spatialID := range spatialIDs {
+// 		mergedSpatialIDs = append(mergedSpatialIDs, spatialID)
+// 	}
 
-	return mergedSpatialIDs
-}
+// 	return mergedSpatialIDs
+// }
 
-func CompareSpatialIDs (a, b *SpatialID) int {
+func CompareSpatialIDs(a, b *SpatialID) int {
 	if a.GetZ() < b.GetZ() {
 		return -1
 	} else if a.GetZ() > b.GetZ() {
@@ -130,10 +129,10 @@ func CompareSpatialIDs (a, b *SpatialID) int {
 
 // SpatialID 空間IDクラス
 type SpatialID struct {
-	z int8 // 精度
-	f                   int64 // 高さID
-	x                   int64 // 経度ID
-	y                   int64 // 緯度ID
+	z int8  // 精度
+	f int64 // 高さID
+	x int64 // 経度ID
+	y int64 // 緯度ID
 }
 
 func NewSpatialIDFromString(string string) (*SpatialID, error) {
@@ -167,7 +166,7 @@ func NewSpatialIDFromGeodetic(geodetic coordinates.Geodetic, z int8) (*SpatialID
 	max := float64(int(1) << z)
 
 	// 経度方向のインデックスの計算
-	x := math.Floor(max * math.Mod(*geodetic.Longitude() + 180.0, 360.0))
+	x := math.Floor(max * math.Mod(*geodetic.Longitude()+180.0, 360.0))
 
 	radianLatitude := mathematics.RadianPerDegree * *geodetic.Latitude()
 
@@ -205,7 +204,7 @@ func NewSpatialID(
 func (id *SpatialID) SetX(x int64) {
 	limit := int64(1 << id.GetZ())
 
-	id.x = x%limit
+	id.x = x % limit
 	if id.x < 0 {
 		id.x += limit
 	}
@@ -257,34 +256,47 @@ func (id SpatialID) GetY() int64 {
 
 func (id SpatialID) String() string {
 	return strconv.FormatInt(int64(id.GetZ()), 10) + delimiter +
-	strconv.FormatInt(id.GetF(), 10) + delimiter +
-	strconv.FormatInt(id.GetX(), 10) + delimiter +
-	strconv.FormatInt(id.GetY(), 10)
+		strconv.FormatInt(id.GetF(), 10) + delimiter +
+		strconv.FormatInt(id.GetX(), 10) + delimiter +
+		strconv.FormatInt(id.GetY(), 10)
 }
 
 func (id SpatialID) NewParent(number int8) (*SpatialID, error) {
 	return NewSpatialID(
 		id.GetZ()-number,
-		id.GetF() >> number,
-		id.GetX() >> number,
-		id.GetY() >> number,
+		id.GetF()>>number,
+		id.GetX()>>number,
+		id.GetY()>>number,
 	)
 }
 
 func (id SpatialID) NewMinChild(number int8) (*SpatialID, error) {
 	return NewSpatialID(
 		id.GetZ()+number,
-		id.GetF() << number,
-		id.GetX() << number,
-		id.GetY() << number,
+		id.GetF()<<number,
+		id.GetX()<<number,
+		id.GetY()<<number,
 	)
 }
 
 func (id SpatialID) NewMaxChild(number int8) (*SpatialID, error) {
 	return NewSpatialID(
 		id.GetZ()+number,
-		(id.GetF() + 1) << number - 1,
-		(id.GetX() + 1) << number - 1,
-		(id.GetY() + 1) << number - 1,
+		(id.GetF()+1)<<number-1,
+		(id.GetX()+1)<<number-1,
+		(id.GetY()+1)<<number-1,
 	)
+}
+
+func (id SpatialID) Overlaps(another SpatialID) bool {
+	deltaZ := id.GetZ() - another.GetZ()
+	if deltaZ < 0 {
+		anotherParent, _ := another.NewParent(-deltaZ)
+		another = *anotherParent
+	} else if deltaZ > 0 {
+		idParent, _ := id.NewParent(deltaZ)
+		id = *idParent
+	}
+
+	return id == another
 }
