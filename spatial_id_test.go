@@ -58,3 +58,113 @@ func TestSpatialIDOverlaps(t *testing.T) {
 		testCase.id, testCase.another = testCase.another, testCase.id
 	}
 }
+
+func TestSummarizeSpatialIDs(t *testing.T) {
+	testCases := []struct {
+		ids            []*SpatialID
+		expectedResult []*SpatialID
+	}{
+		{
+			ids: []*SpatialID{
+				{23, 1, 2, 4},
+			},
+			expectedResult: []*SpatialID{
+				{23, 1, 2, 4},
+			},
+		},
+		{
+			ids: []*SpatialID{
+				{23, 0, 0, 0},
+				{23, 0, 0, 0},
+				{24, 1, 1, 1},
+			},
+			expectedResult: []*SpatialID{
+				{23, 0, 0, 0},
+			},
+		},
+		{
+			ids: []*SpatialID{
+				{23, 0, 0, 0},
+				{23, 0, 0, 1},
+				{23, 0, 1, 0},
+				{23, 0, 1, 1},
+				{23, 1, 0, 0},
+				{23, 1, 0, 1},
+				{23, 1, 1, 0},
+			},
+			expectedResult: []*SpatialID{
+				{23, 0, 0, 0},
+				{23, 0, 0, 1},
+				{23, 0, 1, 0},
+				{23, 0, 1, 1},
+				{23, 1, 0, 0},
+				{23, 1, 0, 1},
+				{23, 1, 1, 0},
+			},
+		},
+		{
+			ids: []*SpatialID{
+				{23, 0, 0, 0},
+				{23, 0, 0, 1},
+				{23, 0, 1, 0},
+				{23, 0, 1, 1},
+				{23, 1, 0, 0},
+				{23, 1, 0, 1},
+				{23, 1, 1, 0},
+				{23, 1, 1, 1},
+				{23, 0, 1, 2},
+			},
+			expectedResult: []*SpatialID{
+				{22, 0, 0, 0},
+				{23, 0, 1, 2},
+			},
+		},
+		{
+			ids: []*SpatialID{
+				{23, -1, 0, 0},
+				{23, -1, 0, 1},
+				{23, -1, 1, 0},
+				{23, -1, 1, 1},
+				{23, -2, 0, 0},
+				{23, -2, 0, 1},
+				{23, -2, 1, 0},
+				{23, -2, 1, 1},
+			},
+			expectedResult: []*SpatialID{
+				{22, -1, 0, 0},
+			},
+		},
+		{
+			ids: []*SpatialID{
+				{23, 0, 0, 0},
+				{24, 0, 0, 2},
+				{24, 0, 0, 3},
+				{24, 0, 1, 2},
+				{24, 0, 1, 3},
+				{24, 1, 0, 2},
+				{24, 1, 0, 3},
+				{24, 1, 1, 2},
+				{24, 1, 1, 3},
+				{23, 0, 1, 0},
+				{23, 0, 1, 1},
+				{23, 1, 0, 0},
+				{23, 1, 0, 1},
+				{23, 1, 1, 0},
+				{23, 1, 1, 1},
+			},
+			expectedResult: []*SpatialID{
+				{22, 0, 0, 0},
+			},
+		},
+	}
+
+	for testCaseIndex, testCase := range testCases {
+		actualResult := SummarizeSpatialIDs(testCase.ids)
+		assert.ElementsMatch(
+			t,
+			testCase.expectedResult,
+			actualResult,
+			fmt.Sprintf("testCaseIndex: %d", testCaseIndex),
+		)
+	}
+}
