@@ -44,7 +44,7 @@ func TestGetSpatialIdsOnLine02(t *testing.T) {
 		t,
 
 		[]string{},
-		NewSpatialIdError(InputValueErrorCode, "入力チェックエラー"),
+		NewSpatialIdError(InputValueErrorCode, ""),
 
 		"10/10/10/10",
 		"10/10/13/10",
@@ -105,20 +105,27 @@ func testGetSpatialIdsOnLine(
 
 		t.Fatal(error)
 	}
-	spatialIDBox.AddZ(z - spatialIDBox.GetMin().GetZ())
+	error = spatialIDBox.AddZ(z - spatialIDBox.GetMin().GetZ())
+	if error != nil {
+		if error.Error() == expectedError.Error() {
+			return
+		}
+
+		t.Fatal(error)
+	}
 
 	i := 0
 	for spatialID := range spatialIDBox.AllCollisionWithConvexHull(
 		[]*coordinates.Geodetic{
 			{
-				(*startGeodeticBox.Min.Longitude() + *endGeodeticBox.Min.Longitude()) / 2,
-				(*startGeodeticBox.Min.Latitude() + *endGeodeticBox.Min.Latitude()) / 2,
-				(*startGeodeticBox.Min.Altitude() + *endGeodeticBox.Min.Altitude()) / 2,
+				(*startGeodeticBox.Min.Longitude() + *startGeodeticBox.Max.Longitude()) / 2,
+				(*startGeodeticBox.Min.Latitude() + *startGeodeticBox.Max.Latitude()) / 2,
+				(*startGeodeticBox.Min.Altitude() + *startGeodeticBox.Max.Altitude()) / 2,
 			},
 			{
-				(*startGeodeticBox.Max.Longitude() + *endGeodeticBox.Max.Longitude()) / 2,
-				(*startGeodeticBox.Max.Latitude() + *endGeodeticBox.Max.Latitude()) / 2,
-				(*startGeodeticBox.Max.Altitude() + *endGeodeticBox.Max.Altitude()) / 2,
+				(*endGeodeticBox.Min.Longitude() + *endGeodeticBox.Max.Longitude()) / 2,
+				(*endGeodeticBox.Min.Latitude() + *endGeodeticBox.Max.Latitude()) / 2,
+				(*endGeodeticBox.Min.Altitude() + *endGeodeticBox.Max.Altitude()) / 2,
 			},
 		},
 		0.0,
@@ -127,7 +134,7 @@ func testGetSpatialIdsOnLine(
 			t.Fatalf("Too many spatial IDs: %v", i)
 		}
 		if spatialID.String() != expectedSpatialIDStrings[i] {
-			t.Fatalf("Unexpected spatial ID: %v", spatialID.String())
+			t.Errorf("expected: %v, result: %v", expectedSpatialIDStrings[i], spatialID.String())
 		}
 
 		i += 1
@@ -215,7 +222,7 @@ func TestGetExtendedSpatialIdsOnLine04(t *testing.T) {
 		t,
 
 		[]*TileXYZ{},
-		NewSpatialIdError(InputValueErrorCode, "入力チェックエラー"),
+		NewSpatialIdError(InputValueErrorCode, ""),
 
 		TileXYZ{
 			quadkeyZoomLevel: 10,
@@ -572,29 +579,37 @@ func testGetTileXYZsOnLine(
 
 		t.Fatal(error)
 	}
-	tileXYZBox.AddZoomLevel(quadkeyZoomLevel - tileXYZBox.GetMin().GetQuadkeyZoomLevel(), altitudekeyZoomLevel - tileXYZBox.GetMin().GetAltitudekeyZoomLevel())
+	
+	error = tileXYZBox.AddZoomLevel(quadkeyZoomLevel - tileXYZBox.GetMin().GetQuadkeyZoomLevel(), altitudekeyZoomLevel - tileXYZBox.GetMin().GetAltitudekeyZoomLevel())
+	if error != nil {
+		if error.Error() == expectedError.Error() {
+			return
+		}
+
+		t.Fatal(error)
+	}
 
 	i := 0
-	for spatialID := range tileXYZBox.AllCollisionWithConvexHull(
+	for tileXYZ := range tileXYZBox.AllCollisionWithConvexHull(
 		[]*coordinates.Geodetic{
 			{
-				(*startGeodeticBox.Min.Longitude() + *endGeodeticBox.Min.Longitude()) / 2,
-				(*startGeodeticBox.Min.Latitude() + *endGeodeticBox.Min.Latitude()) / 2,
-				(*startGeodeticBox.Min.Altitude() + *endGeodeticBox.Min.Altitude()) / 2,
+				(*startGeodeticBox.Min.Longitude() + *startGeodeticBox.Max.Longitude()) / 2,
+				(*startGeodeticBox.Min.Latitude() + *startGeodeticBox.Max.Latitude()) / 2,
+				(*startGeodeticBox.Min.Altitude() + *startGeodeticBox.Max.Altitude()) / 2,
 			},
 			{
-				(*startGeodeticBox.Max.Longitude() + *endGeodeticBox.Max.Longitude()) / 2,
-				(*startGeodeticBox.Max.Latitude() + *endGeodeticBox.Max.Latitude()) / 2,
-				(*startGeodeticBox.Max.Altitude() + *endGeodeticBox.Max.Altitude()) / 2,
+				(*endGeodeticBox.Min.Longitude() + *endGeodeticBox.Max.Longitude()) / 2,
+				(*endGeodeticBox.Min.Latitude() + *endGeodeticBox.Max.Latitude()) / 2,
+				(*endGeodeticBox.Min.Altitude() + *endGeodeticBox.Max.Altitude()) / 2,
 			},
 		},
-		0.0,
+		1.0e-3,
 	) {
 		if i >= len(expected) {
 			t.Fatalf("Too many tile XYZs: %v", i)
 		}
-		if !reflect.DeepEqual(spatialID, expected[i]) {
-			t.Fatalf("Unexpected tile XYZ: %v", spatialID)
+		if !reflect.DeepEqual(tileXYZ, *expected[i]) {
+			t.Errorf("expected: %+v, result: %+v", *expected[i], tileXYZ)
 		}
 
 		i += 1

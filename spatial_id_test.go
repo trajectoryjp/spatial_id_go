@@ -94,7 +94,7 @@ func TestResetExtendedSpatialID05(t *testing.T) {
 	testNewSpatialIDFromString(
 		t,
 		"35/232837/103222/0",
-		&SpatialID{35, 232837, 103222, 25},
+		&SpatialID{35, 232837, 103222, 0},
 		nil,
 	)
 }
@@ -188,7 +188,7 @@ func TestResetExtendedSpatialID10(t *testing.T) {
 	testNewSpatialIDFromString(
 		t,
 		"0/0/0/-1",
-		&SpatialID{0, 0, 0, -1},
+		&SpatialID{0, 0, 0, 0},
 		nil,
 	)
 }
@@ -214,7 +214,7 @@ func TestResetExtendedSpatialID11(t *testing.T) {
 func testNewSpatialIDFromString(
 	t *testing.T,
 	spatialIDString string,
-	expectedSpatialID *SpatialID,
+	expectedSpatialID *SpatialID, // TODO: 順番の整理
 	expectedError error,
 	) {
 	spatialID, error := NewSpatialIDFromString(spatialIDString)

@@ -49,12 +49,28 @@ func NewTileXYZBox(min TileXYZ, max TileXYZ) (*TileXYZBox, error) {
 }
 
 func NewTileXYZBoxFromGeodeticBox(geodeticBox GeodeticBox, quadkeyZoomLevel int8, altitudekeyZoomLevel int8) (*TileXYZBox, error) {
-	minTile, error := NewTileXYZFromGeodetic(geodeticBox.Min, quadkeyZoomLevel, altitudekeyZoomLevel)
+	minTile, error := NewTileXYZFromGeodetic(
+		coordinates.Geodetic{
+			*geodeticBox.Min.Longitude(),
+			*geodeticBox.Max.Latitude(),
+			*geodeticBox.Min.Altitude(),
+		},
+		quadkeyZoomLevel,
+		altitudekeyZoomLevel,
+	)
 	if error != nil {
 		return nil, error
 	}
 
-	maxTile, error := NewTileXYZFromGeodetic(geodeticBox.Max, quadkeyZoomLevel, altitudekeyZoomLevel)
+	maxTile, error := NewTileXYZFromGeodetic(
+		coordinates.Geodetic{
+			*geodeticBox.Max.Longitude(),
+			*geodeticBox.Min.Latitude(),
+			*geodeticBox.Max.Altitude(),
+		},
+		quadkeyZoomLevel,
+		altitudekeyZoomLevel,
+	)
 	if error != nil {
 		return nil, error
 	}
@@ -63,41 +79,89 @@ func NewTileXYZBoxFromGeodeticBox(geodeticBox GeodeticBox, quadkeyZoomLevel int8
 }
 
 func (box *TileXYZBox) AddZoomLevel(quadDelta, altitudeDelta int8) error {
-	if quadDelta < 0 && altitudeDelta < 0 {
-		newMin, error := box.min.NewParent(-quadDelta, -altitudeDelta)
-		if error != nil {
-			return error
+	if quadDelta <= 0 {
+		if altitudeDelta <= 0 {
+			newMin, error := box.min.NewParent(-quadDelta, -altitudeDelta)
+			if error != nil {
+				return error
+			}
+
+			box.min = *newMin
+
+			newMax, error := box.max.NewParent(-quadDelta, -altitudeDelta)
+			if error != nil {
+				return error
+			}
+
+			box.max = *newMax
+		} else {
+			newMin, error := box.min.NewParent(-quadDelta, 0)
+			if error != nil {
+				return error
+			}
+
+			newMin, error = newMin.NewMinChild(0, altitudeDelta)
+			if error != nil {
+				return error
+			}
+
+			box.min = *newMin
+
+			newMax, error := box.max.NewParent(-quadDelta, 0)
+			if error != nil {
+				return error
+			}
+
+			newMax, error = newMax.NewMaxChild(0, altitudeDelta)
+			if error != nil {
+				return error
+			}
+
+			box.max = *newMax
 		}
+	} else {
+		if altitudeDelta <= 0 {
+			newMin, error := box.min.NewMinChild(quadDelta, 0)
+			if error != nil {
+				return error
+			}
 
-		box.min = *newMin
+			newMin, error = newMin.NewParent(0, -altitudeDelta)
+			if error != nil {
+				return error
+			}
 
-		newMax, error := box.max.NewParent(-quadDelta, -altitudeDelta)
-		if error != nil {
-			return error
+			box.min = *newMin
+
+			newMax, error := box.max.NewMaxChild(quadDelta, 0)
+			if error != nil {
+				return error
+			}
+
+			newMax, error = newMax.NewParent(0, -altitudeDelta)
+			if error != nil {
+				return error
+			}
+
+			box.max = *newMax
+		} else {
+			newMin, error := box.min.NewMinChild(quadDelta, altitudeDelta)
+			if error != nil {
+				return error
+			}
+
+			box.min = *newMin
+
+			newMax, error := box.max.NewMaxChild(quadDelta, altitudeDelta)
+			if error != nil {
+				return error
+			}
+
+			box.max = *newMax
 		}
-
-		box.max = *newMax
-
-		return nil
-	} else if quadDelta >= 0 && altitudeDelta >= 0 {
-		newMin, error := box.min.NewMinChild(quadDelta, altitudeDelta)
-		if error != nil {
-			return error
-		}
-
-		box.min = *newMin
-
-		newMax, error := box.max.NewMaxChild(quadDelta, altitudeDelta)
-		if error != nil {
-			return error
-		}
-
-		box.max = *newMax
-
-		return nil
 	}
 
-	return NewSpatialIdError(InputValueErrorCode, "")
+	return nil
 }
 
 func (box TileXYZBox) GetMin() TileXYZ {
@@ -139,9 +203,9 @@ func (box TileXYZBox) AllCollisionWithConvexHull(convexHull []*coordinates.Geode
 	return iter.Seq[TileXYZ](func(yield func(tile TileXYZ) bool) {
 		current := box.GetMin()
 		for ; ; current.SetX(current.GetX() + 1) {
-		yLoop:
 			for current.SetY(box.GetMin().GetY()); ; current.SetY(current.GetY() + 1) {
 				bottom := current
+				top := current
 				oldDistance := math.Inf(1)
 				for bottom.SetZ(box.GetMin().GetZ()); ; bottom.SetZ(bottom.GetZ() + 1) {
 					tileXYZBox, _ := NewTileXYZBox(bottom, bottom)
@@ -153,18 +217,21 @@ func (box TileXYZBox) AllCollisionWithConvexHull(convexHull []*coordinates.Geode
 
 					measure.MeasureNonnegativeDistance()
 
-					geocentric0 := coordinates.GeocentricFromGeodetic(coordinates.Geodetic(measure.Points[0]))
-					geocentric1 := coordinates.GeocentricFromGeodetic(coordinates.Geodetic(measure.Points[1]))
-					distance := mgl64.Vec3(geocentric0).Sub(mgl64.Vec3(geocentric1)).Len() // TODO: Embed
+					distance := measure.Distance
+					if distance > 0.0 {
+						geocentric0 := coordinates.GeocentricFromGeodetic(coordinates.Geodetic(measure.Points[0]))
+						geocentric1 := coordinates.GeocentricFromGeodetic(coordinates.Geodetic(measure.Points[1]))
+						distance = mgl64.Vec3(geocentric0).Sub(mgl64.Vec3(geocentric1)).Len() // TODO: Embed
+					}
 
 					if distance > clearance {
 						if distance > oldDistance {
-							continue yLoop
+							goto yEnd
 						} else {
 							deltaAltitude := *geodeticBox.Max.Altitude() - *geodeticBox.Min.Altitude()
 							newZ := int64(distance/deltaAltitude) + bottom.GetZ()
 							if newZ >= tileXYZBox.GetMax().GetZ() {
-								continue yLoop
+								goto yEnd
 							}
 
 							bottom.SetZ(newZ)
@@ -175,7 +242,6 @@ func (box TileXYZBox) AllCollisionWithConvexHull(convexHull []*coordinates.Geode
 					break
 				}
 
-				top := current
 				oldDistance = math.Inf(1)
 				for top.SetZ(box.GetMax().GetZ()); ; top.SetZ(top.GetZ() - 1) {
 					tileXYZBox, _ := NewTileXYZBox(top, top)
@@ -187,18 +253,21 @@ func (box TileXYZBox) AllCollisionWithConvexHull(convexHull []*coordinates.Geode
 
 					measure.MeasureNonnegativeDistance()
 
-					geocentric0 := coordinates.GeocentricFromGeodetic(coordinates.Geodetic(measure.Points[0]))
-					geocentric1 := coordinates.GeocentricFromGeodetic(coordinates.Geodetic(measure.Points[1]))
-					distance := mgl64.Vec3(geocentric0).Sub(mgl64.Vec3(geocentric1)).Len() // TODO: Embed
-
+					distance := measure.Distance
+					if measure.Distance > 0.0 {
+						geocentric0 := coordinates.GeocentricFromGeodetic(coordinates.Geodetic(measure.Points[0]))
+						geocentric1 := coordinates.GeocentricFromGeodetic(coordinates.Geodetic(measure.Points[1]))
+						distance = mgl64.Vec3(geocentric0).Sub(mgl64.Vec3(geocentric1)).Len() // TODO: Embed
+					}
+					
 					if distance > clearance {
 						if distance > oldDistance {
-							continue yLoop
+							goto yEnd
 						} else {
 							deltaAltitude := *geodeticBox.Max.Altitude() - *geodeticBox.Min.Altitude()
 							newZ := -int64(distance/deltaAltitude) + top.GetZ()
 							if newZ <= tileXYZBox.GetMin().GetZ() {
-								continue yLoop
+								goto yEnd
 							}
 
 							top.SetZ(newZ)
@@ -215,6 +284,7 @@ func (box TileXYZBox) AllCollisionWithConvexHull(convexHull []*coordinates.Geode
 					}
 				}
 
+			yEnd:
 				if current.GetY() == box.GetMax().GetY() {
 					break
 				}
@@ -256,16 +326,23 @@ func (box TileXYZBox) AllXYZ() iter.Seq[TileXYZ] {
 }
 
 func NewTileXYZBoxFromSpatialIDBox(spatialIDBox SpatialIDBox) (*TileXYZBox, error) {
-	deltaQuad := spatialIDBox.GetMin().GetZ() - SpatialIDZBaseExponent
-	deltaAltitude := spatialIDBox.GetMax().GetZ() - TileXYZZBaseExponent
-	spatialIDBox.AddZ(-deltaQuad)
+	deltaBaseExponent := TileXYZZBaseExponent - SpatialIDZBaseExponent
+	deltaBaseZ := MaxZ - SpatialIDZBaseExponent
+	deltaOffset := (TileXYZZBaseOffset - SpatialIDZBaseOffset) << deltaBaseZ
+
+	deltaZ := spatialIDBox.GetMin().GetZ() - MaxZ
+
+	error := spatialIDBox.AddZ(-deltaZ)
+	if error != nil {
+		return nil, error
+	}
 
 	baseMinTile, error := NewTileXYZ(
 		spatialIDBox.GetMin().GetZ(),
-		spatialIDBox.GetMin().GetZ(),
+		spatialIDBox.GetMin().GetZ()+deltaBaseExponent,
 		spatialIDBox.GetMin().GetX(),
 		spatialIDBox.GetMin().GetY(),
-		spatialIDBox.GetMin().GetF()-SpatialIDZBaseOffset+TileXYZZBaseOffset,
+		spatialIDBox.GetMin().GetF()+deltaOffset,
 	)
 	if error != nil {
 		return nil, error
@@ -273,10 +350,10 @@ func NewTileXYZBoxFromSpatialIDBox(spatialIDBox SpatialIDBox) (*TileXYZBox, erro
 
 	baseMaxTile, error := NewTileXYZ(
 		spatialIDBox.GetMax().GetZ(),
-		spatialIDBox.GetMin().GetZ(),
+		spatialIDBox.GetMax().GetZ()+deltaBaseExponent,
 		spatialIDBox.GetMax().GetX(),
 		spatialIDBox.GetMax().GetY(),
-		spatialIDBox.GetMax().GetF()-SpatialIDZBaseOffset+TileXYZZBaseOffset,
+		spatialIDBox.GetMax().GetF()+deltaOffset,
 	)
 	if error != nil {
 		return nil, error
@@ -287,7 +364,7 @@ func NewTileXYZBoxFromSpatialIDBox(spatialIDBox SpatialIDBox) (*TileXYZBox, erro
 		return nil, error
 	}
 
-	error = box.AddZoomLevel(deltaQuad, deltaAltitude)
+	error = box.AddZoomLevel(deltaZ, deltaZ)
 	if error != nil {
 		return nil, error
 	}

@@ -22,20 +22,20 @@ type TileXYZ struct {
 }
 
 func NewTileXYZFromGeodetic(geodetic coordinates.Geodetic, quadkeyZoomLevel int8, altitudeZoomLevel int8) (*TileXYZ, error) {
-	quadMax := float64(int(1) << quadkeyZoomLevel)
+	quadMax := math.Pow(2.0, float64(quadkeyZoomLevel))
 
 	// 経度方向のインデックスの計算
-	x := int64(math.Floor(quadMax * math.Mod(*geodetic.Longitude()+180.0, 360.0)))
+	x := int64(math.Floor(quadMax * math.Mod(*geodetic.Longitude()+180.0, 360.0)/360.0))  // TODO: Delete Floor
 
 	radianLatitude := mathematics.RadianPerDegree * *geodetic.Latitude()
 
 	y := int64(math.Floor(quadMax * (1.0 - math.Log(math.Tan(radianLatitude)+(1.0/math.Cos(radianLatitude)))/math.Pi) / 2.0))
 
 	// 高さ全体の精度あたりの垂直方向の精度
-	altitudeResolution := float64(CalculateArithmeticShift(1, int64(TileXYZZBaseExponent-altitudeZoomLevel)))
+	altitudeResolution := math.Pow(2.0, float64(TileXYZZBaseExponent-altitudeZoomLevel))
 
 	// 垂直方向の位置を計算する
-	z := int64(math.Floor(*geodetic.Altitude()/altitudeResolution)) + TileXYZZBaseOffset
+	z := int64(math.Floor((*geodetic.Altitude()+float64(TileXYZZBaseOffset))/altitudeResolution))
 
 	return NewTileXYZ(quadkeyZoomLevel, altitudeZoomLevel, x, y, z)
 }

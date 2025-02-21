@@ -67,18 +67,18 @@ func NewGeodeticBoxFromConvexHull(convexHull []*coordinates.Geodetic, clearance 
 func NewGeodeticBoxFromSpatialIDBox(spatialIDBox SpatialIDBox) *GeodeticBox {
 	box := &GeodeticBox{}
 
-	max := float64(int(1) << spatialIDBox.GetMin().GetZ())
+	max := math.Pow(2.0, float64(spatialIDBox.GetMin().GetZ()))
 
 	*box.Min.Longitude() = 360.0*float64(spatialIDBox.GetMin().GetX())/max - 180.0
 	*box.Max.Longitude() = 360.0*float64(spatialIDBox.GetMax().GetX()+1)/max - 180.0
 
-	*box.Min.Latitude() = mathematics.RadianPerDegree * math.Atan(math.Sinh(math.Pi*(1.0-2.0*float64(spatialIDBox.GetMin().GetY())/max)))
-	*box.Max.Latitude() = mathematics.RadianPerDegree * math.Atan(math.Sinh(math.Pi*(1.0-2.0*float64(spatialIDBox.GetMax().GetY()+1)/max)))
+	*box.Min.Latitude() = mathematics.DegreePerRadian * math.Atan(math.Sinh(math.Pi*(1.0-2.0*float64(spatialIDBox.GetMin().GetY())/max)))
+	*box.Max.Latitude() = mathematics.DegreePerRadian * math.Atan(math.Sinh(math.Pi*(1.0-2.0*float64(spatialIDBox.GetMax().GetY()+1)/max)))
 
-	altitudeResolution := float64(int(1) << (SpatialIDZBaseExponent - spatialIDBox.GetMin().GetZ()))
+	altitudeResolution := math.Pow(2.0, float64(SpatialIDZBaseExponent - spatialIDBox.GetMin().GetZ()))
 
-	*box.Min.Altitude() = float64(spatialIDBox.GetMin().GetZ()) * altitudeResolution
-	*box.Max.Altitude() = float64(spatialIDBox.GetMax().GetZ()+1) * altitudeResolution
+	*box.Min.Altitude() = float64(spatialIDBox.GetMin().GetF()) * altitudeResolution - float64(SpatialIDZBaseOffset)
+	*box.Max.Altitude() = float64(spatialIDBox.GetMax().GetF()+1) * altitudeResolution - float64(SpatialIDZBaseOffset)
 
 	return box
 }
@@ -86,18 +86,18 @@ func NewGeodeticBoxFromSpatialIDBox(spatialIDBox SpatialIDBox) *GeodeticBox {
 func NewGeodeticBoxFromTileXYZBox(TileXYZBox TileXYZBox) *GeodeticBox {
 	box := &GeodeticBox{}
 
-	quadMax := float64(int(1) << TileXYZBox.GetMin().GetQuadkeyZoomLevel())
+	quadMax := math.Pow(2.0, float64(TileXYZBox.GetMin().GetQuadkeyZoomLevel()))
 
 	*box.Min.Longitude() = 360.0*float64(TileXYZBox.GetMin().GetX())/quadMax - 180.0
 	*box.Max.Longitude() = 360.0*float64(TileXYZBox.GetMax().GetX()+1)/quadMax - 180.0
 
-	*box.Min.Latitude() = mathematics.RadianPerDegree * math.Atan(math.Sinh(math.Pi*(1.0-2.0*float64(TileXYZBox.GetMin().GetY())/quadMax)))
-	*box.Max.Latitude() = mathematics.RadianPerDegree * math.Atan(math.Sinh(math.Pi*(1.0-2.0*float64(TileXYZBox.GetMax().GetY()+1)/quadMax)))
+	*box.Min.Latitude() = mathematics.DegreePerRadian * math.Atan(math.Sinh(math.Pi*(1.0-2.0*float64(TileXYZBox.GetMin().GetY())/quadMax)))
+	*box.Max.Latitude() = mathematics.DegreePerRadian * math.Atan(math.Sinh(math.Pi*(1.0-2.0*float64(TileXYZBox.GetMax().GetY()+1)/quadMax)))
 
-	altitudeResolution := float64(int(1) << (TileXYZZBaseExponent - TileXYZBox.GetMin().GetAltitudekeyZoomLevel()))
+	altitudeResolution := math.Pow(2.0, float64(TileXYZZBaseExponent - TileXYZBox.GetMin().GetAltitudekeyZoomLevel()))
 
-	*box.Min.Altitude() = float64(TileXYZBox.GetMin().GetAltitudekeyZoomLevel()) * altitudeResolution
-	*box.Max.Altitude() = float64(TileXYZBox.GetMax().GetAltitudekeyZoomLevel()+1) * altitudeResolution
+	*box.Min.Altitude() = float64(TileXYZBox.GetMin().GetZ()) * altitudeResolution - float64(TileXYZZBaseOffset)
+	*box.Max.Altitude() = float64(TileXYZBox.GetMax().GetZ()+1) * altitudeResolution - float64(TileXYZZBaseOffset)
 
 	return box
 }

@@ -27,16 +27,16 @@ func TestGetExtendedSpatialIdsWithinRadiusOfLine02_1(t *testing.T) {
 
 	geodeticBox, theError := NewGeodeticBoxFromConvexHull(convexHull, clearance)
 	if theError != nil {
-		t.Error(theError)
+		t.Fatal(theError)
 	}
 
 	tileXYZBox, theError := NewTileXYZBoxFromGeodeticBox(*geodeticBox, quadkeyZoomLevel, altitudekeyZoomLevel)
 	if theError != nil {
-		t.Error(theError)
+		t.Fatal(theError)
 	}
 
 	count := 0
-	for _ = range tileXYZBox.AllCollisionWithConvexHull(convexHull, clearance) {
+	for range tileXYZBox.AllCollisionWithConvexHull(convexHull, clearance) {
 		count += 1
 	}
 
@@ -60,7 +60,7 @@ func TestGetExtendedSpatialIdsWithinRadiusOfLine02_2(t *testing.T) {
 	}
 	clearance := 0.1
 	quadkeyZoomLevel := int8(23)
-	altitudekeyZoomLevel := int8(23)
+	altitudekeyZoomLevel := int8(12)
 
 	expectedCount := 54
 

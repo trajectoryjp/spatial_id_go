@@ -9,7 +9,9 @@ import (
 func TestConvertTileXYZsToSpatialIDs_01(t *testing.T) {
 	testNewSpatialIDBoxFromTileXYZBox(
 		t,
-		[]string{"23/-2/85263/65423"},
+		[]string{
+			"23/-2/85263/65423",
+		},
 
 		23, 23, 85263, 65423, 0,
 
@@ -22,7 +24,12 @@ func TestConvertTileXYZsToSpatialIDs_01(t *testing.T) {
 func TestConvertTileXYZsToSpatialIDs_02(t *testing.T) {
 	testNewSpatialIDBoxFromTileXYZBox(
 		t,
-		[]string{"25/1/170526/130846", "25/1/170526/130847", "25/1/170527/130846", "25/1/170527/130847"},
+		[]string{
+			"25/1/170526/130846",
+			"25/1/170526/130847",
+			"25/1/170527/130846",
+			"25/1/170527/130847",
+		},
 
 		24, 25, 85263, 65423, 3,
 
@@ -35,20 +42,26 @@ func TestConvertTileXYZsToSpatialIDs_02(t *testing.T) {
 func TestConvertTileXYZsToSpatialIDs_03(t *testing.T) {
 	testNewSpatialIDBoxFromTileXYZBox(
 		t,
-		[]string{"4/0/63/23", "4/1/63/23"},
+		[]string{
+			"4/0/15/15", // 元々は"4/0/63/23"だが、境界値処理が異なる
+			// 元々は"4/1/63/23"だが、zが25で誤差がないため二つ目があるのは間違いである
+		},
 
 		4, 3, 63, 23, 3,
 
 		3, 2,
 
-		3,
+		4, // 元々は3だが、変換前からもうすでに3であり、設定しなければzが25で返るので変更した
 	)
 }
 
 func TestConvertTileXYZsToSpatialIDs_04(t *testing.T) {
 	testNewSpatialIDBoxFromTileXYZBox(
 		t,
-		[]string{"23/-2/85263/65423", "23/-1/85263/65423"},
+		[]string{
+			"23/-2/85263/65423",
+			"23/-1/85263/65423",
+		},
 
 		23, 23, 85263, 65423, 0,
 
@@ -62,7 +75,10 @@ func TestConvertTileXYZsToSpatialIDs_05(t *testing.T) {
 	testNewSpatialIDBoxFromTileXYZBox(
 		t,
 
-		[]string{"26/6/85263/65423", "26/7/85263/65423"},
+		[]string{
+			// 元々は"26/6/85263/65423"だが、二つにはなり得ない
+			"26/7/85263/65423",
+		},
 
 		26, 26, 85263, 65423, 3,
 
@@ -78,10 +94,12 @@ func TestConvertTileXYZsToSpatialIDs_06_01(t *testing.T) {
 		[]string{
 			"23/0/170526/130846",
 			"23/1/170526/130846",
-			"23/2/170526/130846",
 			"23/0/170526/130847",
 			"23/1/170526/130847",
-			"23/2/170526/130847",
+			"23/0/170527/130846", // 元々は"23/2/170526/130846"だが、同じズームレベルで3つに跨ることはないので間違い
+			"23/1/170527/130846", // 元々は"23/2/170526/130847"だが、同じズームレベルで3つに跨ることはないので間違い
+			"23/0/170527/130847", // 新規追加
+			"23/1/170527/130847", // 新規追加
 		},
 
 		22, 23, 85263, 65423, 0,
@@ -96,10 +114,12 @@ func TestConvertTileXYZsToSpatialIDs_06_02(t *testing.T) {
 	testNewSpatialIDBoxFromTileXYZBox(
 		t,
 		[]string{
-			"23/0/170527/130846",
+			"23/1/170526/130846", // 元々は"23/0/170527/130846"だが、同じズームレベルで3つに跨ることはないので間違い
+			"23/2/170526/130846", // 元々は"23/0/170527/130847"だが、同じズームレベルで3つに跨ることはないので間違い
+			"23/1/170526/130847", // 新規追加
+			"23/2/170526/130847", // 新規追加
 			"23/1/170527/130846",
 			"23/2/170527/130846",
-			"23/0/170527/130847",
 			"23/1/170527/130847",
 			"23/2/170527/130847",
 		},
@@ -186,7 +206,7 @@ func testNewSpatialIDBoxFromTileXYZBox(
 	z int64,
 	tileXYZZBaseExponent int8,
 	tileXYZZBaseOffset int64,
-	_ int8,
+	spatialIdZoomLevel int8,
 	) {
 	oldZBaseExponent := TileXYZZBaseExponent
 	oldZBaseOffset := TileXYZZBaseOffset
@@ -212,20 +232,20 @@ func testNewSpatialIDBoxFromTileXYZBox(
 		t.Fatal(theError)
 	}
 	
-	spatialIDBox.AddZ(altitudekeyZoomLevel - spatialIDBox.GetMin().GetZ())
+	spatialIDBox.AddZ(spatialIdZoomLevel - spatialIDBox.GetMin().GetZ())
 
 	i := 0
 	for id := range spatialIDBox.AllXYF() {
 		if i >= len(expected) {
-			t.Errorf("TileXYZ - 期待要素数：%v, 取得要素数：%v", len(expected), i)
-			break
+			i += 1
+			continue
 		}
 		if !reflect.DeepEqual(id.String(), expected[i]) {
 			t.Errorf("TileXYZ - 期待値：%v, 取得値：%v", expected[i], id.String())
 		}
 		i += 1
 	}
-	if i < len(expected) {
+	if i != len(expected) {
 		t.Errorf("TileXYZ - 期待要素数：%v, 取得要素数：%v", len(expected), i)
 	}
 }
@@ -236,28 +256,28 @@ func TestConvertSpatialIdsToQuadkeysAndVerticalIDs_Max_UpFlat(t *testing.T) {
 		[]*TileXYZ{
 			{
 				quadkeyZoomLevel: 21,
-				altitudekeyZoomLevel: 10,
+				altitudekeyZoomLevel: 9,
 				x: 170526,
 				y: 130846,
 				z: 511, // Max
 			},
 			{
 				quadkeyZoomLevel: 21,
-				altitudekeyZoomLevel: 10,
-				x: 170527,
-				y: 130846,
-				z: 511, // Max
-			},
-			{
-				quadkeyZoomLevel: 21,
-				altitudekeyZoomLevel: 10,
+				altitudekeyZoomLevel: 9,
 				x: 170526,
 				y: 130847,
 				z: 511, // Max
 			},
 			{
 				quadkeyZoomLevel: 21,
-				altitudekeyZoomLevel: 10,
+				altitudekeyZoomLevel: 9,
+				x: 170527,
+				y: 130846,
+				z: 511, // Max
+			},
+			{
+				quadkeyZoomLevel: 21,
+				altitudekeyZoomLevel: 9,
 				x: 170527,
 				y: 130847,
 				z: 511, // Max
@@ -275,30 +295,58 @@ func TestConvertSpatialIdsToQuadkeysAndVerticalIDs_Max_UpUp(t *testing.T) {
 	testNewTileXYZBoxFromSpatialIDBox_AllXYZ(
 		t,
 		[]*TileXYZ{
+			{ // 新規追加。altitudekeyZoomLevelを確定してから上限値で切る挙動から、上限値で切ってからaltitudekeyZoomLevelを確定する挙動に変更
+				quadkeyZoomLevel: 21,
+				altitudekeyZoomLevel: 10,
+				x: 170526,
+				y: 130846,
+				z: 1022,
+			},
 			{
 				quadkeyZoomLevel: 21,
-				altitudekeyZoomLevel: 11,
+				altitudekeyZoomLevel: 10,
 				x: 170526,
 				y: 130846,
 				z: 1023, // Max
 			},
-			{
+			{ // 新規追加。altitudekeyZoomLevelを確定してから上限値で切る挙動から、上限値で切ってからaltitudekeyZoomLevelを確定する挙動に変更
 				quadkeyZoomLevel: 21,
-				altitudekeyZoomLevel: 11,
-				x: 170527,
-				y: 130846,
-				z: 1023, // Max
+				altitudekeyZoomLevel: 10,
+				x: 170526,
+				y: 130847,
+				z: 1022,
 			},
 			{
 				quadkeyZoomLevel: 21,
-				altitudekeyZoomLevel: 11,
+				altitudekeyZoomLevel: 10,
 				x: 170526,
 				y: 130847,
 				z: 1023, // Max
 			},
+			{ // 新規追加。altitudekeyZoomLevelを確定してから上限値で切る挙動から、上限値で切ってからaltitudekeyZoomLevelを確定する挙動に変更
+				quadkeyZoomLevel: 21,
+				altitudekeyZoomLevel: 10,
+				x: 170527,
+				y: 130846,
+				z: 1022,
+			},
 			{
 				quadkeyZoomLevel: 21,
-				altitudekeyZoomLevel: 11,
+				altitudekeyZoomLevel: 10,
+				x: 170527,
+				y: 130846,
+				z: 1023, // Max
+			},
+			{ // 新規追加。altitudekeyZoomLevelを確定してから上限値で切る挙動から、上限値で切ってからaltitudekeyZoomLevelを確定する挙動に変更
+				quadkeyZoomLevel: 21,
+				altitudekeyZoomLevel: 10,
+				x: 170527,
+				y: 130847,
+				z: 1022,
+			},
+			{
+				quadkeyZoomLevel: 21,
+				altitudekeyZoomLevel: 10,
 				x: 170527,
 				y: 130847,
 				z: 1023, // Max
@@ -318,7 +366,7 @@ func TestConvertSpatialIdsToQuadkeysAndVerticalIDs_Max_DownDown(t *testing.T) {
 		[]*TileXYZ{
 			{
 				quadkeyZoomLevel: 19,
-				altitudekeyZoomLevel: 9,
+				altitudekeyZoomLevel: 8,
 				x: 42631,
 				y: 32711,
 				z: 255, // Max
@@ -336,9 +384,16 @@ func TestConvertSpatialIdsToQuadkeysAndVerticalIDs_Max_DownUp(t *testing.T) {
 	testNewTileXYZBoxFromSpatialIDBox_AllXYZ(
 		t,
 		[]*TileXYZ{
+			{ // 新規追加。altitudekeyZoomLevelを確定してから上限値で切る挙動から、上限値で切ってからaltitudekeyZoomLevelを確定する挙動に変更
+				quadkeyZoomLevel: 19,
+				altitudekeyZoomLevel: 10,
+				x: 42631,
+				y: 32711,
+				z: 1022,
+			},
 			{
 				quadkeyZoomLevel: 19,
-				altitudekeyZoomLevel: 11,
+				altitudekeyZoomLevel: 10,
 				x: 42631,
 				y: 32711,
 				z: 1023, // Max
@@ -364,7 +419,7 @@ func TestConvertSpatialIdsToQuadkeysAndVerticalIDs_MinZoomLevel(t *testing.T) {
 				z: 0,
 			},
 		},
-		nil,
+		NewSpatialIdError(InputValueErrorCode, ""), // 元々はnilだが、値域外なのでエラー
 
 		"0/-1/0/0",
 
@@ -381,7 +436,7 @@ func TestConvertSpatialIdsToQuadkeysAndVerticalIDs_MaxZoomLevel(t *testing.T) {
 				altitudekeyZoomLevel: 24, // MaxZ - SpatialIDZBaseExponent + TileXYZZBaseExponent
 				x: 34359738367, // = (1 << MaxZ) - 1
 				y: 34359738367, // = (1 << MaxZ) - 1
-				z: 34359738879, // = (1 << MaxZ) - 1 - SpatialIDZOffset + TileXYZZBaseOffset
+				z: 16777215, // = (1 << (MaxZ - SpatialIDZBaseExponent + TileXYZZBaseExponent)) - 1
 			},
 		},
 		nil,
@@ -508,14 +563,28 @@ func testNewTileXYZBoxFromSpatialIDBox_AllXYZ(
 		return
 	}
 
-	tileXYZBox.AddZoomLevel(quadkeyZoomLevel - tileXYZBox.GetMin().GetQuadkeyZoomLevel(), altitudekeyZoomLevel - tileXYZBox.GetMin().GetAltitudekeyZoomLevel())
+	theError = tileXYZBox.AddZoomLevel(quadkeyZoomLevel - tileXYZBox.GetMin().GetQuadkeyZoomLevel(), altitudekeyZoomLevel - tileXYZBox.GetMin().GetAltitudekeyZoomLevel())
+	if theError != nil {
+		if theError.Error() != expectedError.Error() {
+			t.Errorf("expectedError: %+v, result: %+v", expectedError, theError)
+		}
+		return
+	}
 
 	i := 0
 	for tileXYZ := range tileXYZBox.AllXYZ() {
+		if i >= len(expected) {
+			i += 1
+			continue
+		}
+
 		if !reflect.DeepEqual(&tileXYZ, expected[i]) {
-			t.Fatal(tileXYZ)
+			t.Errorf("expected: %+v, result: %+v", expected[i], &tileXYZ)
 		}
 		i += 1
+	}
+	if i != len(expected) {
+		t.Errorf("expected: %v, result: %v", len(expected), i)
 	}
 }
 
@@ -554,7 +623,7 @@ func assertConvertZToMinMaxAltitudekey(
 		t.Fatal(error)
 	}
 
-	if !reflect.DeepEqual(tileXYZBox, expected) {
+	if !reflect.DeepEqual(*tileXYZBox, expected) {
 		t.Errorf("expected: %+v, result: %+v", expected, tileXYZBox)
 	}
 }
@@ -945,7 +1014,7 @@ type argsForConvertAltitudekeyToMinMaxZ struct {
 	zBaseOffset          int64
 }
 
-func TestConvertAltitudekeyToMinMaxZ_OffseMustBeConverted(t *testing.T) {
+func TestConvertAltitudekeyToMinMaxZ_OffsetMustBeConverted(t *testing.T) {
 	assertConvertAltitudekeyToMinMaxZ(
 		t,
 
@@ -1078,7 +1147,7 @@ func TestConvertAltitudekeyToMinMaxZ_MinMaxDiffersWhenZBaseExponentLessThanInput
 		SpatialIDBox{
 			min: SpatialID{
 				z: 26,
-				f: 6,
+				f: 7, // 元々6だったが、ズームレベルが変わっていないのに変わるのはおかしい
 				x: 85263,
 				y: 65423,
 			},
@@ -1140,7 +1209,7 @@ func assertConvertAltitudekeyToMinMaxZ(
 		t.Fatal(error)
 	}
 
-	if !reflect.DeepEqual(spatialIDBox, expected) {
-		t.Errorf("expected: %+v, result: %+v", expected, spatialIDBox)
+	if !reflect.DeepEqual(*spatialIDBox, expected) {
+		t.Errorf("expected: %+v, result: %+v", expected, *spatialIDBox)
 	}
 }
