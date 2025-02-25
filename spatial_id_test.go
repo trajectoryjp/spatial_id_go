@@ -159,7 +159,7 @@ func TestSummarizeSpatialIDs(t *testing.T) {
 	}
 
 	for testCaseIndex, testCase := range testCases {
-		actualResult := SummarizeSpatialIDs(testCase.ids)
+		actualResult := MergeSpatialIDs(testCase.ids)
 		assert.ElementsMatch(
 			t,
 			testCase.expectedResult,

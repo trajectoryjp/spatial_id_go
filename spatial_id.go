@@ -1,9 +1,7 @@
 package spatialID
 
 import (
-	"cmp"
 	"math"
-	"slices"
 	"strconv"
 	"strings"
 
@@ -185,7 +183,7 @@ func (id SpatialID) NewMaxChild(number int8) (*SpatialID, error) {
 	)
 }
 
-func (id SpatialID) Covers(another SpatialID) bool {
+func (id SpatialID) Contains(another SpatialID) bool {
 	return id.GetZ() <= another.GetZ() && id.Overlaps(another)
 }
 
@@ -202,26 +200,7 @@ func (id SpatialID) Overlaps(another SpatialID) bool {
 	return id == another
 }
 
-// CompareSpatialIDs compare SpatialIDs with Morton order.
-// All f index must be greater than or equal to 0.
-func CompareSpatialIDs(a, b *SpatialID) int {
-	minZ := min(a.GetZ(), b.GetZ())
-	for z := int8(1); z <= minZ; z++ {
-		parentA, _ := a.NewParent(a.GetZ() - z)
-		parentB, _ := b.NewParent(b.GetZ() - z)
-
-		bitA := (parentA.GetF()&1)<<2 | (parentA.GetX()&1)<<1 | (parentA.GetY() & 1)
-		bitB := (parentB.GetF()&1)<<2 | (parentB.GetX()&1)<<1 | (parentB.GetY() & 1)
-
-		if n := cmp.Compare(bitA, bitB); n != 0 {
-			return n
-		}
-	}
-	return cmp.Compare(a.GetZ(), b.GetZ())
-}
-
-// SummarizeSpatialIDs returns the minimum SpatialIDs that represents the area of ids.
-func SummarizeSpatialIDs(ids []*SpatialID) []*SpatialID {
+func MergeSpatialIDs(ids []*SpatialID) []*SpatialID {
 	positiveSpatialIDs := []*SpatialID{}
 	negativeSpatialIDs := []*SpatialID{}
 	for _, id := range ids {
@@ -233,8 +212,8 @@ func SummarizeSpatialIDs(ids []*SpatialID) []*SpatialID {
 		}
 	}
 
-	positiveSpatialIDs = summarizeSpatialIDs(positiveSpatialIDs)
-	negativeSpatialIDs = summarizeSpatialIDs(negativeSpatialIDs)
+	positiveSpatialIDs = mergeSpatialIDs(positiveSpatialIDs, 0)
+	negativeSpatialIDs = mergeSpatialIDs(negativeSpatialIDs, 0)
 
 	resultIDs := positiveSpatialIDs
 	for _, id := range negativeSpatialIDs {
@@ -245,55 +224,30 @@ func SummarizeSpatialIDs(ids []*SpatialID) []*SpatialID {
 }
 
 // All f index must be greater than or equal to 0.
-func summarizeSpatialIDs(ids []*SpatialID) []*SpatialID {
-	ids = removeCoveredSpatialIDs(ids)
-
-	idsTable := [MaxZ + 1][]*SpatialID{}
-	for _, id := range ids {
-		idsTable[id.GetZ()] = append(idsTable[id.GetZ()], id)
+func mergeSpatialIDs(ids []*SpatialID, z int8) []*SpatialID {
+	if len(ids) == 0 {
+		return []*SpatialID{}
 	}
 
-	for z := MaxZ; z > 0; z-- {
-		slices.SortFunc(idsTable[z], CompareSpatialIDs)
-
-		remainingIDs := []*SpatialID{}
-		children := []*SpatialID{}
-		var prevParent *SpatialID = nil
-		for _, id := range idsTable[z] {
-			parent, _ := id.NewParent(1)
-			if prevParent != nil && *parent == *prevParent {
-				children = append(children, id)
-				if len(children) == SpatialIDMaxNumberOfChildren {
-					idsTable[z-1] = append(idsTable[z-1], parent)
-					children = []*SpatialID{}
-					prevParent = nil
-				}
-			} else {
-				remainingIDs = append(remainingIDs, children...)
-				children = []*SpatialID{id}
-				prevParent = parent
-			}
+	idsTable := [SpatialIDMaxNumberOfChildren][]*SpatialID{}
+	for _, id := range ids {
+		if id.GetZ() == z {
+			return []*SpatialID{id}
 		}
-		remainingIDs = append(remainingIDs, children...)
-		idsTable[z] = remainingIDs
+
+		parent, _ := id.NewParent(id.GetZ() - (z + 1))
+		i := (parent.GetF()&1)<<2 | (parent.GetX()&1)<<1 | (parent.GetY() & 1)
+		idsTable[i] = append(idsTable[i], id)
 	}
 
 	resultIDs := []*SpatialID{}
-	for _, resultID := range idsTable {
-		resultIDs = append(resultIDs, resultID...)
+	for _, ids := range idsTable {
+		resultIDs = append(resultIDs, mergeSpatialIDs(ids, z+1)...)
 	}
-	return resultIDs
-}
 
-// All f index must be greater than or equal to 0.
-func removeCoveredSpatialIDs(ids []*SpatialID) []*SpatialID {
-	slices.SortFunc(ids, CompareSpatialIDs)
-
-	resultIDs := []*SpatialID{}
-	for _, id := range ids {
-		if len(resultIDs) == 0 || !resultIDs[len(resultIDs)-1].Covers(*id) {
-			resultIDs = append(resultIDs, id)
-		}
+	if len(resultIDs) == SpatialIDMaxNumberOfChildren {
+		id, _ := resultIDs[0].NewParent(1)
+		return []*SpatialID{id}
 	}
 	return resultIDs
 }
