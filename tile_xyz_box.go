@@ -224,22 +224,22 @@ func (box TileXYZBox) AllCollisionWithConvexHull(convexHull []*coordinates.Geode
 						distance = mgl64.Vec3(geocentric0).Sub(mgl64.Vec3(geocentric1)).Len() // TODO: Embed
 					}
 
-					if distance > clearance {
-						if distance > oldDistance {
-							goto yEnd
-						} else {
-							deltaAltitude := *geodeticBox.Max.Altitude() - *geodeticBox.Min.Altitude()
-							newZ := int64(distance/deltaAltitude) + bottom.GetZ()
-							if newZ >= tileXYZBox.GetMax().GetZ() {
-								goto yEnd
-							}
-
-							bottom.SetZ(newZ)
-							continue
-						}
+					if distance <= clearance {
+						break
 					}
 
-					break
+					if distance > oldDistance {
+						goto yEnd
+					}
+
+					deltaAltitude := *geodeticBox.Max.Altitude() - *geodeticBox.Min.Altitude()
+					newZ := int64(distance/deltaAltitude) + bottom.GetZ()
+
+					if newZ >= tileXYZBox.GetMax().GetZ() {
+						goto yEnd
+					}
+
+					bottom.SetZ(newZ)
 				}
 
 				oldDistance = math.Inf(1)
@@ -259,23 +259,23 @@ func (box TileXYZBox) AllCollisionWithConvexHull(convexHull []*coordinates.Geode
 						geocentric1 := coordinates.GeocentricFromGeodetic(coordinates.Geodetic(measure.Points[1]))
 						distance = mgl64.Vec3(geocentric0).Sub(mgl64.Vec3(geocentric1)).Len() // TODO: Embed
 					}
-					
-					if distance > clearance {
-						if distance > oldDistance {
-							goto yEnd
-						} else {
-							deltaAltitude := *geodeticBox.Max.Altitude() - *geodeticBox.Min.Altitude()
-							newZ := -int64(distance/deltaAltitude) + top.GetZ()
-							if newZ <= tileXYZBox.GetMin().GetZ() {
-								goto yEnd
-							}
 
-							top.SetZ(newZ)
-							continue
-						}
+					if distance <= clearance {
+						break
 					}
 
-					break
+					if distance > oldDistance {
+						goto yEnd
+					}
+
+					deltaAltitude := *geodeticBox.Max.Altitude() - *geodeticBox.Min.Altitude()
+					newZ := -int64(distance/deltaAltitude) + top.GetZ()
+
+					if newZ <= tileXYZBox.GetMin().GetZ() {
+						goto yEnd
+					}
+
+					top.SetZ(newZ)
 				}
 
 				for currentZ := bottom; currentZ.GetZ() <= top.GetZ(); currentZ.SetZ(currentZ.GetZ() + 1) {

@@ -14,6 +14,8 @@ github.com/trajectoryjp/geodesy_go v1.0.2 h1:wh0RcZDZOQ6Q38evg6YJJ8gAC6+GKSVJgEF
 github.com/trajectoryjp/geodesy_go v1.0.2/go.mod h1:eJuX+ds+t3MKxHG9dhobqNjUbUsYlpTT9XDO0mbc0LU=
 github.com/trajectoryjp/multidimensional-radix-tree/src v0.0.0-20241022055138-bd6190702079 h1:rGlyRqBPoAu5uudBr0nPsplg0aUYyOcoZE/3KI31obg=
 github.com/trajectoryjp/multidimensional-radix-tree/src v0.0.0-20241022055138-bd6190702079/go.mod h1:dDSriNaS7E5bvwmmXxF62rqb1FfgzgB7IDdMEsm8O9A=
+github.com/twpayne/go-kml/v3 v3.3.0 h1:BytZ1F9wFe8WsgeNAQ+7/XeqqYAh72n3aECtp0kiixs=
+github.com/twpayne/go-kml/v3 v3.3.0/go.mod h1:nlEGIr3NcZ5OP2Hv16oD6V9zo3gPVii5rde+0S5IQY8=
 github.com/wroge/wgs84 v1.1.7 h1:8WVUUrpjysYxrn0ssWX7z90SOUKCuHt9NQ5tg9ovjIY=
 github.com/wroge/wgs84 v1.1.7/go.mod h1:mc1F8ubW03DO4zaf/006cmhaiMlfvbKmqVAcPuAtsNA=
 github.com/xieyuschen/deepcopy v1.0.1 h1:nTCnKprCOdibz8WXWlMZzULIlpzZX0ZzKjz8HlGd/Nk=

@@ -1,9 +1,13 @@
 package spatialID
 
 import (
+	"fmt"
+	"image/color"
+	"os"
 	"testing"
 
 	"github.com/trajectoryjp/geodesy_go/coordinates"
+	"github.com/twpayne/go-kml/v3"
 )
 
 func TestGetExtendedSpatialIdsWithinRadiusOfLine02_1(t *testing.T) {
@@ -46,16 +50,20 @@ func TestGetExtendedSpatialIdsWithinRadiusOfLine02_1(t *testing.T) {
 }
 
 func TestGetExtendedSpatialIdsWithinRadiusOfLine02_2(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Failed by https://github.com/trajectoryjp/closest_go/issues/2")
+	}
+
 	convexHull := []*coordinates.Geodetic{
 		{
 			139.788452,
 			35.67093015,
-			0,
+			0.0,
 		},
 		{
 			139.788452,
 			35.670840,
-			0,
+			0.0,
 		},
 	}
 	clearance := 0.1
@@ -75,11 +83,64 @@ func TestGetExtendedSpatialIdsWithinRadiusOfLine02_2(t *testing.T) {
 	}
 
 	count := 0
-	for _ = range tileXYZBox.AllCollisionWithConvexHull(convexHull, clearance) {
+	document := kml.Document(
+		kml.Name(t.Name()),
+		kml.Placemark(
+			kml.LineString(
+				kml.AltitudeMode(kml.AltitudeModeAbsolute),
+				kml.Coordinates(
+					kml.Coordinate{
+						Lon: *convexHull[0].Longitude(),
+						Lat: *convexHull[0].Latitude(),
+						Alt: *convexHull[0].Altitude(),
+					},
+					kml.Coordinate{
+						Lon: *convexHull[1].Longitude(),
+						Lat: *convexHull[1].Latitude(),
+						Alt: *convexHull[1].Altitude(),
+					},
+				),
+			),
+		),
+	)
+	for tileXYZ := range tileXYZBox.AllCollisionWithConvexHull(convexHull, clearance) {
+		tileXYZBox, theError := NewTileXYZBox(tileXYZ, tileXYZ)
+		if theError != nil {
+			t.Fatal(theError)
+		}
+
+		geodeticBox := NewGeodeticBoxFromTileXYZBox(*tileXYZBox)
+
+		document.Append(
+			kml.Placemark(
+				kml.Name(fmt.Sprint(tileXYZ)),
+				kml.Style(
+					kml.PolyStyle(
+						kml.Color(color.RGBA{R: 0xff, G: 0x00, B: 0x00, A: 0xff}),
+					),
+				),
+				NewMultiGeometryFromGeodeticBox(*geodeticBox),
+			),
+		)
 		count += 1
 	}
 
 	if count != expectedCount {
 		t.Errorf("Expected %v voxels, but got %v", expectedCount, count)
+	}
+
+	kmlFile := kml.KML(
+		document,
+	)
+
+	file, error := os.Create(t.Name() + ".kml")
+	if error != nil {
+		t.Fatal(error)
+	}
+	defer file.Close()
+
+	error = kmlFile.WriteIndent(file, "", "  ")
+	if error != nil {
+		t.Fatal(error)
 	}
 }

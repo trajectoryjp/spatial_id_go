@@ -6,6 +6,7 @@ import (
 	mathematics "github.com/HarutakaMatsumoto/mathematics_go"
 	"github.com/HarutakaMatsumoto/mathematics_go/geometry/rectangular/solid"
 	"github.com/trajectoryjp/geodesy_go/coordinates"
+	"github.com/twpayne/go-kml/v3"
 )
 
 type GeodeticBox struct {
@@ -137,4 +138,37 @@ func (box GeodeticBox) GetCenter() coordinates.Geodetic {
 	*center.Altitude() = (*box.Min.Altitude() + *box.Max.Altitude()) / 2.0
 
 	return center
+}
+
+func NewMultiGeometryFromGeodeticBox(geodeticBox GeodeticBox) kml.Element {
+	vertices := geodeticBox.GetVertices()
+
+	kmlVertices := make([]kml.Coordinate, len(vertices))
+	for i, vertex := range vertices {
+		kmlVertices[i].Lon = *vertex.Longitude()
+		kmlVertices[i].Lat = *vertex.Latitude()
+		kmlVertices[i].Alt = *vertex.Altitude()
+	}
+
+	multiGeometry := kml.MultiGeometry()
+	for _, offsets := range solid.FaceOffsets {
+		coordinates := make([]kml.Coordinate, len(offsets)+1)
+		for j := range offsets {
+			coordinates[j] = kmlVertices[int(offsets[j])]
+		}
+		coordinates[len(offsets)] = coordinates[0]
+
+		multiGeometry.Append(kml.Polygon(
+			kml.AltitudeMode(kml.AltitudeModeAbsolute),
+			kml.OuterBoundaryIs(
+				kml.LinearRing(
+					kml.Coordinates(
+						coordinates...,
+					),
+				),
+			),
+		))
+	}
+
+	return multiGeometry
 }
