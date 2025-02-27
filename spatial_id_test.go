@@ -2,6 +2,7 @@ package spatialID
 
 import (
 	"fmt"
+	"runtime"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -170,4 +171,49 @@ func TestMergeSpatialIDs(t *testing.T) {
 			fmt.Sprintf("testCaseIndex: %d", testCaseIndex),
 		)
 	}
+}
+
+func BenchmarkMergeSpatialIDs(b *testing.B) {
+	type Benchmark struct {
+		name string
+		ids  []*SpatialID
+	}
+
+	benchmarks := []*Benchmark{}
+	for _, n := range []int64{16} {
+		for _, z := range []int8{23} {
+			ids := []*SpatialID{}
+			for f := range n {
+				for x := range n {
+					for y := range n {
+						id, _ := NewSpatialID(z, f, x, y)
+						ids = append(ids, id)
+					}
+				}
+			}
+			benchmarks = append(
+				benchmarks,
+				&Benchmark{fmt.Sprintf("n=%d,z=%d", n, z), ids},
+			)
+		}
+	}
+
+	for _, benchmark := range benchmarks {
+		b.Run(
+			benchmark.name,
+			func(b *testing.B) {
+				MergeSpatialIDs(benchmark.ids)
+			},
+		)
+
+		startTotalAlloc := getTotalAlloc()
+		MergeSpatialIDs(benchmark.ids)
+		fmt.Printf("BenchmarkMergeSpatialIDs/%s\t%d B\n", benchmark.name, getTotalAlloc()-startTotalAlloc)
+	}
+}
+
+func getTotalAlloc() uint64 {
+	var mem runtime.MemStats
+	runtime.ReadMemStats(&mem)
+	return mem.TotalAlloc
 }
