@@ -1,7 +1,9 @@
 package spatialID
 
 import (
+	"cmp"
 	"math"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -201,26 +203,19 @@ func (id SpatialID) Overlaps(another SpatialID) bool {
 }
 
 func MergeSpatialIDs(ids []*SpatialID) []*SpatialID {
-	positiveSpatialIDs := []*SpatialID{}
 	negativeSpatialIDs := []*SpatialID{}
+	positiveSpatialIDs := []*SpatialID{}
 	for _, id := range ids {
-		if id.GetF() >= 0 {
-			positiveSpatialIDs = append(positiveSpatialIDs, id)
-		} else {
-			id.SetF(^id.GetF())
+		if id.GetF() < 0 {
 			negativeSpatialIDs = append(negativeSpatialIDs, id)
+		} else {
+			positiveSpatialIDs = append(positiveSpatialIDs, id)
 		}
 	}
-
-	positiveSpatialIDs = mergeSpatialIDs(positiveSpatialIDs, 0)
-	negativeSpatialIDs = mergeSpatialIDs(negativeSpatialIDs, 0)
-
-	resultIDs := positiveSpatialIDs
-	for _, id := range negativeSpatialIDs {
-		id.SetF(^id.GetF())
-		resultIDs = append(resultIDs, id)
-	}
-	return resultIDs
+	return append(
+		mergeSpatialIDs(negativeSpatialIDs, 0),
+		mergeSpatialIDs(positiveSpatialIDs, 0)...,
+	)
 }
 
 // All f index must be greater than or equal to 0.
@@ -229,21 +224,34 @@ func mergeSpatialIDs(ids []*SpatialID, z int8) []*SpatialID {
 		return []*SpatialID{}
 	}
 
-	idsTable := [SpatialIDMaxNumberOfChildren][]*SpatialID{}
 	for _, id := range ids {
 		if id.GetZ() == z {
 			return []*SpatialID{id}
 		}
-
-		parent, _ := id.NewParent(id.GetZ() - (z + 1))
-		i := (parent.GetF()&1)<<2 | (parent.GetX()&1)<<1 | (parent.GetY() & 1)
-		idsTable[i] = append(idsTable[i], id)
 	}
+
+	getKey := func(id *SpatialID) int64 {
+		parent, _ := id.NewParent(id.GetZ() - (z + 1))
+		return (parent.GetF()&1)<<2 | (parent.GetX()&1)<<1 | (parent.GetY() & 1)
+	}
+	slices.SortFunc(
+		ids,
+		func(a, b *SpatialID) int {
+			return cmp.Compare(getKey(a), getKey(b))
+		},
+	)
 
 	resultIDs := []*SpatialID{}
-	for _, ids := range idsTable {
-		resultIDs = append(resultIDs, mergeSpatialIDs(ids, z+1)...)
+	l, lKey := 0, getKey(ids[0])
+	for r := 1; r < len(ids); r++ {
+		rKey := getKey(ids[r])
+		if lKey == rKey {
+			continue
+		}
+		resultIDs = append(resultIDs, mergeSpatialIDs(ids[l:r], z+1)...)
+		l, lKey = r, rKey
 	}
+	resultIDs = append(resultIDs, mergeSpatialIDs(ids[l:], z+1)...)
 
 	if len(resultIDs) == SpatialIDMaxNumberOfChildren {
 		id, _ := resultIDs[0].NewParent(1)
