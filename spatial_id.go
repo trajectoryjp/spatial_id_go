@@ -1,7 +1,9 @@
 package spatialID
 
 import (
+	"cmp"
 	"math"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -16,116 +18,11 @@ import (
 const MaxZ = 35
 const SpatialIDZBaseExponent int8 = 25
 const SpatialIDZBaseOffset int64 = 0
+const SpatialIDMaxNumberOfChildren = 8
 
 const delimiter = "/"
 
 var SpatialIDZoomSetTable = tree.Create3DTable()
-
-// func MergeSpatialIDs (spatialIDs []*SpatialID) []*SpatialID {
-// 	type element struct {
-// 		id SpatialID
-// 		isExprored bool
-// 	}
-// 	compare := func(a, b *element) int {
-// 		return CompareSpatialIDs(&a.id, &b.id)
-// 	}
-
-// 	zooms := [MaxZ + 1][]*element{}
-// 	for _, spatialID := range spatialIDs {
-// 		zooms[spatialID.GetZ()] = append(zooms[spatialID.GetZ()], &element{
-// 			id: *spatialID,
-// 			isExprored: false,
-// 		})
-// 	}
-
-// 	for _, zoom := range zooms {
-// 		slices.SortFunc(zoom, compare)
-// 	}
-
-// 	for i := MaxZ; i >= 0; i -= 1 {
-// 		zoom := zooms[i]
-// 		for j := len(zoom) - 1; j >= 0; j -= 1 {
-// 			// {0, 0, 0}
-// 			element0 := zoom[j]
-// 			if element0.isExprored {
-// 				continue
-// 			}
-// 			element0.isExprored = true
-
-// 			if element0.id.GetF() % 2 == 0 {
-// 				continue
-// 			}
-
-// 			// {1, 0, 0}
-// 			j -= 1
-// 			element1 := zoom[j]
-// 			if element1.isExprored {
-// 				continue
-// 			}
-// 			element1.isExprored = true
-
-// 			for element1.id.GetF() != element0.id.GetF() {
-// 				j -= 1
-// 				element1 = zoom[j]
-// 				if element1.isExprored {
-// 					continue
-// 				}
-// 				element1.isExprored = true
-// 			}
-// 			if element1.id.GetF() != element0.id.GetF() + 1 {
-// 				continue
-// 			}
-// 			if element1.id.GetX() != element0.id.GetX() {
-// 				continue
-// 			}
-// 			if element1.id.GetY() != element0.id.GetY() {
-// 				continue
-// 			}
-
-// 			// {0, 1, 0}
-// 			slices.BinarySearchFunc(zoom, &element{
-// 				id
-// 			})
-// 		}
-
-// 	}
-
-// 	// 空間IDのマージ
-// 	mergedSpatialIDs := []*SpatialID{}
-// 	for _, spatialID := range spatialIDs {
-// 		mergedSpatialIDs = append(mergedSpatialIDs, spatialID)
-// 	}
-
-// 	return mergedSpatialIDs
-// }
-
-func CompareSpatialIDs(a, b *SpatialID) int {
-	if a.GetZ() < b.GetZ() {
-		return -1
-	} else if a.GetZ() > b.GetZ() {
-		return 1
-	}
-
-	if a.GetF() < b.GetF() {
-		return -1
-	} else if a.GetF() > b.GetF() {
-		return 1
-	}
-
-	if a.GetX() < b.GetX() {
-		return -1
-	} else if a.GetX() > b.GetX() {
-		return 1
-	}
-
-	if a.GetY() < b.GetY() {
-		return -1
-	} else if a.GetY() > b.GetY() {
-		return 1
-	}
-
-	return 0
-}
 
 // SpatialID 空間IDクラス
 type SpatialID struct {
@@ -288,6 +185,10 @@ func (id SpatialID) NewMaxChild(number int8) (*SpatialID, error) {
 	)
 }
 
+func (id SpatialID) Contains(another SpatialID) bool {
+	return id.GetZ() <= another.GetZ() && id.Overlaps(another)
+}
+
 func (id SpatialID) Overlaps(another SpatialID) bool {
 	deltaZ := id.GetZ() - another.GetZ()
 	if deltaZ < 0 {
@@ -299,4 +200,62 @@ func (id SpatialID) Overlaps(another SpatialID) bool {
 	}
 
 	return id == another
+}
+
+func MergeSpatialIDs(ids []*SpatialID) []*SpatialID {
+	negativeSpatialIDs := []*SpatialID{}
+	positiveSpatialIDs := []*SpatialID{}
+	for _, id := range ids {
+		if id.GetF() < 0 {
+			negativeSpatialIDs = append(negativeSpatialIDs, id)
+		} else {
+			positiveSpatialIDs = append(positiveSpatialIDs, id)
+		}
+	}
+	return append(
+		mergeSpatialIDs(negativeSpatialIDs, 0),
+		mergeSpatialIDs(positiveSpatialIDs, 0)...,
+	)
+}
+
+// All f index must be greater than or equal to 0.
+func mergeSpatialIDs(ids []*SpatialID, z int8) []*SpatialID {
+	if len(ids) == 0 {
+		return []*SpatialID{}
+	}
+
+	for _, id := range ids {
+		if id.GetZ() == z {
+			return []*SpatialID{id}
+		}
+	}
+
+	getKey := func(id *SpatialID) int64 {
+		parent, _ := id.NewParent(id.GetZ() - (z + 1))
+		return (parent.GetF()&1)<<2 | (parent.GetX()&1)<<1 | (parent.GetY() & 1)
+	}
+	slices.SortFunc(
+		ids,
+		func(a, b *SpatialID) int {
+			return cmp.Compare(getKey(a), getKey(b))
+		},
+	)
+
+	resultIDs := []*SpatialID{}
+	l, lKey := 0, getKey(ids[0])
+	for r := 1; r < len(ids); r++ {
+		rKey := getKey(ids[r])
+		if lKey == rKey {
+			continue
+		}
+		resultIDs = append(resultIDs, mergeSpatialIDs(ids[l:r], z+1)...)
+		l, lKey = r, rKey
+	}
+	resultIDs = append(resultIDs, mergeSpatialIDs(ids[l:], z+1)...)
+
+	if len(resultIDs) == SpatialIDMaxNumberOfChildren {
+		id, _ := resultIDs[0].NewParent(1)
+		return []*SpatialID{id}
+	}
+	return resultIDs
 }
