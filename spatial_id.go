@@ -62,19 +62,19 @@ func NewSpatialIDFromGeodetic(geodetic coordinates.Geodetic, z int8) (*SpatialID
 	max := math.Pow(2.0, float64(z))
 
 	// 経度方向のインデックスの計算
-	x := math.Floor(max * math.Mod(*geodetic.Longitude()+180.0, 360.0) / 360.0)
+	x := int64(max * math.Mod(*geodetic.Longitude()+180.0, 360.0) / 360.0)
 
 	radianLatitude := mathematics.RadianPerDegree * *geodetic.Latitude()
 
-	y := math.Floor(max * (1.0 - math.Log(math.Tan(radianLatitude)+(1.0/math.Cos(radianLatitude)))/math.Pi) / 2.0)
+	y := int64(max * (1.0 - math.Log(math.Tan(radianLatitude)+(1.0/math.Cos(radianLatitude)))/math.Pi) / 2.0)
 
 	// 高さ全体の精度あたりの垂直方向の精度
 	altitudeResolution := math.Pow(2.0, float64(SpatialIDZBaseExponent-z))
 
 	// 垂直方向の位置を計算する
-	f := math.Floor(*geodetic.Altitude() / altitudeResolution)
+	f := int64(*geodetic.Altitude() / altitudeResolution)
 
-	return NewSpatialID(z, int64(f), int64(x), int64(y))
+	return NewSpatialID(z, f, x, y)
 }
 
 func NewSpatialID(

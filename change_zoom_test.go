@@ -326,45 +326,45 @@ func TestChangeExtendedSpatialIdsZoom05(t *testing.T) {
 // + 確認内容
 //   - 入力値から全拡張空間IDを格納した配列を取得できること
 func TestChangeExtendedSpatialIdsZoom06(t *testing.T) {
-	// testTileXYZBoxAddZoomLevel( // TODO: 入れ違いを許容するか否か？
-	// 	t,
+	testTileXYZBoxAddZoomLevel(
+		t,
 
-	// 	[]*TileXYZ{
-	// 		{
-	// 			quadkeyZoomLevel: 35,
-	// 			altitudekeyZoomLevel: 15,
-	// 			x: 2048,
-	// 			y: 2048,
-	// 			z: 0,
-	// 		},
-	// 		{
-	// 			quadkeyZoomLevel: 35,
-	// 			altitudekeyZoomLevel: 15,
-	// 			x: 2049,
-	// 			y: 2048,
-	// 			z: 0,
-	// 		},
-	// 		{
-	// 			quadkeyZoomLevel: 35,
-	// 			altitudekeyZoomLevel: 15,
-	// 			x: 2048,
-	// 			y: 2049,
-	// 			z: 0,
-	// 		},
-	// 		{
-	// 			quadkeyZoomLevel: 35,
-	// 			altitudekeyZoomLevel: 15,
-	// 			x: 2049,
-	// 			y: 2049,
-	// 			z: 0,
-	// 		},
-	// 	},
-	// 	nil,
+		[]*TileXYZ{
+			{
+				quadkeyZoomLevel: 35,
+				altitudekeyZoomLevel: 15,
+				x: 2048,
+				y: 2048,
+				z: 0,
+			},
+			{
+				quadkeyZoomLevel: 35,
+				altitudekeyZoomLevel: 15,
+				x: 2048,
+				y: 2049,
+				z: 0,
+			},
+			{
+				quadkeyZoomLevel: 35,
+				altitudekeyZoomLevel: 15,
+				x: 2049,
+				y: 2048,
+				z: 0,
+			},
+			{
+				quadkeyZoomLevel: 35,
+				altitudekeyZoomLevel: 15,
+				x: 2049,
+				y: 2049,
+				z: 0,
+			},
+		},
+		nil,
 
-	// 	34, 34, 1024, 1024, 0,
+		34, 34, 1024, 1024, 0,
 
-	// 	1, -19,
-	// )
+		1, -19,
+	)
 }
 
 // TestChangeExtendedSpatialIdsZoom07 拡張空間IDの精度変換関数 正常動作確認(境界値)
@@ -448,30 +448,30 @@ func TestChangeExtendedSpatialIdsZoom09(t *testing.T) {
 // + 確認内容
 //   - 入力値から全拡張空間IDを格納した配列を取得できること
 func TestChangeExtendedSpatialIdsZoom10(t *testing.T) {
-	// testTileXYZBoxAddZoomLevel( // TODO: 入れ違いを許容するか否か
-	// 	t,
-	// 	[]*TileXYZ{
-	// 		{
-	// 			quadkeyZoomLevel: 15,
-	// 			altitudekeyZoomLevel: 35,
-	// 			x: 0,
-	// 			y: 0,
-	// 			z: 0,
-	// 		},
-	// 		{
-	// 			quadkeyZoomLevel: 15,
-	// 			altitudekeyZoomLevel: 35,
-	// 			x: 0,
-	// 			y: 0,
-	// 			z: 1,
-	// 		},
-	// 	},
-	// 	nil,
+	testTileXYZBoxAddZoomLevel(
+		t,
+		[]*TileXYZ{
+			{
+				quadkeyZoomLevel: 15,
+				altitudekeyZoomLevel: 35,
+				x: 0,
+				y: 0,
+				z: 0,
+			},
+			{
+				quadkeyZoomLevel: 15,
+				altitudekeyZoomLevel: 35,
+				x: 0,
+				y: 0,
+				z: 1,
+			},
+		},
+		nil,
 
-	// 	34, 34, 1024, 1024, 0,
+		34, 34, 1024, 1024, 0,
 
-	// 	-19, 1,
-	// )
+		-19, 1,
+	)
 }
 
 // TestChangeExtendedSpatialIdsZoom11 拡張空間IDの精度変換関数 正常動作確認(境界値)
