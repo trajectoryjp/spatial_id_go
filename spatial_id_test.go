@@ -227,7 +227,7 @@ func testNewSpatialIDFromString(
 	if !reflect.DeepEqual(spatialID, expectedSpatialID) {
 		t.Errorf("空間IDオブジェクト - 期待値：%v, 取得値：%v", expectedSpatialID, spatialID)
 	}
-	if !reflect.DeepEqual(error, expectedError) {
+	if error != expectedError {
 		// 戻り値のエラーインスタンスが期待値と異なる場合Errorをログに出力
 		t.Errorf("error - 期待値：%s, 取得値：%s\n", expectedError.Error(), error.Error())
 	}

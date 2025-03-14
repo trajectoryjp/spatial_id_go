@@ -588,14 +588,6 @@ func testNewTileXYZBoxFromSpatialIDBox_AllXYZ(
 	}
 }
 
-type argSetForConvertZToMinMaxAltitudekey struct {
-	inputIndex    int64
-	inputZoom     int64
-	outputZoom    int64
-	zBaseExponent int64
-	zBaseOffset   int64
-}
-
 func assertConvertZToMinMaxAltitudekey(
 	t *testing.T,
 	expected TileXYZBox,
@@ -1004,14 +996,6 @@ func TestConvertZToMinMaxAltitudekey_9(t *testing.T) {
 
 		27,
 	)
-}
-
-type argsForConvertAltitudekeyToMinMaxZ struct {
-	altitudekey          int64
-	altitudekeyZoomLevel int64
-	outputZoomLevel      int64
-	zBaseExponent        int64
-	zBaseOffset          int64
 }
 
 func TestConvertAltitudekeyToMinMaxZ_OffsetMustBeConverted(t *testing.T) {
