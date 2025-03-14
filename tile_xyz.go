@@ -25,7 +25,7 @@ func NewTileXYZFromGeodetic(geodetic coordinates.Geodetic, quadkeyZoomLevel int8
 	quadMax := math.Pow(2.0, float64(quadkeyZoomLevel))
 
 	// 経度方向のインデックスの計算
-	x := int64(math.Floor(quadMax * math.Mod(*geodetic.Longitude()+180.0, 360.0)/360.0))  // TODO: Delete Floor
+	x := int64(math.Floor(quadMax * math.Mod(*geodetic.Longitude()+180.0, 360.0) / 360.0)) // TODO: Delete Floor
 
 	radianLatitude := mathematics.RadianPerDegree * *geodetic.Latitude()
 
@@ -35,7 +35,7 @@ func NewTileXYZFromGeodetic(geodetic coordinates.Geodetic, quadkeyZoomLevel int8
 	altitudeResolution := math.Pow(2.0, float64(TileXYZZBaseExponent-altitudeZoomLevel))
 
 	// 垂直方向の位置を計算する
-	z := int64(math.Floor((*geodetic.Altitude()+float64(TileXYZZBaseOffset))/altitudeResolution))
+	z := int64(math.Floor((*geodetic.Altitude() + float64(TileXYZZBaseOffset)) / altitudeResolution))
 
 	return NewTileXYZ(quadkeyZoomLevel, altitudeZoomLevel, x, y, z)
 }
@@ -151,4 +151,43 @@ func (tile TileXYZ) NewMaxChild(quadNumber, altitudeNumber int8) (*TileXYZ, erro
 		(tile.GetY()+1)<<quadNumber-1,
 		(tile.GetZ()+1)<<altitudeNumber-1,
 	)
+}
+
+// TODO: Test
+func (tile TileXYZ) Contains(another TileXYZ) bool {
+	return tile.GetQuadkeyZoomLevel() <= another.GetQuadkeyZoomLevel() &&
+		tile.GetAltitudekeyZoomLevel() <= another.GetAltitudekeyZoomLevel() &&
+		tile.Overlaps(another)
+}
+
+// TODO: Test
+func (tile TileXYZ) Overlaps(another TileXYZ) bool {
+	deltaQuadkeyZoomLevel := tile.GetQuadkeyZoomLevel() - another.GetQuadkeyZoomLevel()
+	deltaAltitudekeyZoomLevel := tile.GetAltitudekeyZoomLevel() - another.GetAltitudekeyZoomLevel()
+
+	if deltaQuadkeyZoomLevel < 0 {
+		if deltaAltitudekeyZoomLevel < 0 {
+			anotherParent, _ := another.NewParent(-deltaQuadkeyZoomLevel, -deltaAltitudekeyZoomLevel)
+			another = *anotherParent
+		} else if deltaAltitudekeyZoomLevel > 0 {
+			anotherParent, _ := another.NewParent(-deltaQuadkeyZoomLevel, 0)
+			another = *anotherParent
+
+			tileParent, _ := tile.NewParent(0, deltaAltitudekeyZoomLevel)
+			tile = *tileParent
+		}
+	} else if deltaQuadkeyZoomLevel > 0 {
+		if deltaAltitudekeyZoomLevel < 0 {
+			anotherParent, _ := another.NewParent(0, -deltaAltitudekeyZoomLevel)
+			another = *anotherParent
+
+			tileParent, _ := tile.NewParent(deltaQuadkeyZoomLevel, 0)
+			tile = *tileParent
+		} else if deltaAltitudekeyZoomLevel > 0 {
+			tileParent, _ := tile.NewParent(deltaQuadkeyZoomLevel, deltaAltitudekeyZoomLevel)
+			tile = *tileParent
+		}
+	}
+
+	return tile == another
 }

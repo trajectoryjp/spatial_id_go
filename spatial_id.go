@@ -184,6 +184,7 @@ func (id SpatialID) NewMaxChild(number int8) (*SpatialID, error) {
 	)
 }
 
+// TODO: Test
 func (id SpatialID) Contains(another SpatialID) bool {
 	return id.GetZ() <= another.GetZ() && id.Overlaps(another)
 }

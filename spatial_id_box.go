@@ -117,8 +117,36 @@ func (box SpatialIDBox) GetMax() SpatialID {
 	return box.max
 }
 
-func (box SpatialIDBox) IsCollidedWith(another SpatialIDBox) bool {
-	another.AddZ(box.GetMin().GetZ() - another.GetMin().GetZ())
+// TODO: Test
+func (box SpatialIDBox) Contains(another SpatialIDBox) bool {
+	deltaZ := box.GetMin().GetZ() - another.GetMin().GetZ()
+	if deltaZ > 0 {
+		another.AddZ(deltaZ)
+	} else if deltaZ < 0 {
+		box.AddZ(-deltaZ)
+	}
+
+	if box.GetMin().GetF() > another.GetMin().GetF() || box.GetMax().GetF() < another.GetMax().GetF() {
+		return false
+	}
+	if box.GetMin().GetX() > another.GetMin().GetX() || box.GetMax().GetX() < another.GetMax().GetX() {
+		return false
+	}
+	if box.GetMin().GetY() > another.GetMin().GetY() || box.GetMax().GetY() < another.GetMax().GetY() {
+		return false
+	}
+
+	return true
+}
+
+// TODO: Test
+func (box SpatialIDBox) Overlaps(another SpatialIDBox) bool {
+	deltaZ := box.GetMin().GetZ() - another.GetMin().GetZ()
+	if deltaZ > 0 {
+		another.AddZ(deltaZ)
+	} else if deltaZ < 0 {
+		box.AddZ(-deltaZ)
+	}
 
 	if box.GetMin().GetF() > another.GetMax().GetF() || box.GetMax().GetF() < another.GetMin().GetF() {
 		return false

@@ -172,8 +172,70 @@ func (box TileXYZBox) GetMax() TileXYZ {
 	return box.max
 }
 
-func (box TileXYZBox) IsCollidedWith(another TileXYZBox) bool {
-	another.AddZoomLevel(box.GetMin().GetQuadkeyZoomLevel()-another.GetMin().GetQuadkeyZoomLevel(), box.GetMin().GetAltitudekeyZoomLevel()-another.GetMin().GetAltitudekeyZoomLevel())
+// TODO: Test
+func (box TileXYZBox) Contains(another TileXYZBox) bool {
+	deltaQuadkeyZoomLevel := box.GetMin().GetQuadkeyZoomLevel() - another.GetMin().GetQuadkeyZoomLevel()
+	deltaAltitudekeyZoomLevel := box.GetMin().GetAltitudekeyZoomLevel() - another.GetMin().GetAltitudekeyZoomLevel()
+	if deltaQuadkeyZoomLevel > 0 {
+		if deltaAltitudekeyZoomLevel > 0 {
+			another.AddZoomLevel(deltaAltitudekeyZoomLevel, deltaAltitudekeyZoomLevel)
+		} else {
+			another.AddZoomLevel(deltaQuadkeyZoomLevel, 0)
+
+			if deltaAltitudekeyZoomLevel < 0 {
+				box.AddZoomLevel(0, -deltaAltitudekeyZoomLevel)
+			}
+		}
+	} else if deltaQuadkeyZoomLevel < 0 {
+		if deltaAltitudekeyZoomLevel < 0 {
+			box.AddZoomLevel(-deltaQuadkeyZoomLevel, -deltaAltitudekeyZoomLevel)
+		} else {
+			box.AddZoomLevel(-deltaQuadkeyZoomLevel, 0)
+
+			if deltaAltitudekeyZoomLevel > 0 {
+				another.AddZoomLevel(0, deltaAltitudekeyZoomLevel)
+			}
+		}
+	}
+
+	if box.GetMin().GetX() > another.GetMin().GetX() || box.GetMax().GetX() < another.GetMax().GetX() {
+		return false
+	}
+	if box.GetMin().GetY() > another.GetMin().GetY() || box.GetMax().GetY() < another.GetMax().GetY() {
+		return false
+	}
+	if box.GetMin().GetZ() > another.GetMin().GetZ() || box.GetMax().GetZ() < another.GetMax().GetZ() {
+		return false
+	}
+
+	return true
+}
+
+// TODO: Test
+func (box TileXYZBox) Overlaps(another TileXYZBox) bool {
+	deltaQuadkeyZoomLevel := box.GetMin().GetQuadkeyZoomLevel() - another.GetMin().GetQuadkeyZoomLevel()
+	deltaAltitudekeyZoomLevel := box.GetMin().GetAltitudekeyZoomLevel() - another.GetMin().GetAltitudekeyZoomLevel()
+	if deltaQuadkeyZoomLevel > 0 {
+		if deltaAltitudekeyZoomLevel > 0 {
+			another.AddZoomLevel(deltaAltitudekeyZoomLevel, deltaAltitudekeyZoomLevel)
+		} else {
+			another.AddZoomLevel(deltaQuadkeyZoomLevel, 0)
+
+			if deltaAltitudekeyZoomLevel < 0 {
+				box.AddZoomLevel(0, -deltaAltitudekeyZoomLevel)
+			}
+		}
+	} else if deltaQuadkeyZoomLevel < 0 {
+		if deltaAltitudekeyZoomLevel < 0 {
+			box.AddZoomLevel(-deltaQuadkeyZoomLevel, -deltaAltitudekeyZoomLevel)
+		} else {
+			box.AddZoomLevel(-deltaQuadkeyZoomLevel, 0)
+
+			if deltaAltitudekeyZoomLevel > 0 {
+				another.AddZoomLevel(0, deltaAltitudekeyZoomLevel)
+			}
+		}
+	}
 
 	if box.GetMin().GetX() > another.GetMax().GetX() || box.GetMax().GetX() < another.GetMin().GetX() {
 		return false
